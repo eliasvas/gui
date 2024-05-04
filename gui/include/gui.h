@@ -27,6 +27,18 @@ typedef double    f64;
 typedef int32_t   b32;
 typedef char      b8;
 
+typedef union {
+    struct{f32 x,y;};
+    struct{f32 u,v;};
+    struct{f32 r,g;};
+    f32 raw[2];
+}vec2;
+typedef union {
+    struct{f32 x,y,z,w;};
+    struct{f32 r,g,b,a;};
+    f32 raw[4];
+}vec4;
+
 #define kilobytes(val) ((val)*1024LL)
 #define megabytes(val) ((kilobytes(val))*1024LL)
 #define gigabytes(val) ((megabytes(val))*1024LL)
@@ -109,7 +121,7 @@ typedef enum {
 //-----------------------------------------------------------------------------
 typedef struct
 {
-	u16 x0,y0,x1,y1; // coordinates of bbox in bitmap
+	unsigned short x0,y0,x1,y1; // coordinates of bbox in bitmap
 	f32 xoff,yoff,xadvance;
 } guiBakedChar;
 
@@ -168,10 +180,31 @@ typedef struct {
 } guiInputState;
 
 //-----------------------------------------------------------------------------
+// RENDERER
+//-----------------------------------------------------------------------------
+
+typedef struct {
+    vec2 pos0;
+    vec2 pos1;
+    vec2 uv0; //uv's = v2(0) for quad rendering
+    vec2 uv1;
+    vec4 color;
+}guiRenderCommand;
+
+typedef struct {
+	guiRenderCommand *commands;
+}guiRenderCommandBuffer;
+guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
+u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
+guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
+guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col);
+
+//-----------------------------------------------------------------------------
 // INTERFACE
 //-----------------------------------------------------------------------------
 
 typedef struct {
+	guiRenderCommandBuffer rcmd_buf;
 	guiFontAtlas atlas;
 	guiInputState gis;
 } guiState;

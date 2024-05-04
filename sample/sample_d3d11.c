@@ -71,7 +71,6 @@ typedef struct
     float uv1[2];
     float color[4];
 }InstanceData;
-
 static void FatalError(const char* message)
 {
     MessageBoxA(NULL, message, "Error", MB_ICONEXCLAMATION);
@@ -589,9 +588,9 @@ void dxb_render_all(dxBackend *backend) {
         // } guiBakedChar;
         // update the dynamic vertex buffer
         {
-            guiBakedChar bc = gui_font_atlas_get_char(&my_gui.atlas, 'A');
-            guiBakedChar bc1 = gui_font_atlas_get_char(&my_gui.atlas, 'B');
-            guiBakedChar bc2 = gui_font_atlas_get_char(&my_gui.atlas, 'C');
+            guiBakedChar bc = gui_font_atlas_get_char(&my_gui.atlas, 'D');
+            guiBakedChar bc1 = gui_font_atlas_get_char(&my_gui.atlas, 'i');
+            guiBakedChar bc2 = gui_font_atlas_get_char(&my_gui.atlas, 'e');
             //printf("%f %f\n", bc.xoff, bc.yoff);
             float char_offset_x = 100.0f;
             float char_offset_y = 100.0f;
@@ -602,6 +601,10 @@ void dxb_render_all(dxBackend *backend) {
                 {{char_offset_x+bc1.xoff+bc.xadvance,char_offset_y+bc1.yoff},{char_offset_x+bc1.xoff+bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+bc1.yoff+(bc1.x1-bc1.x0)},{bc1.x0,bc1.y0},{bc1.x1,bc1.y1},{1,1,0,1}},
                 {{char_offset_x+bc.xadvance+bc1.xadvance+bc2.xoff,char_offset_y+bc2.yoff},{char_offset_x+bc2.xoff+bc.xadvance+bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+bc.yoff+(bc2.x1-bc2.x0)},{bc2.x0,bc2.y0},{bc2.x1,bc2.y1},{1,0,1,1}},
             };
+
+            for (u32 i = 0; i < gui_render_cmd_buf_count(&my_gui.rcmd_buf); ++i){
+                memcpy(&data[i],&my_gui.rcmd_buf.commands[i], sizeof(InstanceData));
+            }
 
 
             D3D11_MAPPED_SUBRESOURCE mapped;
