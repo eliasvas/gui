@@ -128,7 +128,7 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
     what is being done at the end of dxb_init, just put your own!
 */
 void dxb_init(HINSTANCE instance, dxBackend *backend) {
-    ZeroMemory(backend, sizeof(dxBackend));
+    memzero(backend, sizeof(dxBackend));
     // register window class to have custom WindowProc callback
     WNDCLASSEXW wc =
     {
@@ -226,34 +226,6 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
 
 void dxb_prepare_ui_stuff(dxBackend *backend) {
     
-
-    HRESULT hr;
-    ID3D11Buffer* instancebuf;
-    {
-        
-        InstanceData data[] =
-        {
-            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
-            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
-            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
-            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
-            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
-            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
-        };
-
-
-        D3D11_BUFFER_DESC desc =
-        {
-            .ByteWidth = sizeof(data),
-            .Usage = D3D11_USAGE_DYNAMIC,
-            .BindFlags = D3D11_BIND_VERTEX_BUFFER,
-            .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
-        };
-
-        D3D11_SUBRESOURCE_DATA initial = { .pSysMem = data };
-        ID3D11Device_CreateBuffer(backend->device, &desc, &initial, &instancebuf);
-    }
-    
     // vertex & pixel shaders for drawing the ui, plus input layout for vertex input
     ID3D11InputLayout* layout;
     ID3D11VertexShader* vshader;
@@ -335,6 +307,7 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "}                                                          \n";
         ;
 
+        HRESULT hr;
         UINT flags = D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
 
         ID3DBlob* error;
@@ -485,8 +458,7 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
         ID3D11Device_CreateDepthStencilState(backend->device, &desc, &depthState);
     }
 
-    
-    backend->instancebuf = instancebuf;
+    //backend->instancebuf = instancebuf;
     backend->layout = layout;
     backend->vshader = vshader;
     backend->pshader = pshader;
@@ -496,6 +468,34 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
     backend->blendState = blendState;
     backend->rasterizerState = rasterizerState;
     backend->depthState = depthState;
+}
+
+void dxb_fill_instance_buffer_with_ui_commands(dxBackend *backend){
+    //will delete and re-init backend->instancebuf
+    //ID3D11Device_Release(backend->device, &backend->instancebuf);
+    if (backend->instancebuf){
+        ID3D11Buffer_Release(backend->instancebuf); 
+    }
+    HRESULT hr;
+    u32 instance_count = gui_render_cmd_buf_count(&my_gui.rcmd_buf);
+    {
+        // for (u32 i = 0; i < gui_render_cmd_buf_count(&my_gui.rcmd_buf); ++i){
+        //     memcpy(&data[i],&my_gui.rcmd_buf.commands[i], sizeof(InstanceData));
+        // }
+
+        D3D11_BUFFER_DESC desc =
+        {
+            .ByteWidth = sizeof(InstanceData) * instance_count,
+            .Usage = D3D11_USAGE_DYNAMIC,
+            .BindFlags = D3D11_BIND_VERTEX_BUFFER,
+            .CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+        };
+
+        D3D11_SUBRESOURCE_DATA initial = { .pSysMem = &my_gui.rcmd_buf.commands[0] };
+        ID3D11Device_CreateBuffer(backend->device, &desc, &initial, &backend->instancebuf);
+    }
+    
+    // vertex & pixel shaders for drawing the ui, plus input layout 
 }
 
 void dxb_resize_if_needed(dxBackend *backend){
@@ -589,40 +589,6 @@ void dxb_render_all(dxBackend *backend) {
             ID3D11DeviceContext_Unmap(backend->context, (ID3D11Resource*)backend->ubuffer, 0);
         }
 
-
-        // update the dynamic vertex buffer
-        {
-            guiBakedChar bc = gui_font_atlas_get_char(&my_gui.atlas, 'D');
-            guiBakedChar bc1 = gui_font_atlas_get_char(&my_gui.atlas, 'i');
-            guiBakedChar bc2 = gui_font_atlas_get_char(&my_gui.atlas, 'e');
-            printf("[%i %i] [%i %i] %f %f\n",bc1.x0,bc1.y0,bc1.x1,bc1.y1, bc1.xoff, bc1.yoff);
-            float char_offset_x = 100.0f;
-            float char_offset_y = 100.0f;
-            float starting_y_offset= bc.yoff;
-
-            InstanceData data[] =
-            {
-                {{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{0,0},{0,0},{0,0,1,1}},
-                {{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{bc.x0,bc.y0},{bc.x1,bc.y1},{0,1,1,1}},
-
-                {{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{0,0},{0,0},{0,0,0,1}},
-                {{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{bc1.x0,bc1.y0},{bc1.x1,bc1.y1},{1,1,0,1}},
-                
-                {{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{0,0},{0,0},{1,0.4,0,1}},
-                {{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{bc2.x0,bc2.y0},{bc2.x1,bc2.y1},{0,1,1,1}},
-            };
-
-            // for (u32 i = 0; i < gui_render_cmd_buf_count(&my_gui.rcmd_buf); ++i){
-            //     memcpy(&data[i],&my_gui.rcmd_buf.commands[i], sizeof(InstanceData));
-            // }
-
-
-            D3D11_MAPPED_SUBRESOURCE mapped;
-            ID3D11DeviceContext_Map(backend->context, (ID3D11Resource*)backend->instancebuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-            memcpy(mapped.pData, data, sizeof(data));
-            ID3D11DeviceContext_Unmap(backend->context, (ID3D11Resource*)backend->instancebuf, 0);
-        }
-
         // Input Assembler
         ID3D11DeviceContext_IASetInputLayout(backend->context, backend->layout);
         ID3D11DeviceContext_IASetPrimitiveTopology(backend->context, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -648,8 +614,8 @@ void dxb_render_all(dxBackend *backend) {
         ID3D11DeviceContext_OMSetDepthStencilState(backend->context, backend->depthState, 0);
         ID3D11DeviceContext_OMSetRenderTargets(backend->context, 1, &backend->rtView, backend->dsView);
 
-        // draw 4 vertices
-        ID3D11DeviceContext_DrawInstanced(backend->context, 4, 6, 0, 0);
+        // draw 'Instance' vertices
+        ID3D11DeviceContext_DrawInstanced(backend->context, 4, gui_render_cmd_buf_count(&my_gui.rcmd_buf), 0, 0);
     }
 
     // change to FALSE to disable vsync
@@ -691,6 +657,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previnstance, LPSTR cmdline, in
         }
         gui_state_update(&my_gui);
         dxb_resize_if_needed(&dxb);
+        dxb_fill_instance_buffer_with_ui_commands(&dxb);
         dxb_render_all(&dxb);
     }
 }
