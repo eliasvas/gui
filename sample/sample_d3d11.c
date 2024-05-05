@@ -233,9 +233,12 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
         
         InstanceData data[] =
         {
-            {{100,100},{200,200},{0,0},{0,0},{1,1,1,1}},
-            {{100,100},{200,200},{0,0},{0,0},{1,1,1,1}},
-            {{100,100},{200,200},{0,0},{0,0},{1,1,1,1}},
+            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
+            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
+            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
+            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
+            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
+            {{0,0},{0,0},{0,0},{0,0},{1,1,1,1}},
         };
 
 
@@ -269,8 +272,13 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
         const char hlsl[] =
             "#line " STR(__LINE__) "                                  \n\n" // actual line number in this file for nicer error messages
             "                                                           \n"
-            "static float2 verts[4]= {float2(-0.5,-0.5),float2(0.5,-0.5),float2(-0.5,0.5),float2(0.5,0.5)};\n"
-            "static float2 tc[4]= {float2(0,1),float2(1,1),float2(0,0),float2(1,0)};\n"
+            "static float2 vertices[] =\n"
+            "{\n"
+            "    {-1, -1},\n"
+            "    {-1, +1},\n"
+            "    {+1, -1},\n"
+            "    {+1, +1},\n"
+            "};\n"
             "                                                           \n"
             "                                                           \n"
             "struct VS_INPUT                                            \n"
@@ -302,10 +310,18 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "PS_INPUT vs(VS_INPUT input)\n"
             "{                                                          \n"
             "    PS_INPUT output;                                       \n"
-            "    float2 real_pos = input.pos0 + (input.pos1 - input.pos0) * (verts[input.vid]+float2(0.5,0.5)); \n"
-            "    output.pos = float4(((real_pos/winDim)-0.5)*2, 0, 1); \n"
-            "    float2 real_uv = input.uv0 + (input.uv1 - input.uv0) * (tc[input.vid]); \n"
-            "    output.uv = real_uv;                             \n"
+            "    float2 dst_half_size = (input.pos1 - input.pos0)/2; \n"
+            "    float2 dst_center = (input.pos1 + input.pos0)/2; \n"
+            "    float2 dst_pos = vertices[input.vid]*dst_half_size+dst_center; \n"
+            "    output.pos = float4(2*dst_pos/winDim - 1, 0, 1); \n"
+            "    output.pos.y *= -1; \n"
+            "    float2 uv_half_size = (input.uv1 - input.uv0)/2; \n"
+            "    float2 uv_center = (input.uv1 + input.uv0)/2; \n"
+            "    float2 uv_pos = vertices[input.vid]*uv_half_size+uv_center; \n"
+            "    output.uv = uv_pos; \n"
+            "    //output.uv.y *= -1; \n"
+            "    //float2 real_uv = float2(0,0); \n"
+            "    //output.uv = real_uv;                             \n"
             "    output.color = input.color;                 \n"
             "    return output;                                         \n"
             "}                                                          \n"
@@ -369,21 +385,14 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
 
     
     ID3D11ShaderResourceView* textureView;
-    {
-        // checkerboard texture, with 50% transparency on black colors
-        // unsigned int pixels2[] =
-        // {
-        //     0x80000000, 0xffffffff,
-        //     0xffffffff, 0x80000000,
-        // };
-                
+    {           
         gui_state_init(&my_gui);
 		u8 *pixels = my_gui.atlas.tex.data;
         // the first pixel will be white
         pixels[0] = 0xFF;
 		
-        UINT width = 512;
-        UINT height = 512;
+        UINT width = 1024;
+        UINT height = 1024;
 
         D3D11_TEXTURE2D_DESC desc =
         {
@@ -581,30 +590,31 @@ void dxb_render_all(dxBackend *backend) {
         }
 
 
-        // typedef struct
-        // {
-        //     u16 x0,y0,x1,y1; // coordinates of bbox in bitmap
-        //     f32 xoff,yoff,xadvance;
-        // } guiBakedChar;
         // update the dynamic vertex buffer
         {
             guiBakedChar bc = gui_font_atlas_get_char(&my_gui.atlas, 'D');
             guiBakedChar bc1 = gui_font_atlas_get_char(&my_gui.atlas, 'i');
             guiBakedChar bc2 = gui_font_atlas_get_char(&my_gui.atlas, 'e');
-            //printf("%f %f\n", bc.xoff, bc.yoff);
+            printf("[%i %i] [%i %i] %f %f\n",bc1.x0,bc1.y0,bc1.x1,bc1.y1, bc1.xoff, bc1.yoff);
             float char_offset_x = 100.0f;
             float char_offset_y = 100.0f;
+            float starting_y_offset= bc.yoff;
 
             InstanceData data[] =
             {
-                {{char_offset_x+bc.xoff,char_offset_y+bc.yoff},{char_offset_x+bc.xoff+(bc.x1-bc.x0),char_offset_y+bc.yoff+(bc.x1-bc.x0)},{bc.x0,bc.y0},{bc.x1,bc.y1},{0,1,1,1}},
-                {{char_offset_x+bc1.xoff+bc.xadvance,char_offset_y+bc1.yoff},{char_offset_x+bc1.xoff+bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+bc1.yoff+(bc1.x1-bc1.x0)},{bc1.x0,bc1.y0},{bc1.x1,bc1.y1},{1,1,0,1}},
-                {{char_offset_x+bc.xadvance+bc1.xadvance+bc2.xoff,char_offset_y+bc2.yoff},{char_offset_x+bc2.xoff+bc.xadvance+bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+bc.yoff+(bc2.x1-bc2.x0)},{bc2.x0,bc2.y0},{bc2.x1,bc2.y1},{1,0,1,1}},
+                {{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{0,0},{0,0},{0,0,1,1}},
+                {{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{bc.x0,bc.y0},{bc.x1,bc.y1},{0,1,1,1}},
+
+                {{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{0,0},{0,0},{0,0,0,1}},
+                {{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{bc1.x0,bc1.y0},{bc1.x1,bc1.y1},{1,1,0,1}},
+                
+                {{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{0,0},{0,0},{1,0.4,0,1}},
+                {{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{bc2.x0,bc2.y0},{bc2.x1,bc2.y1},{0,1,1,1}},
             };
 
-            for (u32 i = 0; i < gui_render_cmd_buf_count(&my_gui.rcmd_buf); ++i){
-                memcpy(&data[i],&my_gui.rcmd_buf.commands[i], sizeof(InstanceData));
-            }
+            // for (u32 i = 0; i < gui_render_cmd_buf_count(&my_gui.rcmd_buf); ++i){
+            //     memcpy(&data[i],&my_gui.rcmd_buf.commands[i], sizeof(InstanceData));
+            // }
 
 
             D3D11_MAPPED_SUBRESOURCE mapped;
@@ -639,7 +649,7 @@ void dxb_render_all(dxBackend *backend) {
         ID3D11DeviceContext_OMSetRenderTargets(backend->context, 1, &backend->rtView, backend->dsView);
 
         // draw 4 vertices
-        ID3D11DeviceContext_DrawInstanced(backend->context, 4, 3, 0, 0);
+        ID3D11DeviceContext_DrawInstanced(backend->context, 4, 6, 0, 0);
     }
 
     // change to FALSE to disable vsync
