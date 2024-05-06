@@ -8,9 +8,9 @@ guiStatus gui_state_update(guiState *state){
 	gui_input_process_events(&state->gis);
 	if (gui_input_mb_down(&state->gis, GUI_LMB)){
 		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){200,200}, (vec4){1,1,1,1});
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){400,400}, (vec2){200,200}, (vec4){1,0,0.5,1});
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){500,500}, (vec2){100,100}, (vec4){1,0,0.5,1});
 	}
-	
+
 	// SOME SAMPLE RENDERING COMMANDS
 	guiBakedChar bc = gui_font_atlas_get_char(&state->atlas, 'D');
 	guiBakedChar bc1 = gui_font_atlas_get_char(&state->atlas, 'i');
@@ -25,7 +25,7 @@ guiStatus gui_state_update(guiState *state){
 
 		{{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{0,0},{0,0},{0,0,0,1}},
 		{{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{bc1.x0,bc1.y0},{bc1.x1,bc1.y1},{1,1,0,1}},
-		
+
 		{{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{0,0},{0,0},{1,0.4,0,1}},
 		{{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{bc2.x0,bc2.y0},{bc2.x1,bc2.y1},{0,1,1,1}},
 	};

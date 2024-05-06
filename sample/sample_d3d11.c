@@ -1,9 +1,10 @@
 // Big thanks to Martins for the D3D11 gist this is based on
 // https://gist.github.com/mmozeiko/5e727f845db182d468a34d524508ad5f
-// also this is a nice intro: https://www.3dgep.com/introduction-to-directx-11/
+// also this is a nice intro: https://graphicsprogramming.github.io/learnd3d11/1-introduction/1-1-getting-started/1-1-3-hello-triangle/
 
-// TODO -- maybe we need a win32_d3d11 .c with all D3D11 init stuff and then 
-// a separate file containing an abstraction that works for the gui
+// IDEA: maybe a sampleshould be a little functional,
+// we could make a simple color picker! maybe it can also process screenshots or
+// its 'middle' panel can be like a camera seeing the below window (chrome page or something)
 
 #include "gui.h"
 guiState my_gui;
@@ -117,13 +118,13 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
             e.param0=GUI_MMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
             gui_input_push_event(&my_gui, e);
             break;
-    
+
     }
     return DefWindowProcW(wnd, msg, wparam, lparam);
 }
 
 /*
-    dxb_init will allocate new window/instance/device/swap, if you want to put this in your project, 
+    dxb_init will allocate new window/instance/device/swap, if you want to put this in your project,
     don't call init at all and just fill your own stuff by writing to the dxBackend struct like
     what is being done at the end of dxb_init, just put your own!
 */
@@ -155,12 +156,12 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
     // create window
     HWND window = CreateWindowExW(exstyle, wc.lpszClassName, L"guiSample", style,CW_USEDEFAULT, CW_USEDEFAULT, width, height,NULL, NULL, wc.hInstance, NULL);
     Assert(window && "Failed to create window");
-  
+
     // allocate a console to log stuff
     AllocConsole();
     FILE* stream;
     freopen_s(&stream, "CONOUT$", "w", stdout);
-    
+
     HRESULT hr;
 
     ID3D11Device* device;
@@ -217,7 +218,7 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
         IDXGIDevice_Release(dxgiDevice);
     }
     ShowWindow(backend->window, SW_SHOWDEFAULT);
-    
+
     backend->window = window;
     backend->device = device;
     backend->context = context;
@@ -225,7 +226,7 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
 }
 
 void dxb_prepare_ui_stuff(dxBackend *backend) {
-    
+
     // vertex & pixel shaders for drawing the ui, plus input layout for vertex input
     ID3D11InputLayout* layout;
     ID3D11VertexShader* vshader;
@@ -275,9 +276,9 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "    float2 winDim;                                   \n"
             "}                                                          \n"
             "                                                           \n"
-            "sampler sampler0 : register(s0);                           \n" // s0 = sampler bound to slot 0
+            "sampler sampler0 : register(s0);                           \n"
             "                                                           \n"
-            "Texture2D<float4> texture0 : register(t0);                 \n" // t0 = shader resource bound to slot 0
+            "Texture2D<float4> texture0 : register(t0);                 \n"
             "                                                           \n"
             "PS_INPUT vs(VS_INPUT input)\n"
             "{                                                          \n"
@@ -356,14 +357,13 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
         ID3D11Device_CreateBuffer(backend->device, &desc, NULL, &ubuffer);
     }
 
-    
     ID3D11ShaderResourceView* textureView;
-    {           
+    {
         gui_state_init(&my_gui);
 		u8 *pixels = my_gui.atlas.tex.data;
         // the first pixel will be white
         pixels[0] = 0xFF;
-		
+
         UINT width = 1024;
         UINT height = 1024;
 
@@ -452,7 +452,7 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             .StencilEnable = FALSE,
             .StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK,
             .StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK,
-            // .FrontFace = ... 
+            // .FrontFace = ...
             // .BackFace = ...
         };
         ID3D11Device_CreateDepthStencilState(backend->device, &desc, &depthState);
@@ -474,7 +474,7 @@ void dxb_fill_instance_buffer_with_ui_commands(dxBackend *backend){
     //will delete and re-init backend->instancebuf
     //ID3D11Device_Release(backend->device, &backend->instancebuf);
     if (backend->instancebuf){
-        ID3D11Buffer_Release(backend->instancebuf); 
+        ID3D11Buffer_Release(backend->instancebuf);
     }
     HRESULT hr;
     u32 instance_count = gui_render_cmd_buf_count(&my_gui.rcmd_buf);
@@ -494,8 +494,7 @@ void dxb_fill_instance_buffer_with_ui_commands(dxBackend *backend){
         D3D11_SUBRESOURCE_DATA initial = { .pSysMem = &my_gui.rcmd_buf.commands[0] };
         ID3D11Device_CreateBuffer(backend->device, &desc, &initial, &backend->instancebuf);
     }
-    
-    // vertex & pixel shaders for drawing the ui, plus input layout 
+
 }
 
 void dxb_resize_if_needed(dxBackend *backend){
@@ -582,7 +581,7 @@ void dxb_render_all(dxBackend *backend) {
         // update uniforms
         {
             float winDim[16] = {(float)backend->currentWidth, (float)backend->currentHeight};
-        
+
             D3D11_MAPPED_SUBRESOURCE mapped;
             ID3D11DeviceContext_Map(backend->context, (ID3D11Resource*)backend->ubuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
             memcpy(mapped.pData, winDim, 16*sizeof(float));
@@ -638,9 +637,9 @@ void dxb_render_all(dxBackend *backend) {
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previnstance, LPSTR cmdline, int cmdshow)
 {
-    dxb_init(instance, &dxb);   
+    dxb_init(instance, &dxb);
     dxb_prepare_ui_stuff(&dxb);
-    
+
     for (;;)
     {
         // process all incoming Windows messages

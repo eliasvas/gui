@@ -52,7 +52,7 @@ typedef union {
 #define equalf(a, b, epsilon) (fabs(b - a) <= epsilon)
 #define maximum(a, b) ((a) > (b) ? (a) : (b))
 #define minimum(a, b) ((a) < (b) ? (a) : (b))
-#define step(threshold, value) ((value) < (threshold) ? 0 : 1) 
+#define step(threshold, value) ((value) < (threshold) ? 0 : 1)
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 #define memzero(p,s) (memset(p,0,s))
@@ -83,13 +83,13 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
    u32 new_cap = maximum(16, maximum(1 + 2*sb_cap(buf), new_len));
    assert(new_len <= new_cap);
    u32 new_size = offsetof(sbHdr, buf) + new_cap * element_size;
-   sbHdr *new_hdr; 
-   if(buf) 
-   { 
-       new_hdr = (sbHdr*)REALLOC(sb__hdr(buf), new_size); 
+   sbHdr *new_hdr;
+   if(buf)
+   {
+       new_hdr = (sbHdr*)REALLOC(sb__hdr(buf), new_size);
    }
    else
-   { 
+   {
        new_hdr = (sbHdr*)ALLOC(new_size);
        new_hdr->len = 0;
    }
