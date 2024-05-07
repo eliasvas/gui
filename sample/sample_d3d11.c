@@ -71,6 +71,9 @@ typedef struct
     float uv0[2];
     float uv1[2];
     float color[4];
+    float corner_radius;
+    float edge_softness;
+    float border_thickness;
 }InstanceData;
 static void FatalError(const char* message)
 {
@@ -240,6 +243,9 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             { "TEXCOORD",    0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(InstanceData, uv0),    D3D11_INPUT_PER_INSTANCE_DATA, 1 },
             { "TEXCOORD",    1, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(InstanceData, uv1),    D3D11_INPUT_PER_INSTANCE_DATA, 1 },
             { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(InstanceData, color),    D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            { "POSITION",    2, DXGI_FORMAT_R32_FLOAT, 0, offsetof(InstanceData, corner_radius),    D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            { "POSITION",    3, DXGI_FORMAT_R32_FLOAT, 0, offsetof(InstanceData, edge_softness),    D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+            { "POSITION",    4, DXGI_FORMAT_R32_FLOAT, 0, offsetof(InstanceData, border_thickness),    D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 //          { "SV_InstanceID",    0, DXGI_FORMAT_R32_UINT, 0, offsetof(struct Vertex, color),    D3D11_INPUT_PER_INDEX_DATA, 0 },
         };
         const char hlsl[] =
@@ -252,6 +258,16 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "    {+1, -1},\n"
             "    {+1, +1},\n"
             "};\n"
+            "float rounded_rect_sdf(float2 sample_pos,\n"
+            "         float2 rect_center,\n"
+            "         float2 rect_half_size,\n"
+            "         float r)\n"
+            "{\n"
+            "float2 d2 = (abs(rect_center - sample_pos) -\n"
+            "            rect_half_size +\n"
+            "            float2(r, r));\n"
+            "return min(max(d2.x, d2.y), 0.0) + length(max(d2, 0.0)) - r;\n"
+            "}\n"
             "                                                           \n"
             "                                                           \n"
             "struct VS_INPUT                                            \n"
@@ -261,6 +277,9 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "     float2 uv0 : TEXCOORD0;                                 \n"
             "     float2 uv1 : TEXCOORD1;                                 \n"
             "     float4 color : COLOR;                                 \n"
+            "     float corner_radius : POSITION2;                                 \n"
+            "     float edge_softness : POSITION3;                                 \n"
+            "     float border_thickness : POSITION4;                                 \n"
             "     uint vid : SV_VertexID;                                 \n"
             "};                                                         \n"
             "                                                           \n"
@@ -268,7 +287,13 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "{                                                          \n"
             "  float4 pos   : SV_POSITION0;                              \n" // these names do not matter, except SV_... ones
             "  float2 uv    : TEXCOORD;                                 \n"
+            "  float2 dst_pos    : POSITION1;                                 \n"
+            "  float2 dst_center    : POSITION2;                                 \n"
+            "  float2 half_size    : POSITION3;                                 \n"
             "  float4 color : COLOR;                                    \n"
+            "  float corner_radius    : POSITION4;                                 \n"
+            "  float edge_softness    : POSITION5;                                 \n"
+            "  float border_thickness    : POSITION6;                                 \n"
             "};                                                         \n"
             "                                                           \n"
             "cbuffer cbuffer0 : register(b0)                            \n" // b0 = constant buffer bound to slot 0
@@ -296,6 +321,13 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "    //float2 real_uv = float2(0,0); \n"
             "    //output.uv = real_uv;                             \n"
             "    output.color = input.color;                 \n"
+            "    output.corner_radius = input.corner_radius;                 \n"
+            "    output.edge_softness = input.edge_softness;                 \n"
+            "    output.border_thickness = input.border_thickness;                 \n"
+            "    output.color = input.color;                 \n"
+            "    output.dst_pos = dst_pos;                 \n"
+            "    output.dst_center = dst_center;                 \n"
+            "    output.half_size = dst_half_size;                 \n"
             "    return output;                                         \n"
             "}                                                          \n"
             "                                                           \n"
@@ -304,9 +336,42 @@ void dxb_prepare_ui_stuff(dxBackend *backend) {
             "    uint w,h,l;texture0.GetDimensions(0,w,h,l);      \n"
             "    float col = texture0.Sample(sampler0, input.uv/float2(w,h)).r;      \n"
             "    float4 tex = float4(col,col,col,col);      \n"
-            "    return input.color * tex;                              \n"
+            "float softness = input.edge_softness + 0.001;\n"
+            "float corner_radius = input.corner_radius;\n"
+            "float2 softness_padding = float2(max(0, softness*2-1),\n"
+            "                                max(0, softness*2-1));\n"
+            "// sample distance\n"
+            "float dist = rounded_rect_sdf(input.dst_pos,\n"
+            "                            input.dst_center,\n"
+            "                            input.half_size-softness_padding,\n"
+            "                            corner_radius);\n"
+            "// map distance => a blend factor\n"
+            "float sdf_factor = 1.f - smoothstep(0, 2*softness, dist);\n"
+            "// use sdf_factor in final color calculation\n"
+            "float border_factor = 1.f;\n"
+            "if(input.border_thickness != 0)\n"
+            "{\n"
+            "float2 interior_half_size =\n"
+            "    input.half_size - float2(input.border_thickness,input.border_thickness);\n"
+            "float interior_radius_reduce_f = \n"
+            "    min(interior_half_size.x/input.half_size.x,\n"
+            "        interior_half_size.y/input.half_size.y);\n"
+            "float interior_corner_radius =\n"
+            "    (input.corner_radius *\n"
+            "    interior_radius_reduce_f *\n"
+            "    interior_radius_reduce_f);\n"
+            "// calculate sample distance from interior\n"
+            "float inside_d = rounded_rect_sdf(input.dst_pos,\n"
+            "                                input.dst_center,\n"
+            "                                interior_half_size-\n"
+            "                                softness_padding,\n"
+            "                                interior_corner_radius);\n"
+            "// map distance => factor\n"
+            "float inside_f = smoothstep(0, 2*softness, inside_d);\n"
+            "border_factor = inside_f;\n"
+            "}\n"
+            "    return input.color * tex * sdf_factor*border_factor;                              \n"
             "}                                                          \n";
-        ;
 
         HRESULT hr;
         UINT flags = D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
