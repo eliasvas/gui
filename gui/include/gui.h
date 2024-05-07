@@ -201,6 +201,7 @@ guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
 u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
 guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
+guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, char c, vec2 p0, vec2 dim, vec4 col);
 //-----------------------------------------------------------------------------
 // INTERFACE
 //-----------------------------------------------------------------------------

@@ -13,26 +13,22 @@ guiStatus gui_state_update(guiState *state){
 	}
 
 	// SOME SAMPLE RENDERING COMMANDS
+	f32 ts_x = 100.0f;
+	f32 ts_y = 100.0f;
 	guiBakedChar bc = gui_font_atlas_get_char(&state->atlas, 'D');
+	// we always want to start from the first character's y offset, initial (first_y_off - bc.yoff) = 0
+	f32 first_y_off = bc.yoff;
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc.xoff, ts_y + (bc.yoff - first_y_off)}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0}, (vec4){1,0,0,1},0,0,0);
+	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'D', (vec2){ts_x+bc.xoff, ts_y + (bc.yoff - first_y_off)}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0},(vec4){1,1,1,1});
+
 	guiBakedChar bc1 = gui_font_atlas_get_char(&state->atlas, 'i');
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc1.xoff + bc.xadvance, ts_y + (bc1.yoff - first_y_off)}, (vec2){bc1.x1-bc1.x0,bc1.y1-bc1.y0}, (vec4){0.9,0.9,0.2,1},0,0,0);
+	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'i', (vec2){ts_x+bc1.xoff + bc.xadvance, ts_y + (bc1.yoff - first_y_off)}, (vec2){bc1.x1-bc1.x0,bc1.y1-bc1.y0},(vec4){0.1,0.1,1,1});
+
 	guiBakedChar bc2 = gui_font_atlas_get_char(&state->atlas, 'e');
-	//printf("[%i %i] [%i %i] %f %f\n",bc1.x0,bc1.y0,bc1.x1,bc1.y1, bc1.xoff, bc1.yoff);
-	f32 char_offset_x = 100.0f;
-	f32 char_offset_y = 100.0f;
-	f32 starting_y_offset= bc.yoff;
-	guiRenderCommand rc[] = {
-		{{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{0,0},{0,0},{0,0,1,1},0,0,0},
-		{{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{bc.x0,bc.y0},{bc.x1,bc.y1},{0,1,1,1},0,0,0},
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc2.xoff + bc.xadvance + bc1.xadvance, ts_y + (bc2.yoff - first_y_off)}, (vec2){bc2.x1-bc2.x0,bc2.y1-bc2.y0}, (vec4){0.2,0.5,1,1},0,0,0);
+	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'e', (vec2){ts_x+bc2.xoff + bc.xadvance + bc1.xadvance, ts_y + (bc2.yoff - first_y_off)}, (vec2){bc2.x1-bc2.x0,bc2.y1-bc2.y0},(vec4){0.5,0.9,0.1,1});
 
-		{{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{0,0},{0,0},{0,0,0,1},0,0,0},
-		{{char_offset_x + bc1.xoff + bc.xadvance,char_offset_y + (bc1.yoff-starting_y_offset)},{char_offset_x + bc1.xoff +bc.xadvance+(bc1.x1-bc1.x0),char_offset_y+ (bc1.yoff-starting_y_offset)+(bc1.y1-bc1.y0)},{bc1.x0,bc1.y0},{bc1.x1,bc1.y1},{1,1,0,1},0,0,0},
-
-		{{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{0,0},{0,0},{1,0.4,0,1},0,0,0},
-		{{char_offset_x + bc2.xoff + bc.xadvance+ bc1.xadvance,char_offset_y + (bc2.yoff-starting_y_offset)},{char_offset_x + bc2.xoff +bc.xadvance+ bc1.xadvance+(bc2.x1-bc2.x0),char_offset_y+ (bc2.yoff-starting_y_offset)+(bc2.y1-bc2.y0)},{bc2.x0,bc2.y0},{bc2.x1,bc2.y1},{0,1,1,1},0,0,0},
-	};
-	for (int i = 0; i < array_count(rc);++i){
-		gui_render_cmd_buf_add(&state->rcmd_buf, rc[i]);
-	}
 	return GUI_GUD;
 }
 
