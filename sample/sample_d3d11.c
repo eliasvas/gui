@@ -26,15 +26,15 @@ guiState my_gui;
 #define Assert(cond) do { if (!(cond)) __debugbreak(); } while (0)
 #define AssertHR(hr) Assert(SUCCEEDED(hr))
 
-#pragma comment (lib, "gdi32")
-#pragma comment (lib, "user32")
-#pragma comment (lib, "dxguid")
-#pragma comment (lib, "dxgi")
-#pragma comment (lib, "d3d11")
-#pragma comment (lib, "d3dcompiler")
+// #pragma comment (lib, "gdi32")
+// #pragma comment (lib, "user32")
+// #pragma comment (lib, "dxguid")
+// #pragma comment (lib, "dxgi")
+// #pragma comment (lib, "d3d11")
+// #pragma comment (lib, "d3dcompiler")
 
 //maybe all the gui stuff should be somewhere else
-#pragma comment (lib, "../../gui/.build/gui.lib")
+//#pragma comment (lib, "../../gui/.build/gui.lib")
 
 #define STR2(x) #x
 #define STR(x) STR2(x)

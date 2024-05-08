@@ -3,6 +3,7 @@
 #include "../ext/stb/stb_truetype.h"
 
 //TODO -- we need to do the base85 compressed ProggyClean in source thing
+//TODO -- we should probably do SDF fonts by default, I think stb_truetype has an API for this
 
 
 guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath){

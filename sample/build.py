@@ -4,16 +4,16 @@ import os
 
 def get_latest_windows_kit_include_path():
     windows_kit_include_path = r"C:\Program Files (x86)\Windows Kits\10\Include"
-    
+
     # Get all subdirectories within the Windows Kits include directory
     subdirectories = [d for d in os.listdir(windows_kit_include_path) if os.path.isdir(os.path.join(windows_kit_include_path, d))]
-    
+
     # Filter out directories that don't start with a version number
     subdirectories = [d for d in subdirectories if d.split(".")[0].isdigit()]
-    
+
     # Sort the directories based on version number
     sorted_subdirectories = sorted(subdirectories, key=lambda x: tuple(map(int, x.split("."))), reverse=True)
-    
+
     # Choose the directory with the highest version number
     if sorted_subdirectories:
         return os.path.join(windows_kit_include_path, sorted_subdirectories[0])
@@ -40,20 +40,20 @@ def compile_d3d_example(build_type):
     result = subprocess.run(compile_gui_lib_command, capture_output=True, text=True)
     print(result.stdout)
     print(result.stderr)
-    
-    
+
+
     # Create the build directory if it doesn't exist
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
-    
+
     # Set the build directory as the working directory
     os.chdir(build_dir)
-    
+
     # Compile the source file
     if build_type == "DEBUG":
-        compile_command = ["cl.exe", "/Zi", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_file), "/link", "/SUBSYSTEM:WINDOWS", f"/OUT:{output_file}"]
+        compile_command = ["cl.exe", "/Zi", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_file), "/link", "User32.lib","D3D11.lib","D3DCompiler.lib","dxguid.lib","../../gui/.build/gui.lib", "/SUBSYSTEM:WINDOWS", f"/OUT:{output_file}"]
     else:  # Release mode
-        compile_command = ["cl.exe", "/O2", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_file), "/link", "/SUBSYSTEM:WINDOWS", f"/OUT:{output_file}"]
+        compile_command = ["cl.exe", "/O2", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_file), "/link", "User32.lib","D3D11.lib","D3DCompiler.lib","dxguid.lib","../../gui/.build/gui.lib", "/SUBSYSTEM:WINDOWS", f"/OUT:{output_file}"]
     result = subprocess.run(compile_command, capture_output=True, text=True)
     if result.returncode == 0:
         print(result.stdout)

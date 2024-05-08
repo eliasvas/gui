@@ -10,10 +10,10 @@ def compile_gui_sources(build_type):
     # Create the build directory if it doesn't exist
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
-    
+
     # Set the src directory as the working directory
     os.chdir(src_dir)
-    
+
     # Get list of source files in src directory
     source_files = [f for f in os.listdir() if f.endswith(".c")]
 
@@ -35,7 +35,7 @@ def compile_gui_sources(build_type):
             return
         else:
             print(result.stdout)
-    
+
     # Set the build directory as the working directory
     os.chdir("..")
 
