@@ -22,7 +22,7 @@ def get_latest_windows_kit_include_path():
 
 
 def compile_d3d_example(build_type):
-    source_file = "sample_d3d11.c"
+    source_files = ["d3d11_backend.c", "sample.c"]  # List of all source files to compile
     output_file = "sample_d3d11.exe"
     build_dir = "../sample/.build"
     gui_lib_dir = "../gui"
@@ -51,9 +51,9 @@ def compile_d3d_example(build_type):
 
     # Compile the source file
     if build_type == "DEBUG":
-        compile_command = ["cl.exe", "/Zi", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_file), "/link", "User32.lib","D3D11.lib","D3DCompiler.lib","dxguid.lib","../../gui/.build/gui.lib", "/SUBSYSTEM:WINDOWS", f"/OUT:{output_file}"]
+        compile_command = ["cl.exe", "/Zi", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_files[0]), os.path.join("..", source_files[1]), "/link", "User32.lib","D3D11.lib","D3DCompiler.lib","dxguid.lib","../../gui/.build/gui.lib", "/SUBSYSTEM:CONSOLE", f"/OUT:{output_file}"]
     else:  # Release mode
-        compile_command = ["cl.exe", "/O2", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_file), "/link", "User32.lib","D3D11.lib","D3DCompiler.lib","dxguid.lib","../../gui/.build/gui.lib", "/SUBSYSTEM:WINDOWS", f"/OUT:{output_file}"]
+        compile_command = ["cl.exe", "/O2", "/I", include_path,"/I", gui_include_path, os.path.join("..", source_files[0]), os.path.join("..", source_files[1]), "/link", "User32.lib","D3D11.lib","D3DCompiler.lib","dxguid.lib","../../gui/.build/gui.lib", "/SUBSYSTEM:CONSOLE", f"/OUT:{output_file}"]
     result = subprocess.run(compile_command, capture_output=True, text=True)
     if result.returncode == 0:
         print(result.stdout)
