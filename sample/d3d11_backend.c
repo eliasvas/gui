@@ -675,29 +675,26 @@ void dxb_render_all(dxBackend *backend, guiRenderCommand *rcommands, u32 command
     }
 }
 
-void platform_deinit(){exit(1);}
-
-void platform_update(){
-    for (;;)
-    {
-        // process all incoming Windows messages
-        MSG msg;
-        if (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
-        {
-            if (msg.message == WM_QUIT)
-            {
-                platform_deinit();
-            }
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }else break;
-    }
-}
 void platform_init(u8 *font_atlas_data){
     dxb_init(GetModuleHandle(NULL), &dxb);
     dxb_prepare_ui_stuff(&dxb, font_atlas_data);
 }
 
+void platform_deinit(){exit(1);}
+
+void platform_update(){
+    // process all incoming Windows messages
+    MSG msg;
+    while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        if (msg.message == WM_QUIT)
+        {
+            platform_deinit();
+        }
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+}
 
 void platform_render(guiRenderCommand *rcommands, u32 command_count){
     dxb_resize_if_needed(&dxb);
