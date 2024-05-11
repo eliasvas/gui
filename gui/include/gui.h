@@ -39,6 +39,11 @@ typedef union {
     f32 raw[4];
 }vec4;
 
+typedef struct {f32 x,y,w,h;} rect;
+static b32 point_inside_rect(vec2 point, rect r) {
+	return (r.x >= point.x) && (r.x + r.w <= point.y) && (r.y <= point.y) && (r.y + r.h >= point.y);
+}
+
 #define kilobytes(val) ((val)*1024LL)
 #define megabytes(val) ((kilobytes(val))*1024LL)
 #define gigabytes(val) ((megabytes(val))*1024LL)
@@ -110,6 +115,17 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 	sb_free(arr);
 }
 */
+
+//-----------------------------------------------------------------------------
+// GENERIC HASH FUNCTION
+//-----------------------------------------------------------------------------
+static u64 djb2(u8 *str) {
+	u64 hash = 5381;
+	int c;
+	while ((c = *str++))
+		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+	return hash;
+}
 
 typedef enum {
 	GUI_GUD,
@@ -202,6 +218,111 @@ u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
 guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
 guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, char c, vec2 p0, vec2 dim, vec4 col);
+
+//-----------------------------------------------------------------------------
+// UI CORE STUFF 
+//-----------------------------------------------------------------------------
+typedef enum {
+	GUI_SIZEKIND_NULL,
+	GUI_SIZEKIND_PIXELS, // direct size in pixels
+	GUI_SIZEKIND_TEXT_CONTENT, // axis' size determined by string dimensions
+	GUI_SIZEKIND_TEXT_PERCENT_OF_PARENT, // we want a percent of parent widget's size in some axis
+	GUI_SIZEKIND_CHILDREN_SUM, // size of given axis is sum of children sizes layed out in order
+} guiSizeKind;
+
+typedef struct guiSize guiSize;
+struct guiSize {
+	guiSizeKind kind;
+	f32 value;
+	f32 strictness;
+};
+
+typedef enum {
+	AXIS2_X,
+	AXIS2_Y,
+	AXIS2_COUNT,
+} Axis2;
+
+typedef u32 guiKey;
+
+typedef u32 guiWidgetFlags;
+enum {
+	GUI_WIDGET_FLAG_CLICKABLE             = (1<<0),
+	GUI_WIDGET_FLAG_DRAW_TEXT             = (1<<1),
+	GUI_WIDGET_FLAG_DRAW_BORDER           = (1<<2),
+	GUI_WIDGET_FLAG_DRAW_BACKGROUND       = (1<<3),
+	GUI_WIDGET_FLAG_DRAW_HOT_ANIMATION    = (1<<4),
+	GUI_WIDGET_FLAG_DRAW_ACTIVE_ANIMATION = (1<<5),
+};
+
+#define GUI_WIDGET_MAX_STRING_SIZE 64
+
+typedef struct guiWidget guiWidget;
+struct guiWidget {
+	// gui widget hierarchy (used to calculate new positions/animations/wtv each frame)
+	guiWidget *first; // first child (this widget's widgets)
+	guiWidget *last; // last child
+	guiWidget *next; // next widget of parent
+	guiWidget *prev; // prev widget of parent
+	guiWidget *parent; // parent widget
+
+	// gui widget hashing (used to iterate all cached widgets, e.g for pruning)
+	guiWidget *hash_next;
+	guiWidget *hash_prev;
+
+	// key+generation info
+	guiKey key;
+	u64 last_frame_touched_index; //if last_frame_touched_index < current_frame_index, we PRUNE from cache (widget deleted)
+
+	// per-frame info, provided by builder code (the main gui interface, e.g do_button(..))
+	guiWidgetFlags flags;
+	char str[GUI_WIDGET_MAX_STRING_SIZE]; // widget's string data??? (e.g a label)
+	guiSize semantic_size[AXIS2_COUNT];
+
+	// computed every frame
+	f32 computed_rel_position[AXIS2_COUNT]; // position relative to parent
+	f32 computed_size[AXIS2_COUNT]; // computed size in pixels
+	rect r; // final on-screen rectangular coordinates
+
+	//persistent data (across widget's lifetime)
+	f32 hot_t;
+	f32 active_t;
+};
+
+guiKey gui_key_null(void);
+guiKey gui_key_from_str(char *str);
+b32 gui_key_equals(guiKey lk, guiKey rk);
+
+guiWidget *gui_widget_make(guiWidgetFlags flags, char *str);
+guiWidget *gui_push_parent(guiWidget *widget);
+guiWidget *gui_pop_parent(void);
+
+typedef u32 guiSignalFlags;
+enum {
+	GUI_SIGNAL_FLAG_LMB_PRESSED  = (1<<0),
+	GUI_SIGNAL_FLAG_MMB_PRESSED  = (1<<2),
+	GUI_SIGNAL_FLAG_RMB_PRESSED  = (1<<3),
+	GUI_SIGNAL_FLAG_LMB_RELEASED = (1<<4),
+	GUI_SIGNAL_FLAG_MMB_RELEASED = (1<<5),
+	GUI_SIGNAL_FLAG_RMB_RELEASED = (1<<6),
+	GUI_SIGNAL_FLAG_MOUSE_HOVER  = (1<<7),
+	// ...
+};
+
+typedef struct guiSignal guiSignal;
+struct guiSignal {
+	guiWidget *widget;
+	vec2 mouse;
+	vec2 drag_delta;
+	guiSignalFlags flags;
+};
+
+guiSignal gui_get_signal_for_widget(guiWidget *widget);
+
+
+b32 gui_button(char *str);
+
+
 //-----------------------------------------------------------------------------
 // INTERFACE
 //-----------------------------------------------------------------------------
@@ -210,6 +331,7 @@ typedef struct {
 	guiRenderCommandBuffer rcmd_buf;
 	guiFontAtlas atlas;
 	guiInputState gis;
+	u64 current_frame_index;
 } guiState;
 
 /*

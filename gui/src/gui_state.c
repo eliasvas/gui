@@ -4,6 +4,8 @@
 b32 gui_input_mb_down(const guiInputState *gis, guiMouseButton button);
 
 guiStatus gui_state_update(guiState *state){
+	// At the end of every frame, if a widget’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that widget should be “pruned”.
+	state->current_frame_index += 1; // This is used to prune unused widgets
 	gui_render_cmd_buf_clear(&state->rcmd_buf);
 	gui_input_process_events(&state->gis);
 	if (gui_input_mb_down(&state->gis, GUI_LMB)){
@@ -29,6 +31,9 @@ guiStatus gui_state_update(guiState *state){
 	guiBakedChar bc2 = gui_font_atlas_get_char(&state->atlas, 'e');
 	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc2.xoff + bc.xadvance + bc1.xadvance, ts_y + (bc2.yoff - first_y_off)}, (vec2){bc2.x1-bc2.x0,bc2.y1-bc2.y0}, (vec4){0.2,0.5,1,1},0,0,0);
 	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'e', (vec2){ts_x+bc2.xoff + bc.xadvance + bc1.xadvance, ts_y + (bc2.yoff - first_y_off)}, (vec2){bc2.x1-bc2.x0,bc2.y1-bc2.y0},(vec4){0.5,0.9,0.1,1});
+
+
+	gui_button("Click me!");
 
 	return GUI_GUD;
 }
