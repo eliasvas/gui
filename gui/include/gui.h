@@ -226,7 +226,7 @@ typedef enum {
 	GUI_SIZEKIND_NULL,
 	GUI_SIZEKIND_PIXELS, // direct size in pixels
 	GUI_SIZEKIND_TEXT_CONTENT, // axis' size determined by string dimensions
-	GUI_SIZEKIND_TEXT_PERCENT_OF_PARENT, // we want a percent of parent widget's size in some axis
+	GUI_SIZEKIND_TEXT_PERCENT_OF_PARENT, // we want a percent of parent box's size in some axis
 	GUI_SIZEKIND_CHILDREN_SUM, // size of given axis is sum of children sizes layed out in order
 } guiSizeKind;
 
@@ -245,38 +245,38 @@ typedef enum {
 
 typedef u32 guiKey;
 
-typedef u32 guiWidgetFlags;
+typedef u32 guiBoxFlags;
 enum {
-	GUI_WIDGET_FLAG_CLICKABLE             = (1<<0),
-	GUI_WIDGET_FLAG_DRAW_TEXT             = (1<<1),
-	GUI_WIDGET_FLAG_DRAW_BORDER           = (1<<2),
-	GUI_WIDGET_FLAG_DRAW_BACKGROUND       = (1<<3),
-	GUI_WIDGET_FLAG_DRAW_HOT_ANIMATION    = (1<<4),
-	GUI_WIDGET_FLAG_DRAW_ACTIVE_ANIMATION = (1<<5),
+	GUI_BOX_FLAG_CLICKABLE             = (1<<0),
+	GUI_BOX_FLAG_DRAW_TEXT             = (1<<1),
+	GUI_BOX_FLAG_DRAW_BORDER           = (1<<2),
+	GUI_BOX_FLAG_DRAW_BACKGROUND       = (1<<3),
+	GUI_BOX_FLAG_DRAW_HOT_ANIMATION    = (1<<4),
+	GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION = (1<<5),
 };
 
-#define GUI_WIDGET_MAX_STRING_SIZE 64
+#define GUI_BOX_MAX_STRING_SIZE 64
 
-typedef struct guiWidget guiWidget;
-struct guiWidget {
-	// gui widget hierarchy (used to calculate new positions/animations/wtv each frame)
-	guiWidget *first; // first child (this widget's widgets)
-	guiWidget *last; // last child
-	guiWidget *next; // next widget of parent
-	guiWidget *prev; // prev widget of parent
-	guiWidget *parent; // parent widget
+typedef struct guiBox guiBox;
+struct guiBox {
+	// gui box hierarchy (used to calculate new positions/animations/wtv each frame)
+	guiBox *first; // first child (this box's boxs)
+	guiBox *last; // last child
+	guiBox *next; // next box of parent
+	guiBox *prev; // prev box of parent
+	guiBox *parent; // parent box
 
-	// gui widget hashing (used to iterate all cached widgets, e.g for pruning)
-	guiWidget *hash_next;
-	guiWidget *hash_prev;
+	// gui box hashing (used to iterate all cached boxs, e.g for pruning)
+	guiBox *hash_next;
+	guiBox *hash_prev;
 
 	// key+generation info
 	guiKey key;
-	u64 last_frame_touched_index; //if last_frame_touched_index < current_frame_index, we PRUNE from cache (widget deleted)
+	u64 last_frame_touched_index; //if last_frame_touched_index < current_frame_index, we PRUNE from cache (box deleted)
 
 	// per-frame info, provided by builder code (the main gui interface, e.g do_button(..))
-	guiWidgetFlags flags;
-	char str[GUI_WIDGET_MAX_STRING_SIZE]; // widget's string data??? (e.g a label)
+	guiBoxFlags flags;
+	char str[GUI_BOX_MAX_STRING_SIZE]; // box's string data??? (e.g a label)
 	guiSize semantic_size[AXIS2_COUNT];
 
 	// computed every frame
@@ -284,7 +284,7 @@ struct guiWidget {
 	f32 computed_size[AXIS2_COUNT]; // computed size in pixels
 	rect r; // final on-screen rectangular coordinates
 
-	//persistent data (across widget's lifetime)
+	//persistent data (across box's lifetime)
 	f32 hot_t;
 	f32 active_t;
 };
@@ -293,9 +293,9 @@ guiKey gui_key_null(void);
 guiKey gui_key_from_str(char *str);
 b32 gui_key_equals(guiKey lk, guiKey rk);
 
-guiWidget *gui_widget_make(guiWidgetFlags flags, char *str);
-guiWidget *gui_push_parent(guiWidget *widget);
-guiWidget *gui_pop_parent(void);
+guiBox *gui_box_make(guiBoxFlags flags, char *str);
+guiBox *gui_push_parent(guiBox *box);
+guiBox *gui_pop_parent(void);
 
 typedef u32 guiSignalFlags;
 enum {
@@ -311,13 +311,13 @@ enum {
 
 typedef struct guiSignal guiSignal;
 struct guiSignal {
-	guiWidget *widget;
+	guiBox *box;
 	vec2 mouse;
 	vec2 drag_delta;
 	guiSignalFlags flags;
 };
 
-guiSignal gui_get_signal_for_widget(guiWidget *widget);
+guiSignal gui_get_signal_for_box(guiBox *box);
 
 
 b32 gui_button(char *str);

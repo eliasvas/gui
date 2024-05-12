@@ -14,7 +14,7 @@ guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath){
 
 	u8 *ttf_buffer = ALLOC(1<<20);
 	u32 byte_count = fread(ttf_buffer, 1, 1<<20, fopen(filepath, "rb"));
-	stbtt_BakeFontBitmap(ttf_buffer,0, 100.0, atlas->tex.data,1024,1024, 32,96, (stbtt_bakedchar *)atlas->cdata);
+	stbtt_BakeFontBitmap(ttf_buffer,0, 64.0, atlas->tex.data,1024,1024, 32,96, (stbtt_bakedchar *)atlas->cdata);
 
 	if (ttf_buffer == NULL) {
 		printf("Error allocating ttf's storage");
