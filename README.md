@@ -40,5 +40,3 @@ An interactive demo can be viewed [here](https://pages.github.com/).
         //..
     }
     ```
-### License
-MIT

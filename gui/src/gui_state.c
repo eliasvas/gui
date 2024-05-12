@@ -15,23 +15,12 @@ guiStatus gui_state_update(guiState *state){
 		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){400,400}, (vec2){100,100}, (vec4){1,1,1,1},0,0,2);
 	}
 
+
+
 	// SOME SAMPLE RENDERING COMMANDS
-	f32 ts_x = 100.0f;
-	f32 ts_y = 100.0f;
-	guiBakedChar bc = gui_font_atlas_get_char(&state->atlas, 'D');
-	// we always want to start from the first character's y offset, initial (first_y_off - bc.yoff) = 0
-	f32 first_y_off = bc.yoff;
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc.xoff, ts_y + (bc.yoff - first_y_off)}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0}, (vec4){1,0,0,1},0,0,0);
-	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'D', (vec2){ts_x+bc.xoff, ts_y + (bc.yoff - first_y_off)}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0},(vec4){1,1,1,1});
-
-	guiBakedChar bc1 = gui_font_atlas_get_char(&state->atlas, 'i');
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc1.xoff + bc.xadvance, ts_y + (bc1.yoff - first_y_off)}, (vec2){bc1.x1-bc1.x0,bc1.y1-bc1.y0}, (vec4){0.9,0.9,0.2,1},0,0,0);
-	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'i', (vec2){ts_x+bc1.xoff + bc.xadvance, ts_y + (bc1.yoff - first_y_off)}, (vec2){bc1.x1-bc1.x0,bc1.y1-bc1.y0},(vec4){0.1,0.1,1,1});
-
-	guiBakedChar bc2 = gui_font_atlas_get_char(&state->atlas, 'e');
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){ts_x+bc2.xoff + bc.xadvance + bc1.xadvance, ts_y + (bc2.yoff - first_y_off)}, (vec2){bc2.x1-bc2.x0,bc2.y1-bc2.y0}, (vec4){0.2,0.5,1,1},0,0,0);
-	gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, 'e', (vec2){ts_x+bc2.xoff + bc.xadvance + bc1.xadvance, ts_y + (bc2.yoff - first_y_off)}, (vec2){bc2.x1-bc2.x0,bc2.y1-bc2.y0},(vec4){0.5,0.9,0.1,1});
-
+	gui_draw_string_in_pos(state, "Die", (vec2){100,100});
+	vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die"); 
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
 
 	gui_button("Click me!");
 

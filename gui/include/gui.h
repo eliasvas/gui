@@ -358,4 +358,8 @@ typedef struct {
 } guiRect;
 guiRect make_gui_rect(float x, float y, float w, float h);
 
+vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
+f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
+guiStatus gui_draw_string_in_pos(guiState *state, char *str, vec2 pos);
+
 #endif
