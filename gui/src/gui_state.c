@@ -2,6 +2,7 @@
 
 // forward declared bc I don't want this function to be in the interface (gui.h)
 b32 gui_input_mb_down(const guiInputState *gis, guiMouseButton button);
+gui_style_default(guiStyle *style);
 
 guiStatus gui_state_update(guiState *state){
 	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
@@ -18,7 +19,7 @@ guiStatus gui_state_update(guiState *state){
 
 
 	// SOME SAMPLE RENDERING COMMANDS
-	gui_draw_string_in_pos(state, "Die", (vec2){100,100});
+	gui_draw_string_in_pos(state, "Die", (vec2){100,100}, state->style.base_text_color);
 	vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die"); 
 	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
 
@@ -30,5 +31,6 @@ guiStatus gui_state_update(guiState *state){
 
 guiStatus gui_state_init(guiState *state){
 	memzero(state, sizeof(guiState));
+	gui_style_default(&state->style);
 	return gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
 }

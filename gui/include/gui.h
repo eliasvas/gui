@@ -51,9 +51,11 @@ static b32 point_inside_rect(vec2 point, rect r) {
 
 #define PI 3.1415926535897f
 #define align_pow2(val, align) (((val) + ((align) - 1)) & ~(((val) - (val)) + (align) - 1))
-#define align4(val) (((val) + 3) & ~3)
-#define align8(val) (((val) + 7) & ~7)
-#define align16(val) (((val) + 15) & ~15)
+#define align2(val) align_pow2(val,2)
+#define align4(val) align_pow2(val,4)
+#define align8(val) align_pow2(val,8)
+#define align16(val) align_pow2(val,16)
+#define align32(val) align_pow2(val,32)
 #define equalf(a, b, epsilon) (fabs(b - a) <= epsilon)
 #define maximum(a, b) ((a) > (b) ? (a) : (b))
 #define minimum(a, b) ((a) < (b) ? (a) : (b))
@@ -117,6 +119,50 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 */
 
 //-----------------------------------------------------------------------------
+//	SIMPLE ARENA 
+//-----------------------------------------------------------------------------
+typedef struct {
+	u8 *buf;
+	size_t buf_len; // buffer total length (in bytes)
+	size_t prev_offset; // ???
+	size_t curr_offset; // in bytes
+}Arena;
+
+static void *arena_alloc_aligned(Arena *a, size_t size, size_t align) {
+	u64 curr_ptr = (u64)a->buf + (u64)a->curr_offset;
+	u64 offset = align_pow2(curr_ptr, align);
+	offset -= (u64)a->buf; // offset now becomes relative to buf
+
+	// if there is _space_
+	if (offset+size <= a->buf_len) {
+		void *ptr = &a->buf[offset];
+		a->prev_offset = offset;
+		a->curr_offset = offset + size;
+		memset(ptr, 0, size);
+		return ptr;
+	}
+	return NULL;
+}
+
+#define DEF_ALIGN 2*sizeof(void*)
+
+static void *arena_alloc(Arena *a, size_t size) {
+	return arena_alloc_aligned(a, size, DEF_ALIGN);
+}
+
+static void arena_init(Arena *a, void *backing_buf, size_t backing_buf_len) {
+	a->buf = (u8*)backing_buf;
+	a->buf_len = backing_buf_len;
+	a->curr_offset = 0;
+	a->prev_offset = 0;
+}
+
+static void arena_clear(Arena *a) {
+	a->curr_offset = 0;
+	a->prev_offset = 0;
+}
+
+//-----------------------------------------------------------------------------
 // GENERIC HASH FUNCTION
 //-----------------------------------------------------------------------------
 static u64 djb2(u8 *str) {
@@ -131,6 +177,16 @@ typedef enum {
 	GUI_GUD,
 	GUI_BAD
 }guiStatus;
+
+//-----------------------------------------------------------------------------
+// STYLE
+//-----------------------------------------------------------------------------
+
+typedef struct {
+	vec4 base_text_color;
+	vec4 base_background_color;
+}guiStyle;
+
 
 //-----------------------------------------------------------------------------
 // FONT
@@ -331,6 +387,7 @@ typedef struct {
 	guiRenderCommandBuffer rcmd_buf;
 	guiFontAtlas atlas;
 	guiInputState gis;
+	guiStyle style;
 	u64 current_frame_index;
 } guiState;
 
@@ -360,6 +417,6 @@ guiRect make_gui_rect(float x, float y, float w, float h);
 
 vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
-guiStatus gui_draw_string_in_pos(guiState *state, char *str, vec2 pos);
+guiStatus gui_draw_string_in_pos(guiState *state, char *str, vec2 pos, vec4 color);
 
 #endif
