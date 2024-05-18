@@ -115,7 +115,7 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
     what is being done at the end of dxb_init, just put your own!
 */
 void dxb_init(HINSTANCE instance, dxBackend *backend) {
-    memzero(backend, sizeof(dxBackend));
+    M_ZERO(backend, sizeof(dxBackend));
     // register window class to have custom WindowProc callback
     WNDCLASSEXW wc =
     {

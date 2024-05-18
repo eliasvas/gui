@@ -18,7 +18,7 @@ b32 gui_key_equals(guiKey lk, guiKey rk) {
 guiBox *gui_box_make(guiBoxFlags flags, char *str) {
 	assert(strlen(str) < GUI_BOX_MAX_STRING_SIZE);
 	guiBox *w = ALLOC(sizeof(guiBox));
-	memzero(w, sizeof(guiBox));
+	M_ZERO(w, sizeof(guiBox));
 	w->flags = flags;
 	memcpy(w->str, str, strlen(str));
 	return w;

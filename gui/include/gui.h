@@ -61,8 +61,8 @@ static b32 point_inside_rect(vec2 point, rect r) {
 #define minimum(a, b) ((a) < (b) ? (a) : (b))
 #define step(threshold, value) ((value) < (threshold) ? 0 : 1)
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
+#define is_pow2(x) ((x & (x - 1)) == 0)
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
-#define memzero(p,s) (memset(p,0,s))
 
 #define ALLOC malloc
 #define REALLOC realloc
@@ -119,47 +119,186 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 */
 
 //-----------------------------------------------------------------------------
-//	SIMPLE ARENA 
+//	ARENA ALLOCATOR (64-Bit)
 //-----------------------------------------------------------------------------
-typedef struct {
-	u8 *buf;
-	size_t buf_len; // buffer total length (in bytes)
-	size_t prev_offset; // ???
-	size_t curr_offset; // in bytes
-}Arena;
+#if defined(_WIN32)
+	#include <windows.h>
+	#define M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
+	#define M_COMMIT(reserved_ptr, bytes) VirtualAlloc(reserved_ptr, bytes, MEM_COMMIT, PAGE_READWRITE)
+	#define M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE) 
+	#define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RESERVE | MEM_RELEASE) 
+	#define M_ZERO(p,s) (ZeroMemory(p,s))
+#else
+	#error "Implement virtual memory stuff for this target (probably just mmap)"
+#endif
 
-static void *arena_alloc_aligned(Arena *a, size_t size, size_t align) {
-	u64 curr_ptr = (u64)a->buf + (u64)a->curr_offset;
-	u64 offset = align_pow2(curr_ptr, align);
-	offset -= (u64)a->buf; // offset now becomes relative to buf
 
-	// if there is _space_
-	if (offset+size <= a->buf_len) {
-		void *ptr = &a->buf[offset];
-		a->prev_offset = offset;
-		a->curr_offset = offset + size;
-		memset(ptr, 0, size);
-		return ptr;
+typedef struct Arena Arena;
+struct Arena {
+	Arena *curr;
+	Arena *prev;
+	u64 alignment;
+	u64 base_pos;
+	u64 chunk_cap; // how many bytes current chunk can save
+	u64 chunk_pos; // our offset inside that chunk
+	u64 chunk_commit_pos; // how much memory in this chunk is CURRENTLY commited
+	// for packing in 64-bit offset
+	b32 growable;
+	u32 trash;
+};
+typedef struct ArenaTemp ArenaTemp;
+struct ArenaTemp {
+	Arena *arena;
+	u64 pos;
+};
+#define M_ARENA_INITIAL_COMMIT kilobytes(4)
+#define M_ARENA_MAX_ALIGN 64
+#define M_ARENA_DEFAULT_RESERVE_SIZE gigabytes(1)
+#define M_ARENA_COMMIT_BLOCK_SIZE megabytes(64)
+#define M_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(Arena), M_ARENA_MAX_ALIGN)
+
+static Arena* arena_alloc_reserve(u64 reserve_size) {
+	Arena *arena = NULL;
+	if (reserve_size >= M_ARENA_INITIAL_COMMIT) {
+		void *mem = M_RESERVE(reserve_size);
+		if (M_COMMIT(mem, M_ARENA_INITIAL_COMMIT)) {
+			arena = (Arena*)mem;
+			arena->curr = arena;
+			arena->prev = 0;
+			arena->alignment = sizeof(void*);
+			arena->base_pos = 0;
+			arena->growable = 1;
+			arena->chunk_cap = reserve_size;
+			arena->chunk_pos = M_ARENA_INTERNAL_MIN_SIZE;
+			arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT;
+		}
+	}
+	assert(arena != NULL);
+	return arena;
+}
+static Arena* arena_alloc() {
+	return arena_alloc_reserve(M_ARENA_DEFAULT_RESERVE_SIZE);
+}
+static void arena_release(Arena *arena) {
+	//M_RELEASE(arena, arena->chunk_cap);
+	//Arena *curr = arena->curr;
+	for(Arena *curr = arena->curr; curr != NULL; curr = curr->prev) {
+		M_RELEASE(curr, curr->chunk_cap);
+	}
+	M_ZERO(arena, sizeof(arena));
+}
+static void* arena_push_nz(Arena *arena, u64 size) {
+	void *res = NULL;
+	Arena *curr = arena->curr;
+
+	// alloc a new chunk if not enough space 
+	if (arena->growable) {
+		u64 next_chunk_pos = align_pow2(curr->chunk_pos, arena->alignment);
+		if (next_chunk_pos + size > curr->chunk_cap) {
+			u64 new_reserved_size = M_ARENA_DEFAULT_RESERVE_SIZE;
+			u64 least_size = M_ARENA_INTERNAL_MIN_SIZE + size;
+			if (new_reserved_size < least_size) {
+				// because 4KB is recommended page size for most currect Architectures
+				new_reserved_size = align_pow2(least_size, kilobytes(4));
+			}	
+			void *mem = M_RESERVE(new_reserved_size);
+			if (M_COMMIT(mem, M_ARENA_INITIAL_COMMIT)) {
+				Arena *new_chunk_arena = (Arena*)mem;	
+				new_chunk_arena->curr = new_chunk_arena;
+				new_chunk_arena->prev = curr;
+				new_chunk_arena->base_pos = curr->base_pos + curr->chunk_cap;
+				new_chunk_arena->chunk_cap = new_reserved_size;
+				new_chunk_arena->chunk_pos = M_ARENA_INTERNAL_MIN_SIZE;
+				new_chunk_arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT;
+				curr = new_chunk_arena;
+				arena->curr = new_chunk_arena;
+			}
+		}
+	}
+
+	// assumming we have enough free space ( < chunk_cap)
+	u64 result_pos = align_pow2(curr->chunk_pos, arena->alignment);
+	u64 next_chunk_pos = result_pos + size;
+	if (next_chunk_pos <= curr->chunk_cap) {
+		if (next_chunk_pos > curr->chunk_commit_pos) {
+			u64 next_commit_pos_aligned = align_pow2(next_chunk_pos, M_ARENA_COMMIT_BLOCK_SIZE);	
+			u64 next_commit_pos = minimum(next_commit_pos_aligned,curr->chunk_cap);
+			u64 commit_size = next_commit_pos - curr->chunk_commit_pos;
+			if (M_COMMIT((u8*)curr + curr->chunk_commit_pos, commit_size)) {
+				curr->chunk_commit_pos = next_commit_pos;
+			}
+		}
+	}
+
+	// if allocation successful, return the pointer
+	if (next_chunk_pos <= curr->chunk_commit_pos) {
+		res = (u8*)curr + result_pos;
+		curr->chunk_pos = next_chunk_pos;
+	}
+
+	return res;
+}
+static void* arena_push(Arena *arena, u64 size) {
+	Arena *curr = arena->curr;
+	void *res = arena_push_nz(curr, size);
+	M_ZERO(res, size);
+	return res;
+}
+
+static void arena_align(Arena *arena, u64 p)
+{
+	assert(is_pow2(p) && p < M_ARENA_MAX_ALIGN);
+	Arena *curr = arena->curr;
+	u64 current_chunk_pos = curr->chunk_pos;
+	u64 current_chunk_pos_aligned = align_pow2(curr->chunk_pos, p);
+	u64 needed_space = current_chunk_pos_aligned - current_chunk_pos;
+	// This 'if' might not be needed
+	if (needed_space > 0) {
+		arena_push(curr, needed_space);
+	}
+}
+static u64 arena_current_pos(Arena *arena){
+	Arena *curr = arena->curr;
+	u64 pos = curr->base_pos + curr->chunk_pos;
+	return(pos);
+}
+
+static void* arena_pop_to_pos(Arena *arena, u64 pos) {
+	Arena *curr = arena->curr;
+	u64 total_pos = arena_current_pos(curr);
+	// release chunks that BEGIN after this pos
+	if (pos < total_pos) {
+		// We need at least M_ARENA_INTERNAL_MIN_SIZE of allocation in our arena (for the Arena* at least)
+		u64 clamped_total_pos = maximum(pos, M_ARENA_INTERNAL_MIN_SIZE);
+		for(;clamped_total_pos < pos;) {
+			Arena *prev = curr->prev;
+			M_RELEASE(curr, curr->chunk_cap);
+			curr = prev;
+		}
+		arena->curr = curr;
+		u64 chunk_pos = clamped_total_pos - curr->base_pos;
+		u64 clamped_chunk_pos = maximum(chunk_pos, M_ARENA_INTERNAL_MIN_SIZE);
+		curr->chunk_pos = clamped_chunk_pos;
 	}
 	return NULL;
 }
 
-#define DEF_ALIGN 2*sizeof(void*)
-
-static void *arena_alloc(Arena *a, size_t size) {
-	return arena_alloc_aligned(a, size, DEF_ALIGN);
+static void* arena_pop_amount(Arena *arena, u64 amount) {
+	Arena *curr = arena->curr;
+	u64 total_pos = arena_current_pos(curr);
+	if (amount <= total_pos) {
+		u64 new_pos = total_pos - amount;
+		arena_pop_to_pos(arena, new_pos);
+	}
 }
 
-static void arena_init(Arena *a, void *backing_buf, size_t backing_buf_len) {
-	a->buf = (u8*)backing_buf;
-	a->buf_len = backing_buf_len;
-	a->curr_offset = 0;
-	a->prev_offset = 0;
+static ArenaTemp arena_begin_temp(Arena *arena) {
+	u64 pos = arena_current_pos(arena);
+	ArenaTemp t = {arena, pos};
+	return t;
 }
-
-static void arena_clear(Arena *a) {
-	a->curr_offset = 0;
-	a->prev_offset = 0;
+static void arena_end_temp(ArenaTemp *t) {
+	arena_pop_to_pos(t->arena, t->pos);
 }
 
 //-----------------------------------------------------------------------------

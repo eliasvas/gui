@@ -19,9 +19,9 @@ guiStatus gui_state_update(guiState *state){
 
 
 	// SOME SAMPLE RENDERING COMMANDS
-	gui_draw_string_in_pos(state, "Die", (vec2){100,100}, state->style.base_text_color);
-	vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die"); 
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
+	//gui_draw_string_in_pos(state, "Die", (vec2){100,100}, state->style.base_text_color);
+	//vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die"); 
+	//gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
 
 	gui_button("Click me!");
 
@@ -30,7 +30,7 @@ guiStatus gui_state_update(guiState *state){
 
 
 guiStatus gui_state_init(guiState *state){
-	memzero(state, sizeof(guiState));
+	M_ZERO(state, sizeof(guiState));
 	gui_style_default(&state->style);
 	return gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
 }
