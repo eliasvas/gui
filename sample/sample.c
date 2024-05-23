@@ -32,8 +32,14 @@ void sample_push_input_event(guiInputEvent e) {
 
 void hello_arena() {
     printf("Hello Arena!\n");
+    ArenaTemp temp = arena_get_scratch(NULL);
+
     Arena *arena = arena_alloc();
-    u8 *mem = arena_push_nz(arena, gigabytes(0.9));
+    u8 arr[5560];
+    //void* other_mem = push_array(arena, u8, 256);
+   
+    u8 *mem = arena_push_nz(arena, kilobytes(1));
+    memcpy(mem, arr, 2560);
     mem = arena_push_nz(arena, gigabytes(0.9));
     printf("arena_current_pos=[%llud]", arena_current_pos(arena));
     ArenaTemp t = arena_begin_temp(arena);
@@ -49,6 +55,7 @@ void hello_arena() {
     // mem = arena_push(arena, gigabytes(1));
     // mem = arena_push_nz(arena, gigabytes(5));
     arena_release(arena);
+    arena_end_temp(&temp);
     printf("Bye Arena!\n");
 }
 

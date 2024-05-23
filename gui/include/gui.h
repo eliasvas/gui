@@ -68,6 +68,16 @@ static b32 point_inside_rect(vec2 point, rect r) {
 #define REALLOC realloc
 #define FREE free
 
+#ifdef __GNUC__
+	#define thread_loc __thread
+#elif __STDC_VERSION__ >= 201112L
+	#define thread_loc _Thread_local
+#elif defined(_MSC_VER)
+	#define thread_loc __declspec(thread)
+#else
+	# error Cannot define thread_loc
+#endif
+
 //-----------------------------------------------------------------------------
 // STRETCHY BUFFER IMPLEMENTATION
 //-----------------------------------------------------------------------------
@@ -157,6 +167,7 @@ struct ArenaTemp {
 #define M_ARENA_COMMIT_BLOCK_SIZE megabytes(64)
 #define M_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(Arena), M_ARENA_MAX_ALIGN)
 
+// ref: https://git.mr4th.com/mr4th-public/mr4th/src/branch/main/src/base/base_big_functions.c
 static Arena* arena_alloc_reserve(u64 reserve_size) {
 	Arena *arena = NULL;
 	if (reserve_size >= M_ARENA_INITIAL_COMMIT) {
@@ -299,6 +310,32 @@ static ArenaTemp arena_begin_temp(Arena *arena) {
 }
 static void arena_end_temp(ArenaTemp *t) {
 	arena_pop_to_pos(t->arena, t->pos);
+}
+#define push_array_nz(arena, type, count) (type *)arena_push_nz((arena), sizeof(type)*(count))
+#define push_array(arena, type, count) (type *)arena_push((arena), sizeof(type)*(count))
+
+static thread_loc Arena *m__scratch_pool[2] = {0};
+static ArenaTemp arena_get_scratch(Arena *conflict) {
+	
+	// init the scratch pool at the first time
+	if (m__scratch_pool[0] == 0) {
+		Arena **scratch_slot = m__scratch_pool;
+		for (u32 i = 0; i < 2; i+=1, scratch_slot+=1) {
+			*scratch_slot = arena_alloc();
+		}
+	}
+
+	// return the non conflicting arena from pool
+	ArenaTemp res = {0};
+	Arena **scratch_slot = m__scratch_pool;
+	for (u32 i = 0; i < 2; i+=1, scratch_slot+=1) {
+		if (*scratch_slot == conflict){
+			continue;
+		}
+		res = arena_begin_temp(*scratch_slot);
+	}
+
+	return res;
 }
 
 //-----------------------------------------------------------------------------
