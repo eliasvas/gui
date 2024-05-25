@@ -51,7 +51,7 @@ void hello_arena() {
     for (int i = 0; i < 9; ++i) {
         mem[i] = '0'+(9 - i);
     }
-    printf("%s", &mem[0]);
+    printf("%s\n", &mem[0]);
     // mem = arena_push(arena, gigabytes(1));
     // mem = arena_push_nz(arena, gigabytes(5));
     arena_release(arena);

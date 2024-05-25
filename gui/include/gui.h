@@ -338,6 +338,36 @@ static ArenaTemp arena_get_scratch(Arena *conflict) {
 	return res;
 }
 
+/*
+// WHY we need to pass conflict arena in arena_get_scratch(..);
+void* bar(Arena *arena){
+    // this should be arena_get_scratch(arena) to get the other scratch arena, and not foo's
+    ArenaTemp temp = arena_get_scratch(0);
+    // we allocate memory on 'arena' allocator which is the same as foo's
+    u8 *mem = arena_push(arena, kilobytes(1));
+    memcpy(mem, "Hello bar\n", strlen("Hello bar\n"));
+    // some BS allocation we need to do with temp 
+    void *bs_allocation = arena_push(temp.arena, megabytes(2));
+    // This will free temp, but ALSO, because temp == arena, arena will be freed and our data (Hello bar) will be invalid 
+    arena_end_temp(&temp);
+    return mem;
+}
+void foo(){
+    ArenaTemp temp = arena_get_scratch(0);
+    void *mem_old = bar(temp.arena);
+
+    u8 *mem = arena_push(temp.arena, kilobytes(1));
+    memcpy(mem, "Hello foo\n", strlen("Hello foo\n"));
+
+    // Because our bar() function popped temp allocator, 'Hello foo' will OVERWRITE 'Hello bar'
+    // And it will be the output of this printf, thats why we need to pass conflict arenas in bar
+    printf("%s", mem_old);
+
+    arena_end_temp(&temp);
+}
+
+*/
+
 //-----------------------------------------------------------------------------
 // GENERIC HASH FUNCTION
 //-----------------------------------------------------------------------------
