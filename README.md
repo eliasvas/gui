@@ -13,30 +13,12 @@ An interactive demo can be viewed [here](https://pages.github.com/).
 ### Building
 - #### Deps
     - [git🧰](https://git-scm.com/downloads) (for cloning the repo)
-    -  [python3🐍](https://www.python.org/downloads/) (for running the build scripts)
+    -  [cmake🔪](https://cmake.org/download/) (for building)
     - [clang💻](https://releases.llvm.org/download.html) (for compiling C code)
 - #### Building sample
     ```bash
     git clone https://github.com/eliasvas/gui gui/
-    cd gui/sample/
-    python3 build.py --backend d3d11
-    cd .build/
-    sample_d3d11.exe
-    ```
-- #### Produce Single-header lib
-    ```bash
-    git clone https://github.com/eliasvas/gui gui/
-    cd gui/gui/
-    python3 produce.py gui_sh.h
-    cp gui_sh.h my/code/path/ext/inc/gui_sh.h
-    ```
-    ```C++
-    #define GUI_SH_IMPLEMENTATION
-    #include "gui_sh.h"
-    guiState my_gui;
-    int main() {
-        //..
-        gui_state_init(&my_gui);
-        //..
-    }
+    cd gui/
+    cmake -S . -B build
+    cmake --build build --target run 
     ```
