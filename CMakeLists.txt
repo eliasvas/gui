@@ -23,13 +23,12 @@ IF (WIN32)
     target_include_directories(sample_d3d11 PUBLIC gui/include)
     target_link_libraries(sample_d3d11 PUBLIC guiLib)
     target_link_libraries(sample_d3d11 PRIVATE d3d11 dxguid d3dcompiler)
+    # Run the D3D11 sample, can be invoked by cmake --build build --target run
+    add_custom_target(run
+        COMMAND sample_d3d11 
+        DEPENDS sample_d3d11 
+        WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+        USES_TERMINAL
+    )
+    add_dependencies(run sample_d3d11)
 ENDIF()
-
-# Run the D3D11 sample, can be invoked by cmake --build build --target run
-add_custom_target(run
-    COMMAND sample_d3d11 
-    DEPENDS sample_d3d11 
-    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
-    USES_TERMINAL
-)
-add_dependencies(run sample_d3d11)
