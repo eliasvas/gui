@@ -1,7 +1,9 @@
 #include "gui.h"
 
 
-typedef u32 guiKey;
+b32 gui_key_is_null(guiKey k){
+	return (k == 0);
+}
 guiKey gui_key_null(void){
 	guiKey k = {0};
 	return k;

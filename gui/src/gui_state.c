@@ -1,5 +1,7 @@
 #include "gui.h"
 
+guiState *ui_state;
+
 // forward declared bc I don't want this function to be in the interface (gui.h)
 b32 gui_input_mb_down(const guiInputState *gis, guiMouseButton button);
 gui_style_default(guiStyle *style);
@@ -29,8 +31,22 @@ guiStatus gui_state_update(guiState *state){
 }
 
 
-guiStatus gui_state_init(guiState *state){
-	M_ZERO(state, sizeof(guiState));
+guiState *gui_state_init(){
+	Arena *arena = arena_alloc();
+	guiState *state = push_array(arena, guiState, 1);
 	gui_style_default(&state->style);
-	return gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
+	state->build_arenas[0] = arena_alloc();
+	state->build_arenas[1] = arena_alloc();
+	state->box_table_size = 4096;
+	state->box_table = push_array(arena, guiBoxHashSlot, state->box_table_size);
+	gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
+
+	return state;
+}
+
+void gui_set_ui_state(guiState *state) {
+	ui_state = state;
+}
+guiState * gui_get_ui_state() {
+	return ui_state;
 }

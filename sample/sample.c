@@ -3,6 +3,7 @@
 
 #include "gui.h"
 
+// TODOl -- the gui_get_ui_state should happen INSIDE the gui functions, no need to provide it!
 
 void platform_init(u8 *font_atlas_data);
 void platform_update();
@@ -10,35 +11,35 @@ void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
 
-guiState my_gui;
 sample_push_event(guiInputEvent e){
-    gui_input_push_event(&my_gui, e);
+    gui_input_push_event(gui_get_ui_state(), e);
 }
 
 void sample_init(){
-    gui_state_init(&my_gui);
+    guiState *gui_state = gui_state_init();
+    gui_set_ui_state(gui_state);
 }
 
 void sample_update(){
-    gui_state_update(&my_gui);
+    gui_state_update(gui_get_ui_state());
     char debug_str[256] = {0};
     sprintf(debug_str, "ArenaSz: %dKB", 12);
-	gui_draw_string_in_pos(&my_gui, debug_str, (vec2){0,0}, my_gui.style.base_text_color);
+	gui_draw_string_in_pos(gui_get_ui_state(), debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
 }
 
 void sample_push_input_event(guiInputEvent e) {
-    gui_input_push_event(&my_gui, e);
+    gui_input_push_event(gui_get_ui_state(), e);
 }
 
 int main(){
     sample_init();
     arena_test();
     ll_test();
-    platform_init(my_gui.atlas.tex.data);
+    platform_init(gui_get_ui_state()->atlas.tex.data);
     for (;;){
         sample_update();
         platform_update();
-        platform_render(&my_gui.rcmd_buf.commands[0], gui_render_cmd_buf_count(&my_gui.rcmd_buf));
+        platform_render(&gui_get_ui_state()->rcmd_buf.commands[0], gui_render_cmd_buf_count(&gui_get_ui_state()->rcmd_buf));
     }
     platform_deinit();
 }

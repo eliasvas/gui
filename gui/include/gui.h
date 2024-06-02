@@ -198,6 +198,7 @@ static void arena_release(Arena *arena) {
 	}
 	M_ZERO(arena, sizeof(arena));
 }
+
 static void* arena_push_nz(Arena *arena, u64 size) {
 	void *res = NULL;
 	Arena *curr = arena->curr;
@@ -293,7 +294,6 @@ static void* arena_pop_to_pos(Arena *arena, u64 pos) {
 	}
 	return NULL;
 }
-
 static void* arena_pop_amount(Arena *arena, u64 amount) {
 	Arena *curr = arena->curr;
 	u64 total_pos = arena_current_pos(curr);
@@ -301,6 +301,10 @@ static void* arena_pop_amount(Arena *arena, u64 amount) {
 		u64 new_pos = total_pos - amount;
 		arena_pop_to_pos(arena, new_pos);
 	}
+}
+
+static void arena_clear(Arena *arena) {
+  arena_pop_to_pos(arena, 0);
 }
 
 static ArenaTemp arena_begin_temp(Arena *arena) {
@@ -549,13 +553,14 @@ enum {
 typedef struct guiBox guiBox;
 struct guiBox {
 	// gui box hierarchy (used to calculate new positions/animations/wtv each frame)
-	guiBox *first; // first child (this box's boxs)
+	guiBox *first; // first child
 	guiBox *last; // last child
-	guiBox *next; // next box of parent
-	guiBox *prev; // prev box of parent
-	guiBox *parent; // parent box
+	guiBox *next; // next box of parent (meaning in the same 'level' on the n-ary tree)
+	guiBox *prev; // prev box of parent (in the same 'level', as in, having the same parent with this)
+	guiBox *parent; // parent ref
 
 	// gui box hashing (used to iterate all cached boxs, e.g for pruning)
+	// this part just represents a doubly linked list Node, as in dll_push_back(hash_first, hash_last, new_box);
 	guiBox *hash_next;
 	guiBox *hash_prev;
 
@@ -581,6 +586,7 @@ struct guiBox {
 guiKey gui_key_null(void);
 guiKey gui_key_from_str(char *str);
 b32 gui_key_equals(guiKey lk, guiKey rk);
+b32 gui_key_is_null(guiKey k);
 
 guiBox *gui_box_make(guiBoxFlags flags, char *str);
 guiBox *gui_push_parent(guiBox *box);
@@ -616,7 +622,20 @@ b32 gui_button(char *str);
 // INTERFACE
 //-----------------------------------------------------------------------------
 
+typedef struct guiBoxHashSlot guiBoxHashSlot;
+struct guiBoxHashSlot 
+{
+  guiBox *hash_first;
+  guiBox *hash_last;
+};
+
 typedef struct {
+	Arena *build_arenas[2];
+
+	u32 box_table_size;
+	guiBox*first_free_box;
+	guiBoxHashSlot *box_table;
+
 	guiRenderCommandBuffer rcmd_buf;
 	guiFontAtlas atlas;
 	guiInputState gis;
@@ -624,24 +643,12 @@ typedef struct {
 	u64 current_frame_index;
 } guiState;
 
-/*
-	You should use this function to push all input events to the
-	gui library, you should pass all your input events through here
-*/
 guiStatus gui_input_push_event(guiState *state, guiInputEvent e);
-
-/*
-	Once every frame you should call gui_state_update which
-	will update input and the internal caching stuff for the gui
-*/
 guiStatus gui_state_update(guiState *state);
+guiState *gui_state_init();
 
-
-/*
-	Should be called before anything else, will initialize all needed
-	state for the gui library to function properly
-*/
-guiStatus gui_state_init(guiState *state);
+void gui_set_ui_state(guiState *state);
+guiState * gui_get_ui_state();
 
 typedef struct {
 	float x,y,w,h;
