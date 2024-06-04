@@ -1,22 +1,5 @@
 #include "gui.h"
 
-
-b32 gui_key_is_null(guiKey k){
-	return (k == 0);
-}
-guiKey gui_key_null(void){
-	guiKey k = {0};
-	return k;
-}
-
-guiKey gui_key_from_str(char *str) {
-	return djb2(str);
-}
-
-b32 gui_key_equals(guiKey lk, guiKey rk) {
-	return (lk==rk);
-}
-
 guiBox *gui_box_make(guiBoxFlags flags, char *str) {
 	assert(strlen(str) < GUI_BOX_MAX_STRING_SIZE);
 	guiBox *w = ALLOC(sizeof(guiBox));

@@ -74,7 +74,9 @@ vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char *str) {
 	return accum;
 }
 
-guiStatus gui_draw_string_in_pos(guiState *state, char *str, vec2 pos, vec4 color) {
+guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
+	guiState *state = gui_get_ui_state();
+
 	guiBakedChar bc = gui_font_atlas_get_char(&state->atlas, str[0]);
 	f32 y_to_add = gui_font_get_string_y_to_add(&state->atlas, str);
 	f32 first_y_off = bc.yoff;

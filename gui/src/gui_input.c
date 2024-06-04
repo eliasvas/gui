@@ -46,7 +46,9 @@ void gui_input_process_events(guiInputState *gis){
 }
 
 
-guiStatus gui_input_push_event(guiState *state, guiInputEvent e) {
+guiStatus gui_input_push_event(guiInputEvent e) {
+	guiState *state = gui_get_ui_state();
+
 	sb_push(state->gis.events, e);
 	//gui_input_process_events(&state->gis);
 	return GUI_GUD;

@@ -2,13 +2,21 @@
 
 guiState *ui_state;
 
+guiState *gui_get_ui_state() {
+	return ui_state;
+}
+
+void gui_set_ui_state(guiState *state) {
+	ui_state = state;
+}
+
 // forward declared bc I don't want this function to be in the interface (gui.h)
 b32 gui_input_mb_down(const guiInputState *gis, guiMouseButton button);
 gui_style_default(guiStyle *style);
 
-guiStatus gui_state_update(guiState *state){
-	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
-	state->current_frame_index += 1; // This is used to prune unused boxs
+guiStatus gui_state_update(){
+	guiState *state = gui_get_ui_state();
+	
 	gui_render_cmd_buf_clear(&state->rcmd_buf);
 	gui_input_process_events(&state->gis);
 	if (gui_input_mb_down(&state->gis, GUI_LMB)){
@@ -21,15 +29,17 @@ guiStatus gui_state_update(guiState *state){
 
 
 	// SOME SAMPLE RENDERING COMMANDS
-	//gui_draw_string_in_pos(state, "Die", (vec2){100,100}, state->style.base_text_color);
+	//gui_draw_string_in_pos("Die", (vec2){100,100}, state->style.base_text_color);
 	//vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die"); 
 	//gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
 
 	gui_button("Click me!");
 
+	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
+	state->current_frame_index += 1; // This is used to prune unused boxes
+	arena_clear(gui_get_build_arena());
 	return GUI_GUD;
 }
-
 
 guiState *gui_state_init(){
 	Arena *arena = arena_alloc();
@@ -44,9 +54,6 @@ guiState *gui_state_init(){
 	return state;
 }
 
-void gui_set_ui_state(guiState *state) {
-	ui_state = state;
-}
-guiState * gui_get_ui_state() {
-	return ui_state;
+Arena *gui_get_build_arena() {
+	return gui_get_ui_state()->build_arenas[gui_get_ui_state()->current_frame_index%2]; 
 }

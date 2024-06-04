@@ -12,7 +12,7 @@ void platform_deinit();
 
 
 sample_push_event(guiInputEvent e){
-    gui_input_push_event(gui_get_ui_state(), e);
+    gui_input_push_event(e);
 }
 
 void sample_init(){
@@ -21,14 +21,14 @@ void sample_init(){
 }
 
 void sample_update(){
-    gui_state_update(gui_get_ui_state());
+    gui_state_update();
     char debug_str[256] = {0};
     sprintf(debug_str, "ArenaSz: %dKB", 12);
-	gui_draw_string_in_pos(gui_get_ui_state(), debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
+	gui_draw_string_in_pos(debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
 }
 
 void sample_push_input_event(guiInputEvent e) {
-    gui_input_push_event(gui_get_ui_state(), e);
+    gui_input_push_event(e);
 }
 
 int main(){

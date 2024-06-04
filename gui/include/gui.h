@@ -583,10 +583,11 @@ struct guiBox {
 	f32 active_t;
 };
 
-guiKey gui_key_null(void);
-guiKey gui_key_from_str(char *str);
-b32 gui_key_equals(guiKey lk, guiKey rk);
+
 b32 gui_key_is_null(guiKey k);
+guiKey gui_key_zero(void);
+guiKey gui_key_from_str(char *s);
+b32 gui_key_match(guiKey a, guiKey b);
 
 guiBox *gui_box_make(guiBoxFlags flags, char *str);
 guiBox *gui_push_parent(guiBox *box);
@@ -643,12 +644,13 @@ typedef struct {
 	u64 current_frame_index;
 } guiState;
 
-guiStatus gui_input_push_event(guiState *state, guiInputEvent e);
-guiStatus gui_state_update(guiState *state);
+guiStatus gui_input_push_event(guiInputEvent e);
+guiStatus gui_state_update();
 guiState *gui_state_init();
 
 void gui_set_ui_state(guiState *state);
 guiState * gui_get_ui_state();
+Arena *gui_get_build_arena();
 
 typedef struct {
 	float x,y,w,h;
@@ -657,6 +659,6 @@ guiRect make_gui_rect(float x, float y, float w, float h);
 
 vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
-guiStatus gui_draw_string_in_pos(guiState *state, char *str, vec2 pos, vec4 color);
+guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
 
 #endif
