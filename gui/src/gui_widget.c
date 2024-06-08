@@ -1,5 +1,11 @@
 #include "gui.h"
 
+static guiBox ggui_empty_box = {&ggui_empty_box};
+
+b32 gui_box_is_empty(guiBox *box) {
+	return (box == 0 || box == &ggui_empty_box);
+}
+
 guiBox *gui_box_make(guiBoxFlags flags, char *str) {
 	assert(strlen(str) < GUI_BOX_MAX_STRING_SIZE);
 	guiBox *w = ALLOC(sizeof(guiBox));

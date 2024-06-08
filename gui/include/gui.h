@@ -79,6 +79,42 @@ static b32 point_inside_rect(vec2 point, rect r) {
 #endif
 
 //-----------------------------------------------------------------------------
+// SIMPLE FILE I/O
+//-----------------------------------------------------------------------------
+static u8 *read_entire_file(const char *src_filepath, u32 *byte_count) {
+	u8 *buffer = NULL;
+	*byte_count = 0;
+	FILE *file = fopen(src_filepath, "rb");
+	if (file) {
+		fseek(file,0,SEEK_END);
+		u32 size = ftell(file);
+		rewind(file);
+		buffer = ALLOC(size+1);
+		if (buffer) {
+			fread(buffer, 1, size,file);
+			buffer[size] = '\0'; // do we always need the null termination? i think not
+			*byte_count = size;
+		}
+		fclose(file);
+	}
+	return buffer;
+}
+static b32 write_buffer_to_file(const char *dst_filepath, u8 *buffer, u32 byte_count) {
+	b32 res = 0;
+	FILE *file = fopen(dst_filepath, "wb");
+	if (file){
+		u32 wsize = fwrite(buffer, 1, byte_count, file);
+		res = (wsize == byte_count);
+		fclose(file);
+	}
+	return res;
+}
+static void free_entire_file(u8 *buffer) {
+	FREE(buffer);
+	buffer = NULL;
+}
+
+//-----------------------------------------------------------------------------
 // STRETCHY BUFFER IMPLEMENTATION
 //-----------------------------------------------------------------------------
 
@@ -135,8 +171,8 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 	#include <windows.h>
 	#define M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
 	#define M_COMMIT(reserved_ptr, bytes) VirtualAlloc(reserved_ptr, bytes, MEM_COMMIT, PAGE_READWRITE)
-	#define M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE) 
-	#define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RESERVE | MEM_RELEASE) 
+	#define M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)
+	#define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RESERVE | MEM_RELEASE)
 	#define M_ZERO(p,s) (ZeroMemory(p,s))
 #else
 	#error "Implement virtual memory stuff for this target (probably just mmap)"
@@ -203,7 +239,7 @@ static void* arena_push_nz(Arena *arena, u64 size) {
 	void *res = NULL;
 	Arena *curr = arena->curr;
 
-	// alloc a new chunk if not enough space 
+	// alloc a new chunk if not enough space
 	if (arena->growable) {
 		u64 next_chunk_pos = align_pow2(curr->chunk_pos, arena->alignment);
 		if (next_chunk_pos + size > curr->chunk_cap) {
@@ -212,10 +248,10 @@ static void* arena_push_nz(Arena *arena, u64 size) {
 			if (new_reserved_size < least_size) {
 				// because 4KB is recommended page size for most currect Architectures
 				new_reserved_size = align_pow2(least_size, kilobytes(4));
-			}	
+			}
 			void *mem = M_RESERVE(new_reserved_size);
 			if (M_COMMIT(mem, M_ARENA_INITIAL_COMMIT)) {
-				Arena *new_chunk_arena = (Arena*)mem;	
+				Arena *new_chunk_arena = (Arena*)mem;
 				new_chunk_arena->curr = new_chunk_arena;
 				new_chunk_arena->prev = curr;
 				new_chunk_arena->base_pos = curr->base_pos + curr->chunk_cap;
@@ -233,7 +269,7 @@ static void* arena_push_nz(Arena *arena, u64 size) {
 	u64 next_chunk_pos = result_pos + size;
 	if (next_chunk_pos <= curr->chunk_cap) {
 		if (next_chunk_pos > curr->chunk_commit_pos) {
-			u64 next_commit_pos_aligned = align_pow2(next_chunk_pos, M_ARENA_COMMIT_BLOCK_SIZE);	
+			u64 next_commit_pos_aligned = align_pow2(next_chunk_pos, M_ARENA_COMMIT_BLOCK_SIZE);
 			u64 next_commit_pos = minimum(next_commit_pos_aligned,curr->chunk_cap);
 			u64 commit_size = next_commit_pos - curr->chunk_commit_pos;
 			if (M_COMMIT((u8*)curr + curr->chunk_commit_pos, commit_size)) {
@@ -320,7 +356,7 @@ static void arena_end_temp(ArenaTemp *t) {
 
 static thread_loc Arena *m__scratch_pool[2] = {0};
 static ArenaTemp arena_get_scratch(Arena *conflict) {
-	
+
 	// init the scratch pool at the first time
 	if (m__scratch_pool[0] == 0) {
 		Arena **scratch_slot = m__scratch_pool;
@@ -351,9 +387,9 @@ void* bar(Arena *arena){
     // we allocate memory on 'arena' allocator which is the same as foo's
     u8 *mem = arena_push(arena, kilobytes(1));
     memcpy(mem, "Hello bar\n", strlen("Hello bar\n"));
-    // some BS allocation we need to do with temp 
+    // some BS allocation we need to do with temp
     void *bs_allocation = arena_push(temp.arena, megabytes(2));
-    // This will free temp, but ALSO, because temp == arena, arena will be freed and our data (Hello bar) will be invalid 
+    // This will free temp, but ALSO, because temp == arena, arena will be freed and our data (Hello bar) will be invalid
     arena_end_temp(&temp);
     return mem;
 }
@@ -373,7 +409,7 @@ void foo(){
 */
 
 //-----------------------------------------------------------------------------
-// DATA STRUCTURES (mainly for use in conj. with Arena) 
+// DATA STRUCTURES (mainly for use in conj. with Arena)
 //-----------------------------------------------------------------------------
 
 #define sll_stack_push_N(f,n,next) ((n)->next=(f), (f)=(n))
@@ -513,7 +549,7 @@ guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, 
 guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, char c, vec2 p0, vec2 dim, vec4 col);
 
 //-----------------------------------------------------------------------------
-// UI CORE STUFF 
+// UI CORE STUFF
 //-----------------------------------------------------------------------------
 typedef enum {
 	GUI_SIZEKIND_NULL,
@@ -589,6 +625,7 @@ guiKey gui_key_zero(void);
 guiKey gui_key_from_str(char *s);
 b32 gui_key_match(guiKey a, guiKey b);
 
+b32 gui_box_is_empty(guiBox *box);
 guiBox *gui_box_make(guiBoxFlags flags, char *str);
 guiBox *gui_push_parent(guiBox *box);
 guiBox *gui_pop_parent(void);
@@ -624,7 +661,7 @@ b32 gui_button(char *str);
 //-----------------------------------------------------------------------------
 
 typedef struct guiBoxHashSlot guiBoxHashSlot;
-struct guiBoxHashSlot 
+struct guiBoxHashSlot
 {
   guiBox *hash_first;
   guiBox *hash_last;
@@ -634,8 +671,10 @@ typedef struct {
 	Arena *build_arenas[2];
 
 	u32 box_table_size;
-	guiBox*first_free_box;
+	guiBox *first_free_box;
 	guiBoxHashSlot *box_table;
+
+	guiBox *root;
 
 	guiRenderCommandBuffer rcmd_buf;
 	guiFontAtlas atlas;

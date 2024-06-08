@@ -3,7 +3,7 @@
 #include "../ext/stb/stb_truetype.h"
 
 // TODO -- This field should be configurable
-#define GUI_TEXT_SIZE 128 
+#define GUI_TEXT_SIZE 128
 
 //TODO -- we need to do the base85 compressed ProggyClean in source thing
 //TODO -- we should probably do SDF fonts by default, I think stb_truetype has an API for this
@@ -38,7 +38,7 @@ guiBakedChar gui_font_atlas_get_char(guiFontAtlas *atlas, char c){
 }
 
 
-// calculates how much 'up' we need to go on y axis to draw a string correctly 
+// calculates how much 'up' we need to go on y axis to draw a string correctly
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char *str) {
 	assert(str);
 	guiBakedChar bc = gui_font_atlas_get_char(atlas, (u8)str[0]);
