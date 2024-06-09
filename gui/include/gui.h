@@ -547,7 +547,6 @@ u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
 guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
 guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, char c, vec2 p0, vec2 dim, vec4 col);
-
 //-----------------------------------------------------------------------------
 // UI CORE STUFF
 //-----------------------------------------------------------------------------
@@ -618,6 +617,21 @@ struct guiBox {
 	f32 hot_t;
 	f32 active_t;
 };
+static guiBox g_nil_box = {
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box
+};
+
+//-----------------------------------------------------------------------------
+// UI stack stuff (for Style stacks and friends)
+//-----------------------------------------------------------------------------
+
+typedef struct guiParentNode guiParentNode; struct guiParentNode{guiParentNode *next; guiBox *v;};
 
 
 b32 gui_key_is_null(guiKey k);
@@ -625,10 +639,16 @@ guiKey gui_key_zero(void);
 guiKey gui_key_from_str(char *s);
 b32 gui_key_match(guiKey a, guiKey b);
 
-b32 gui_box_is_empty(guiBox *box);
+b32 gui_box_is_nil(guiBox *box);
 guiBox *gui_box_make(guiBoxFlags flags, char *str);
+guiBox *gui_box_lookup_from_key(guiBoxFlags flags, guiKey key);
+guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str);
+guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key);
+
 guiBox *gui_push_parent(guiBox *box);
+guiBox *gui_set_next_parent(guiBox *box);
 guiBox *gui_pop_parent(void);
+guiBox *gui_top_parent(void);
 
 typedef u32 guiSignalFlags;
 enum {
@@ -681,6 +701,13 @@ typedef struct {
 	guiInputState gis;
 	guiStyle style;
 	u64 current_frame_index;
+
+	vec2 win_dim;
+
+	// all the stacks! (there are a lot!)
+	guiParentNode parent_nil_stack_top;
+	struct { guiParentNode *top; guiBox * bottom_val; guiParentNode *free; b32 auto_pop; } parent_stack;
+
 } guiState;
 
 guiStatus gui_input_push_event(guiInputEvent e);

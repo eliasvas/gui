@@ -3,10 +3,9 @@
 
 #include "gui.h"
 
-// TODOl -- the gui_get_ui_state should happen INSIDE the gui functions, no need to provide it!
-
 void platform_init(u8 *font_atlas_data);
 void platform_update();
+vec2 platform_get_windim();
 void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
@@ -21,10 +20,14 @@ void sample_init(){
 }
 
 void sample_update(){
+    gui_get_ui_state()->win_dim.x = platform_get_windim().x;
+    gui_get_ui_state()->win_dim.y = platform_get_windim().y;
+    gui_build_begin();
     gui_state_update();
     char debug_str[256] = {0};
     sprintf(debug_str, "ArenaSz: %dKB", 12);
 	gui_draw_string_in_pos(debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
+    gui_build_end();
 }
 
 void sample_push_input_event(guiInputEvent e) {

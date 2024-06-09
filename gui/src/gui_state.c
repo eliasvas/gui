@@ -16,7 +16,7 @@ gui_style_default(guiStyle *style);
 
 guiStatus gui_state_update(){
 	guiState *state = gui_get_ui_state();
-	
+
 	gui_render_cmd_buf_clear(&state->rcmd_buf);
 	gui_input_process_events(&state->gis);
 	if (gui_input_mb_down(&state->gis, GUI_LMB)){
@@ -30,7 +30,7 @@ guiStatus gui_state_update(){
 
 	// SOME SAMPLE RENDERING COMMANDS
 	//gui_draw_string_in_pos("Die", (vec2){100,100}, state->style.base_text_color);
-	//vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die"); 
+	//vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die");
 	//gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
 
 	gui_button("Click me!");
@@ -50,10 +50,10 @@ guiState *gui_state_init(){
 	state->box_table_size = 4096;
 	state->box_table = push_array(arena, guiBoxHashSlot, state->box_table_size);
 	gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
-
+	gui_init_stacks(state);
 	return state;
 }
 
 Arena *gui_get_build_arena() {
-	return gui_get_ui_state()->build_arenas[gui_get_ui_state()->current_frame_index%2]; 
+	return gui_get_ui_state()->build_arenas[gui_get_ui_state()->current_frame_index%2];
 }

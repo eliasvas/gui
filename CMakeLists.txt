@@ -6,14 +6,15 @@ set(CMAKE_C_STANDARD_REQUIRED TRUE)
 project(gui VERSION 1.0 LANGUAGES C)
 
 # Build the gui library
-add_library(guiLib STATIC  gui/include/gui.h 
+add_library(guiLib STATIC  gui/include/gui.h
                         gui/src/gui_font.c
                         gui/src/gui_input.c
                         gui/src/gui_render.c
                         gui/src/gui_state.c
                         gui/src/gui_style.c
                         gui/src/gui_key.c
-                        gui/src/gui_widget.c
+                        gui/src/gui_stacks.c
+                        gui/src/gui_box.c
                         gui/src/gui.c
                         gui/ext/stb/stb_truetype.h)
 target_include_directories(guiLib PUBLIC gui/include)
@@ -26,8 +27,8 @@ IF (WIN32)
     target_link_libraries(sample_d3d11 PRIVATE d3d11 dxguid d3dcompiler)
     # Run the D3D11 sample, can be invoked by cmake --build build --target run
     add_custom_target(run
-        COMMAND sample_d3d11 
-        DEPENDS sample_d3d11 
+        COMMAND sample_d3d11
+        DEPENDS sample_d3d11
         WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
         USES_TERMINAL
     )

@@ -675,6 +675,10 @@ void dxb_render_all(dxBackend *backend, guiRenderCommand *rcommands, u32 command
     }
 }
 
+vec2 platform_get_windim() {
+    return (vec2){dxb.currentWidth, dxb.currentHeight};
+}
+
 void platform_init(u8 *font_atlas_data){
     dxb_init(GetModuleHandle(NULL), &dxb);
     dxb_prepare_ui_stuff(&dxb, font_atlas_data);
