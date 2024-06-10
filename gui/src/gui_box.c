@@ -5,10 +5,6 @@ b32 gui_box_is_nil(guiBox *box) {
 	return (box == 0 || box == &g_nil_box);
 }
 
-guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
-
-}
-
 // lookup a box in our box cache (box_table)
 guiBox *gui_box_lookup_from_key(guiBoxFlags flags, guiKey key) {
 	guiBox *res = &g_nil_box;
@@ -24,15 +20,31 @@ guiBox *gui_box_lookup_from_key(guiBoxFlags flags, guiKey key) {
 	return res;
 }
 
+guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
+	guiState *state = gui_get_ui_state();
+	guiBox *parent = gui_top_parent();
+
+	//lookup in persistent guiBox cache for our box
+	guiBox *lookup = gui_box_lookup_from_key(flags, key);
+	b32 key_first_time = gui_box_is_nil(lookup);
+	if (key_first_time) {
+		printf("Inserting new key [%u]\n", (u32)key);
+	}
+	b32 box_is_spacer = gui_key_match(key,gui_key_zero());
+
+	return NULL;
+}
+
+
+
 guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str) {
 	guiBox *parent = gui_top_parent();
 	guiKey key = gui_key_from_str(str);
 	guiBox *box = gui_box_build_from_key(flags, key);
 	if (flags & GUI_BOX_FLAG_DRAW_TEXT)
 	{
-		printf("Text should be written on [%s] box! fix!", str);
+		//printf("Text should be written on [%s] box! fix!", str);
 	}
-	printf("new [%s] box! fix!", str);
 	return box;
 }
 

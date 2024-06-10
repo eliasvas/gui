@@ -439,6 +439,7 @@ static void ll_test() { ArenaTemp temp = arena_get_scratch(NULL); printf("--Link
 // GENERIC HASH FUNCTION
 //-----------------------------------------------------------------------------
 static u64 djb2(u8 *str) {
+	if (!str) return 0;
 	u64 hash = 5381;
 	int c;
 	while ((c = *str++))

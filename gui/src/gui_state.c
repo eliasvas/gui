@@ -26,14 +26,8 @@ guiStatus gui_state_update(){
 		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){400,400}, (vec2){100,100}, (vec4){1,1,1,1},0,0,2);
 	}
 
-
-
-	// SOME SAMPLE RENDERING COMMANDS
-	//gui_draw_string_in_pos("Die", (vec2){100,100}, state->style.base_text_color);
-	//vec2 die_box = gui_font_get_string_dim(&state->atlas, "Die");
-	//gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){die_box.x,die_box.y}, (vec4){1,1,0,1},0,0,1);
-
 	gui_button("Click me!");
+	printf("clickme\n");
 
 	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
 	state->current_frame_index += 1; // This is used to prune unused boxes

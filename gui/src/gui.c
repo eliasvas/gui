@@ -12,6 +12,7 @@ void gui_build_begin(void) {
 
 	// NOTE: build top level's root guiBox
 	guiBox *root = gui_box_build_from_str(0, "ImRootPlsDontPutSameNameSomewhere!");
+	guiBox *empty_spacer = gui_box_build_from_str(0, "");
 	gui_push_parent(root);
     gui_get_ui_state()->root = root;
 

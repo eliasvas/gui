@@ -144,9 +144,9 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
     Assert(window && "Failed to create window");
 
     // allocate a console to log stuff
-    AllocConsole();
-    FILE* stream;
-    freopen_s(&stream, "CONOUT$", "w", stdout);
+    //AllocConsole();
+    //FILE* stream;
+    //freopen_s(&stream, "CONOUT$", "w", stdout);
 
     HRESULT hr;
 
