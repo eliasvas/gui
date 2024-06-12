@@ -39,6 +39,7 @@ guiState *gui_state_init(){
 	Arena *arena = arena_alloc();
 	guiState *state = push_array(arena, guiState, 1);
 	gui_style_default(&state->style);
+	state->arena = arena;
 	state->build_arenas[0] = arena_alloc();
 	state->build_arenas[1] = arena_alloc();
 	state->box_table_size = 4096;

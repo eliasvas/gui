@@ -25,12 +25,24 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	guiBox *parent = gui_top_parent();
 
 	//lookup in persistent guiBox cache for our box
-	guiBox *lookup = gui_box_lookup_from_key(flags, key);
-	b32 key_first_time = gui_box_is_nil(lookup);
-	if (key_first_time) {
-		printf("Inserting new key [%u]\n", (u32)key);
-	}
+	guiBox *box = gui_box_lookup_from_key(flags, key);
+	b32 box_first_time = gui_box_is_nil(box);
 	b32 box_is_spacer = gui_key_match(key,gui_key_zero());
+	if (box_first_time) {
+		printf("Inserting new key [%u]\n", (u32)key);
+		box = !box_is_spacer? gui_get_ui_state()->first_free_box : 0;
+		if (!gui_box_is_nil(box)) {
+			sll_stack_pop(gui_get_ui_state()->first_free_box);
+		}
+		else {
+			box = push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
+		}
+		M_ZERO(box, sizeof(guiBox));
+	}
+	
+	box->first = box->last = box->next = box->prev = box->parent = &g_nil_box;
+    box->child_count = 0;
+    box->flags = 0;
 
 	return NULL;
 }
