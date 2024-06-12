@@ -175,8 +175,11 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 	#define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RESERVE | MEM_RELEASE)
 	#define M_ZERO(p,s) (ZeroMemory(p,s))
 #else
+	#define M_ZERO(p,s) memset(p,0,s)
 	#error "Implement virtual memory stuff for this target (probably just mmap)"
 #endif
+#define M_ZERO_STRUCT(p)  M_ZERO((p), sizeof(*(p)))
+#define M_ZERO_ARRAY(a)  M_ZERO((a), sizeof(a))
 
 
 typedef struct Arena Arena;
@@ -232,7 +235,7 @@ static void arena_release(Arena *arena) {
 	for(Arena *curr = arena->curr; curr != NULL; curr = curr->prev) {
 		M_RELEASE(curr, curr->chunk_cap);
 	}
-	M_ZERO(arena, sizeof(arena));
+	M_ZERO_STRUCT(arena);
 }
 
 static void* arena_push_nz(Arena *arena, u64 size) {
@@ -643,7 +646,6 @@ static guiBox g_nil_box = {
 typedef struct guiParentNode guiParentNode; struct guiParentNode{guiParentNode *next; guiBox *v;};
 
 
-b32 gui_key_is_null(guiKey k);
 guiKey gui_key_zero(void);
 guiKey gui_key_from_str(char *s);
 b32 gui_key_match(guiKey a, guiKey b);
@@ -701,8 +703,9 @@ typedef struct {
 	Arena *build_arenas[2];
 
 	u32 box_table_size;
-	guiBox *first_free_box;
 	guiBoxHashSlot *box_table;
+
+	guiBox *first_free_box;
 
 	guiBox *root;
 

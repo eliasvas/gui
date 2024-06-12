@@ -15,11 +15,9 @@ void gui_build_begin(void) {
 	guiBox *empty_spacer = gui_box_build_from_str(0, "");
 	gui_push_parent(root);
     gui_get_ui_state()->root = root;
-
-
 }
 
 void gui_build_end(void) {
+	print_gui_hierarchy();
 	guiState *state = gui_get_ui_state();
-
 }

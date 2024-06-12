@@ -27,7 +27,8 @@ guiStatus gui_state_update(){
 	}
 
 	gui_button("Click me!");
-	printf("clickme\n");
+	gui_button("Click me2!");
+	gui_button("Click me3!");
 
 	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
 	state->current_frame_index += 1; // This is used to prune unused boxes
