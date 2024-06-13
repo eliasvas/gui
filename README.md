@@ -19,6 +19,6 @@ An interactive demo can be viewed [here](https://pages.github.com/).
     ```bash
     git clone https://github.com/eliasvas/gui gui/
     cd gui/
-    cmake -S . -B build
+    cmake -S . -B build/ -D CMAKE_BUILD_TYPE=Release
     cmake --build build --target run 
     ```

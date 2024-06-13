@@ -36,7 +36,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box = &g_nil_box;
 		key = gui_key_zero();
 		box_first_time = 1;
-		printf("Key [%s] has been detected twice, which means some box's hash to same ID!\n");
+		printf("Key [%u] has been detected twice, which means some box's hash to same ID!\n", key);
 		printf("Exiting rn..\n");
 		exit(1);
 	}
@@ -44,7 +44,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	// if first frame, allocate the box, either from the free box list OR push a new box
 	// TODO -- Dis way, our arena will always have allocated the MAX box count ahead of time, maybe not the best way?
 	if (box_first_time) {
-		printf("Inserting new key [%u]\n", (u32)key);
+		//printf("Inserting new key [%u]\n", (u32)key);
 		box = !box_is_spacer? gui_get_ui_state()->first_free_box : 0;
 		if (!gui_box_is_nil(box)) {
 			sll_stack_pop(gui_get_ui_state()->first_free_box);
@@ -86,19 +86,36 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	return box;
 }
 
+void print_gui_box_hierarchy(guiBox *box, u32 depth) {
+	if (gui_box_is_nil(box))return;
+
+	if (depth == 0) {
+		printf("[%u]\n",box->key);
+	}else {
+		for (u32 i = 1; i < depth; ++i) {
+			printf("\t");
+		}
+		printf("+----[%u]\n", box->key);
+	}
+	for (guiBox* child = box->first; !gui_box_is_nil(child); child = child->next) {
+		print_gui_box_hierarchy(child, depth+1);
+	}
+}
+
 void print_gui_hierarchy(void) {
 	printf("------------------\n");
 	printf("Printing hierarchy..\n");
-	guiBox *parent = gui_top_parent();
-	printf("parent node: [%p]\n", parent);
-	printf("g_nil_box: [%p]\n", &g_nil_box);
-	for (guiBox *child= parent->first; !gui_box_is_nil(child); child = child->next){
-		printf("node: [%p]\n", child);
+	printf("g_nil_box=[%p]\n", &g_nil_box);
+	printf("zero=[%u]\n", gui_key_from_str("zero"));
+	printf("one=[%u]\n", gui_key_from_str("one"));
+	printf("two=[%u]\n", gui_key_from_str("two"));
+	printf("three=[%u]\n", gui_key_from_str("three"));
+	printf("four=[%u]\n", gui_key_from_str("four"));
+	guiBox *root = gui_get_ui_state()->root;
 
-	}
+	print_gui_box_hierarchy(root, 0);
 	printf("------------------\n");
 }
-
 
 
 guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str) {
