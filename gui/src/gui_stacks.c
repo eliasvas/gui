@@ -77,97 +77,46 @@ void gui_init_stacks(guiState *state) {
 	state->pref_height_stack.bottom_val = state->pref_height_nil_stack_top.v;
 	state->pref_height_stack.free = 0;
 	state->pref_height_stack.auto_pop = 0;
+	// -- pref_height stack initialization
+	state->bg_color_nil_stack_top.v = v4(0,0,0,0);
+	state->bg_color_stack.top = &state->bg_color_nil_stack_top;
+	state->bg_color_stack.bottom_val = state->bg_color_nil_stack_top.v;
+	state->bg_color_stack.free = 0;
+	state->bg_color_stack.auto_pop = 0;
 }
 
-guiBox *gui_top_parent(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_top_impl(state, Parent, parent);
-}
-guiBox *gui_set_next_parent(guiBox *box) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_set_next_impl(gui_get_ui_state(), Parent, parent, guiBox*, box);
-}
-guiBox *gui_push_parent(guiBox *box) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_push_impl(gui_get_ui_state(), Parent, parent, guiBox*, box);
-}
-guiBox *gui_pop_parent(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_pop_impl(state, Parent, parent);
-}
+guiBox *gui_top_parent(void) { gui_stack_top_impl(gui_get_ui_state(), Parent, parent); }
+guiBox *gui_set_next_parent(guiBox *box) { gui_stack_set_next_impl(gui_get_ui_state(), Parent, parent, guiBox*, box); }
+guiBox *gui_push_parent(guiBox *box) { gui_stack_push_impl(gui_get_ui_state(), Parent, parent, guiBox*, box); }
+guiBox *gui_pop_parent(void) { gui_stack_pop_impl(gui_get_ui_state(), Parent, parent); }
 
-f32 gui_top_fixed_x(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_top_impl(state, FixedX, fixed_x);
-}
-f32 gui_set_next_fixed_x(f32 v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_set_next_impl(gui_get_ui_state(), FixedX, fixed_x, f32, v);
-}
-f32 gui_push_fixed_x(f32 v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_push_impl(gui_get_ui_state(), FixedX, fixed_x, f32, v);
-}
-f32 gui_pop_fixed_x(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_pop_impl(state, FixedX, fixed_x);
-}
+f32 gui_top_fixed_x(void) { gui_stack_top_impl(gui_get_ui_state(), FixedX, fixed_x); }
+f32 gui_set_next_fixed_x(f32 v) { gui_stack_set_next_impl(gui_get_ui_state(), FixedX, fixed_x, f32, v); }
+f32 gui_push_fixed_x(f32 v) { gui_stack_push_impl(gui_get_ui_state(), FixedX, fixed_x, f32, v); }
+f32 gui_pop_fixed_x(void) { gui_stack_pop_impl(gui_get_ui_state(), FixedX, fixed_x); }
 
-f32 gui_top_fixed_y(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_top_impl(state, FixedY, fixed_y);
-}
-f32 gui_set_next_fixed_y(f32 v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_set_next_impl(gui_get_ui_state(), FixedY, fixed_y, f32, v);
-}
-f32 gui_push_fixed_y(f32 v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_push_impl(gui_get_ui_state(), FixedY, fixed_y, f32, v);
-}
-f32 gui_pop_fixed_y(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_pop_impl(state, FixedY, fixed_y);
-}
+f32 gui_top_fixed_y(void) { gui_stack_top_impl(gui_get_ui_state(), FixedY, fixed_y); }
+f32 gui_set_next_fixed_y(f32 v) { gui_stack_set_next_impl(gui_get_ui_state(), FixedY, fixed_y, f32, v); }
+f32 gui_push_fixed_y(f32 v) { gui_stack_push_impl(gui_get_ui_state(), FixedY, fixed_y, f32, v); }
+f32 gui_pop_fixed_y(void) { gui_stack_pop_impl(gui_get_ui_state(), FixedY, fixed_y); }
 
-guiSize gui_top_pref_width(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_top_impl(state, PrefWidth, pref_width);
-}
-guiSize gui_set_next_pref_width(guiSize v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_set_next_impl(gui_get_ui_state(), PrefWidth, pref_width, guiSize, v);
-}
-guiSize gui_push_pref_width(guiSize v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_push_impl(gui_get_ui_state(), PrefWidth, pref_width, guiSize, v);
-}
-guiSize gui_pop_pref_width(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_pop_impl(state, PrefWidth, pref_width);
-}
+guiSize gui_top_pref_width(void) { gui_stack_top_impl(gui_get_ui_state(), PrefWidth, pref_width); }
+guiSize gui_set_next_pref_width(guiSize v) { gui_stack_set_next_impl(gui_get_ui_state(), PrefWidth, pref_width, guiSize, v); }
+guiSize gui_push_pref_width(guiSize v) { gui_stack_push_impl(gui_get_ui_state(), PrefWidth, pref_width, guiSize, v); }
+guiSize gui_pop_pref_width(void) { gui_stack_pop_impl(gui_get_ui_state(), PrefWidth, pref_width); }
 
-guiSize gui_top_pref_height(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_top_impl(state, PrefHeight, pref_height);
-}
-guiSize gui_set_next_pref_height(guiSize v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_set_next_impl(gui_get_ui_state(), PrefHeight, pref_height, guiSize, v);
-}
-guiSize gui_push_pref_height(guiSize v) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_push_impl(gui_get_ui_state(), PrefHeight, pref_height, guiSize, v);
-}
-guiSize gui_pop_pref_height(void) {
-	guiState *state = gui_get_ui_state();
-	gui_stack_pop_impl(state, PrefHeight, pref_height);
-}
+guiSize gui_top_pref_height(void) { gui_stack_top_impl(gui_get_ui_state(), PrefHeight, pref_height); }
+guiSize gui_set_next_pref_height(guiSize v) { gui_stack_set_next_impl(gui_get_ui_state(), PrefHeight, pref_height, guiSize, v); }
+guiSize gui_push_pref_height(guiSize v) { gui_stack_push_impl(gui_get_ui_state(), PrefHeight, pref_height, guiSize, v); }
+guiSize gui_pop_pref_height(void) { gui_stack_pop_impl(gui_get_ui_state(), PrefHeight, pref_height); }
+
+vec4 gui_top_bg_color(void) { gui_stack_top_impl(gui_get_ui_state(), BgColor, bg_color); }
+vec4 gui_set_next_bg_color(vec4 v) { gui_stack_set_next_impl(gui_get_ui_state(), BgColor, bg_color, vec4, v); }
+vec4 gui_push_bg_color(vec4 v) { gui_stack_push_impl(gui_get_ui_state(), BgColor, bg_color, vec4, v); }
+vec4 gui_pop_bg_color(void) { gui_stack_pop_impl(gui_get_ui_state(), BgColor, bg_color); }
 
 
-
-guiSize gui_push_pref_size(Axis2 axis, guiSize v)
-{
+guiSize gui_push_pref_size(Axis2 axis, guiSize v) {
   guiSize result;
   switch(axis)
   {
@@ -178,8 +127,7 @@ guiSize gui_push_pref_size(Axis2 axis, guiSize v)
   return result;
 }
 
-guiSize gui_pop_pref_size(Axis2 axis)
-{
+guiSize gui_pop_pref_size(Axis2 axis) {
   guiSize result;
   switch(axis)
   {
@@ -190,15 +138,12 @@ guiSize gui_pop_pref_size(Axis2 axis)
   return result;
 }
 
-guiSize gui_set_next_pref_size(Axis2 axis, guiSize v)
-{
+guiSize gui_set_next_pref_size(Axis2 axis, guiSize v) {
   return (axis == AXIS2_X ? gui_set_next_pref_width : gui_set_next_pref_height)(v);
 }
 
 
-// TODO -- should these functions return whats pushed and popped?
-void gui_push_rect(rect r)
-{
+void gui_push_rect(rect r) {
   vec2 size = {abs(r.x1 - r.x0), abs(r.y1 - r.y0)};
   gui_push_fixed_x(r.x0);
   gui_push_fixed_y(r.y0);
@@ -206,8 +151,7 @@ void gui_push_rect(rect r)
   gui_push_pref_size(AXIS2_Y, (guiSize){GUI_SIZEKIND_PIXELS,size.y,1.0f});
 }
 
-void gui_pop_rect(void)
-{
+void gui_pop_rect(void) {
   gui_pop_fixed_x();
   gui_pop_fixed_y();
   gui_pop_pref_size(AXIS2_X);

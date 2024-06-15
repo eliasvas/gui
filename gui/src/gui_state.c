@@ -20,23 +20,26 @@ guiStatus gui_state_update(){
 	gui_render_cmd_buf_clear(&state->rcmd_buf);
 	gui_input_process_events(&state->gis);
 	if (gui_input_mb_down(&state->gis, GUI_LMB)){
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){200,200}, (vec4){1,1,1,1},3,2,0);
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){100,100}, (vec2){200,200}, (vec4){1,0,0.5,1},3,2,3);
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){400,400}, (vec2){100,100}, (vec4){1,0,0.5,1},0,5,0);
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){400,400}, (vec2){100,100}, (vec4){1,1,1,1},0,0,2);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, v2(100,100), v2(200,200), v4(1,1,1,1),3,2,0);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, v2(100,100), v2(200,200), v4(1,0.f,0.5,1),3,2,3);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, v2(400,400), v2(100,100), v4(1,0.f,0.5,1),0,3,0);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, v2(400,400), v2(100,100), v4(1,1,1,1),0,0,2);
 	}
 
+	gui_push_bg_color(v4(0.4f,0.4f,0.9f,1.f));
 	gui_push_rect((rect){0,0,200,100});
 	gui_button("one");
-	gui_pop_rect();
-
+	gui_push_bg_color(v4(1.0,0.5,0.1,1.f));
 	gui_push_rect((rect){205,0,500,100});
 	gui_button("two");
+	gui_pop_bg_color();
+	gui_pop_rect();
 	gui_pop_rect();
 
-	gui_push_rect((rect){505,0,5500,100});
+	gui_push_rect((rect){505,0,785,100});
 	gui_button("three");
 	gui_pop_rect();
+	gui_pop_bg_color();
 	// guiBox* t = gui_box_build_from_str(0, "two"); //can this be a layout?
 	// gui_push_parent(t);
 	// gui_button("three");

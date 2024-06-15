@@ -84,7 +84,7 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
 	f32 xadvance = 0;
 	for (u32 i = 0; i < strlen(str); ++i){
 		guiBakedChar bc = gui_font_atlas_get_char(&state->atlas, str[i]);
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){pos.x+bc.xoff+xadvance, pos.y + (bc.yoff - first_y_off) - y_to_add}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0}, (vec4){1,0,0,1},0,0,0);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){pos.x+bc.xoff+xadvance, pos.y + (bc.yoff - first_y_off) - y_to_add}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0}, v4(1,0,0,1),0,0,0);
 		gui_render_cmd_buf_add_char(&state->rcmd_buf,&state->atlas, str[i], (vec2){pos.x+bc.xoff+xadvance, pos.y + (bc.yoff - first_y_off) - y_to_add}, (vec2){bc.x1-bc.x0,bc.y1-bc.y0},color);
 		xadvance += bc.xadvance;
 
@@ -95,6 +95,6 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
 
 guiStatus gui_draw_rect(rect r, vec4 color) {
 	guiState *state = gui_get_ui_state();
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,0,0,0);
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,2,7,0);
 	return GUI_GUD;
 }

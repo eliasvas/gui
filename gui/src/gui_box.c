@@ -81,11 +81,12 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	// fill the box's info stuff
 	{
 		box->key = key;
-		// We are doing all calculations inside here, we should probably just traverse the hierarchy like Ryan says
+		// We are doing all layouting here, we should probably just traverse the hierarchy like Ryan says
 		box->fixed_pos = (vec2){gui_top_fixed_x(), gui_top_fixed_y()};
 		box->pref_size = (vec2){gui_top_pref_width().value, gui_top_pref_height().value};
 		box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->pref_size.x, box->fixed_pos.y + box->pref_size.y};
-		gui_draw_rect(box->r, v4(1.f,1.f,1.f,1.f));
+		vec4 color = gui_top_bg_color();
+		gui_draw_rect(box->r, color);
 	}
 
 	return box;

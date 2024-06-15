@@ -616,7 +616,7 @@ void dxb_render_all(dxBackend *backend, guiRenderCommand *rcommands, u32 command
 
         // clear screen
         //FLOAT color[] = { 0.392f, 0.584f, 0.929f, 1.f };
-        FLOAT color[] = { 0.f, 0.f, 0.f, 1.f };
+        FLOAT color[] = { 0.f, 0.f, 0.f, 0.f };
         ID3D11DeviceContext_ClearRenderTargetView(backend->context, backend->rtView, color);
         ID3D11DeviceContext_ClearDepthStencilView(backend->context, backend->dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 

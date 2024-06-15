@@ -40,7 +40,7 @@ typedef union {
     struct{f32 r,g,b,a;};
     f32 raw[4];
 }vec4;
-#define v4(x,y,z,w) (vec4){x,y,z,y}
+#define v4(x,y,z,w) (vec4){x,y,z,w}
 
 typedef struct {f32 x0,y0,x1,y1;} rect;
 static b32 point_inside_rect(vec2 point, rect r) {
@@ -653,6 +653,7 @@ typedef struct guiPrefWidthNode guiPrefWidthNode; struct guiPrefWidthNode {guiPr
 typedef struct guiPrefHeightNode guiPrefHeightNode; struct guiPrefHeightNode {guiPrefHeightNode *next; guiSize v;};
 typedef struct guiFixedXNode guiFixedXNode; struct guiFixedXNode {guiFixedXNode *next; f32 v;};
 typedef struct guiFixedYNode guiFixedYNode; struct guiFixedYNode {guiFixedYNode *next; f32 v;};
+typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; vec4 v;};
 
 
 guiKey gui_key_zero(void);
@@ -690,7 +691,10 @@ guiSize gui_set_next_pref_height(guiSize v);
 guiSize gui_pop_pref_height(void);
 guiSize gui_top_pref_height(void);
 
-
+vec4 gui_top_bg_color(void);
+vec4 gui_set_next_bg_color(vec4 v);
+vec4 gui_push_bg_color(vec4 v);
+vec4 gui_pop_bg_color(void);
 
 // pushes fixed widths heights (TODO -- i should probably add all the lower level stack functions in future)
 void gui_push_rect(rect r);
@@ -763,6 +767,8 @@ typedef struct {
 	struct { guiPrefWidthNode *top; guiSize bottom_val; guiPrefWidthNode *free; b32 auto_pop; } pref_width_stack;
 	guiPrefHeightNode pref_height_nil_stack_top;
 	struct { guiPrefHeightNode *top; guiSize bottom_val; guiPrefHeightNode *free; b32 auto_pop; } pref_height_stack;
+	guiBgColorNode bg_color_nil_stack_top;
+	struct { guiBgColorNode *top; vec4 bottom_val; guiBgColorNode *free; b32 auto_pop; } bg_color_stack;
 } guiState;
 
 guiStatus gui_input_push_event(guiInputEvent e);

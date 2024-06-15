@@ -4,6 +4,6 @@
 
 
 gui_style_default(guiStyle *style) {
-	style->base_text_color = (vec4){1,1,1,1};
-	style->base_background_color = (vec4){0.4,0.4,0.4,1.0};
+	style->base_text_color = v4(1,1,1,1);
+	style->base_background_color = v4(0.4,0.4,0.4,1.0);
 }
