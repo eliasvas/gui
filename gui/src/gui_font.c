@@ -92,3 +92,9 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
 
 	return GUI_GUD;
 }
+
+guiStatus gui_draw_rect(rect r, vec4 color) {
+	guiState *state = gui_get_ui_state();
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,0,0,0);
+	return GUI_GUD;
+}

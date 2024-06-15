@@ -81,6 +81,11 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	// fill the box's info stuff
 	{
 		box->key = key;
+		// We are doing all calculations inside here, we should probably just traverse the hierarchy like Ryan says
+		box->fixed_pos = (vec2){gui_top_fixed_x(), gui_top_fixed_y()};
+		box->pref_size = (vec2){gui_top_pref_width().value, gui_top_pref_height().value};
+		box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->pref_size.x, box->fixed_pos.y + box->pref_size.y};
+		gui_draw_rect(box->r, v4(1.f,1.f,1.f,1.f));
 	}
 
 	return box;
@@ -90,12 +95,12 @@ void print_gui_box_hierarchy(guiBox *box, u32 depth) {
 	if (gui_box_is_nil(box))return;
 
 	if (depth == 0) {
-		printf("[%u]\n",box->key);
+		printf("[%u:%u]\n",box->key, depth);
 	}else {
 		for (u32 i = 1; i < depth; ++i) {
 			printf("\t");
 		}
-		printf("+----[%u]\n", box->key);
+		printf("+----[%u:%u]\n", box->key, depth);
 	}
 	for (guiBox* child = box->first; !gui_box_is_nil(child); child = child->next) {
 		print_gui_box_hierarchy(child, depth+1);

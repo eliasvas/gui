@@ -26,13 +26,22 @@ guiStatus gui_state_update(){
 		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){400,400}, (vec2){100,100}, (vec4){1,1,1,1},0,0,2);
 	}
 
+	gui_push_rect((rect){0,0,200,100});
 	gui_button("one");
-	guiBox* spacer = gui_box_build_from_str(0, ""); //can this be a layout?
-	gui_push_parent(spacer);
+	gui_pop_rect();
+
+	gui_push_rect((rect){205,0,500,100});
 	gui_button("two");
+	gui_pop_rect();
+
+	gui_push_rect((rect){505,0,5500,100});
 	gui_button("three");
-	gui_pop_parent();
-	gui_button("four");
+	gui_pop_rect();
+	// guiBox* t = gui_box_build_from_str(0, "two"); //can this be a layout?
+	// gui_push_parent(t);
+	// gui_button("three");
+	// gui_pop_parent();
+	// gui_button("four");
 
 	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
 	state->current_frame_index += 1; // This is used to prune unused boxes

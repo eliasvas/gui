@@ -24,9 +24,9 @@ void sample_update(){
     gui_get_ui_state()->win_dim.y = platform_get_windim().y;
     gui_build_begin();
     gui_state_update();
-    char debug_str[256] = {0};
-    sprintf(debug_str, "ArenaSz: %dKB", 12);
-	gui_draw_string_in_pos(debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
+    // char debug_str[256] = {0};
+    // sprintf(debug_str, "ArenaSz: %dKB", 12);
+	// gui_draw_string_in_pos(debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
     gui_build_end();
 }
 
