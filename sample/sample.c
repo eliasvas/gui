@@ -24,9 +24,45 @@ void sample_update(){
     gui_get_ui_state()->win_dim.y = platform_get_windim().y;
     gui_build_begin();
     gui_state_update();
-    // char debug_str[256] = {0};
-    // sprintf(debug_str, "ArenaSz: %dKB", 12);
-	// gui_draw_string_in_pos(debug_str, (vec2){0,0}, gui_get_ui_state()->style.base_text_color);
+
+    //our test UI
+    {
+        static b32 box_pressed = 0;
+
+        f32 pad_x = 10;
+        f32 bhs_w = 100;
+        f32 bhs_h = 50;
+        f32 ww = platform_get_windim().x;
+        f32 wh = platform_get_windim().y;
+        rect base_button_rect = (rect){ww/2.f - bhs_w, wh/2.f - bhs_h, ww/2.f + bhs_w, wh/2.f + bhs_h};
+
+        gui_push_bg_color(v4(1.0,0.5,0.1,1.f));
+        gui_push_rect(base_button_rect);
+        u64 sf = (u64)gui_button("middle").flags;
+        box_pressed |= (sf & GUI_SIGNAL_FLAG_LMB_PRESSED);
+        box_pressed &= (!(sf & GUI_SIGNAL_FLAG_LMB_RELEASED) > 0);
+        gui_pop_bg_color();
+        gui_pop_rect();
+
+        if (box_pressed) {
+            rect left_button_rect = (rect){ww/2.f - 2 * bhs_w - pad_x, wh/2.f - bhs_h, ww/2.f - bhs_w - pad_x, wh/2.f + bhs_h};
+            gui_push_bg_color(v4(0.4,0.5,0.9,1.f));
+            gui_push_rect(left_button_rect);
+            gui_button("left");
+            gui_pop_rect();
+            gui_pop_bg_color();
+
+            rect right_button_rect = (rect){ww/2.f + bhs_w + pad_x, wh/2.f - bhs_h, ww/2.f + 2 *bhs_w + pad_x, wh/2.f + bhs_h};
+            gui_push_bg_color(v4(0.2,0.9,0.3,1.f));
+            gui_push_rect(right_button_rect);
+            gui_button("right");
+            gui_pop_rect();
+            gui_pop_bg_color();
+        }
+        gui_pop_bg_color();
+ 
+    }
+
     gui_build_end();
 }
 

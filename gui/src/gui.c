@@ -15,6 +15,20 @@ void gui_build_begin(void) {
 	//guiBox *empty_spacer = gui_box_build_from_str(0, "");
 	gui_push_parent(root);
     gui_get_ui_state()->root = root;
+
+	// reset hot widget
+	gui_get_ui_state()->hot_box_key = gui_key_zero();
+
+	// reset active if currently active box no longer cached
+	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
+		guiKey active_key = gui_get_active_box_key(mk);
+		guiBox *box = gui_box_lookup_from_key(0, active_key);
+		b32 box_not_found = gui_box_is_nil(box);
+		if (box_not_found) {
+			gui_get_ui_state()->active_box_keys[mk] = gui_key_zero();
+		}
+	}
+
 }
 
 void gui_build_end(void) {

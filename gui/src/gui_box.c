@@ -135,15 +135,48 @@ guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str) {
 	return box;
 }
 
+guiKey gui_get_hot_box_key() {
+	return gui_get_ui_state()->hot_box_key;
+}
+
+guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b){
+	return gui_get_ui_state()->active_box_keys[b];
+}
 
 guiSignal gui_get_signal_for_box(guiBox *box) {
 	guiSignal signal = {0};
-	// lookup signal cache and find associated signal
+	rect r = box->r;
+	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+	// if mouse inside box, the box is HOT
+	if (point_inside_rect(mp, r)) {
+		gui_get_ui_state()->hot_box_key = box->key;
+	}
+	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
+	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
+		if (point_inside_rect(mp, r) && gui_input_mb_pressed(&gui_get_ui_state()->gis, mk)) {
+			gui_get_ui_state()->active_box_keys[mk] = box->key;
+			signal.flags |= GUI_SIGNAL_FLAG_LMB_PRESSED;
+		}
+	}
+	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal 
+	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
+		if (point_inside_rect(mp, r) && gui_input_mb_released(&gui_get_ui_state()->gis, mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+			gui_get_ui_state()->hot_box_key = gui_key_zero();
+			gui_get_ui_state()->active_box_keys[mk]= gui_key_zero();
+			signal.flags |= GUI_SIGNAL_FLAG_LMB_RELEASED;
+		}
+	}
+	// if mouse outside box AND mouse button released and box was ACTIVE, reset hot/active
+	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
+		if (point_inside_rect(mp, r) && gui_input_mb_released(&gui_get_ui_state()->gis, mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+			gui_get_ui_state()->hot_box_key = gui_key_zero();
+			gui_get_ui_state()->active_box_keys[mk] = gui_key_zero();
+		}
+	}
 	return signal;
 }
 
-b32 gui_button(char *str) {
-
+guiSignal gui_button(char *str) {
 	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
 									GUI_BOX_FLAG_DRAW_BORDER|
 									GUI_BOX_FLAG_DRAW_TEXT|
@@ -152,5 +185,6 @@ b32 gui_button(char *str) {
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);
 	guiSignal signal = gui_get_signal_for_box(w);
-	return (signal.flags & GUI_SIGNAL_FLAG_LMB_PRESSED) > 0;
+	//return (signal.flags & GUI_SIGNAL_FLAG_LMB_PRESSED) > 0;
+	return signal;
 }

@@ -43,8 +43,9 @@ typedef union {
 #define v4(x,y,z,w) (vec4){x,y,z,w}
 
 typedef struct {f32 x0,y0,x1,y1;} rect;
-static b32 point_inside_rect(vec2 point, rect r) {
-	return (r.x0 >= point.x) && (r.x1 <= point.y) && (r.y0 <= point.y) && (r.y1 >= point.y);
+
+static b32 point_inside_rect(vec2 p, rect r) {
+	return ( (p.x <= r.x1) && (p.x >= r.x0) && (p.y >= r.y0) && (p.y <= r.y1) );
 }
 
 #define kilobytes(val) ((val)*1024LL)
@@ -66,6 +67,7 @@ static b32 point_inside_rect(vec2 point, rect r) {
 #define clamp(x, a, b)  (maximum(a, minimum(x, b)))
 #define is_pow2(x) ((x & (x - 1)) == 0)
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
+#define each_enumv(type, it) type it = (type)0; it < type##_COUNT; it = (type)(it+1)
 
 #define ALLOC malloc
 #define REALLOC realloc
@@ -510,7 +512,7 @@ typedef enum {
 	GUI_RMB,
 	//....
 	GUI_MOUSE_BUTTON_COUNT,
-}guiMouseButton;
+}GUI_MOUSE_BUTTON;
 
 typedef enum {
 	KEY_STATE_UP = 0x0, // 00
@@ -722,8 +724,11 @@ struct guiSignal {
 
 guiSignal gui_get_signal_for_box(guiBox *box);
 
+guiKey gui_get_hot_box_key();
+guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b);
 
-b32 gui_button(char *str);
+
+guiSignal gui_button(char *str);
 
 
 //-----------------------------------------------------------------------------
@@ -755,6 +760,9 @@ typedef struct {
 	u64 current_frame_index;
 
 	vec2 win_dim;
+
+	guiKey active_box_keys[GUI_MOUSE_BUTTON_COUNT];
+	guiKey hot_box_key;
 
 	// all the stacks! (there are a lot!)
 	guiParentNode parent_nil_stack_top;
