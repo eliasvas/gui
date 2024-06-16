@@ -8,7 +8,6 @@ extern vec2 dxb_get_win_dim();
 
 void gui_build_begin(void) {
 	guiState *state = gui_get_ui_state();
-	//gui_get_build_arena();
 
 	// NOTE: build top level's root guiBox
 	guiBox *root = gui_box_build_from_str(0, "zero");
@@ -32,7 +31,7 @@ void gui_build_begin(void) {
 }
 
 void gui_build_end(void) {
-	if (gui_input_mb_pressed(&gui_get_ui_state()->gis, GUI_RMB)) {
+	if (gui_input_mb_pressed(GUI_RMB)) {
 		print_gui_hierarchy();
 	}
 	guiState *state = gui_get_ui_state();

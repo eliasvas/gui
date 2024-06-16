@@ -526,18 +526,25 @@ typedef enum {
 	GUI_INPUT_EVENT_TYPE_KEY_EVENT,
 	GUI_INPUT_EVENT_TYPE_MOUSE_MOVE,
 	GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT,
-}guiInputEventType;
+}guiInputEventNodeType;
 
-typedef struct {
+typedef struct guiInputEventNode guiInputEventNode;
+struct guiInputEventNode {
 	u32 param0;
 	u32 param1;
-	guiInputEventType type;
-} guiInputEvent;
+	guiInputEventNodeType type;
+	guiInputEventNode *next;
+};
 
 typedef struct {
+	Arena *event_arena;
+	// global state used inside the GUI
 	guiMouseButtonState mb[GUI_MOUSE_BUTTON_COUNT];
 	s32 mouse_x, mouse_y;
-	guiInputEvent *events;
+
+	// per-frame event system (queue-like)
+	guiInputEventNode *first;
+	guiInputEventNode *last;
 } guiInputState;
 
 //-----------------------------------------------------------------------------
@@ -779,7 +786,7 @@ typedef struct {
 	struct { guiBgColorNode *top; vec4 bottom_val; guiBgColorNode *free; b32 auto_pop; } bg_color_stack;
 } guiState;
 
-guiStatus gui_input_push_event(guiInputEvent e);
+guiStatus gui_input_push_event(guiInputEventNode e);
 guiStatus gui_state_update();
 guiState *gui_state_init();
 

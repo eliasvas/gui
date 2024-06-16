@@ -153,14 +153,14 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (point_inside_rect(mp, r) && gui_input_mb_pressed(&gui_get_ui_state()->gis, mk)) {
+		if (point_inside_rect(mp, r) && gui_input_mb_pressed(mk)) {
 			gui_get_ui_state()->active_box_keys[mk] = box->key;
 			signal.flags |= GUI_SIGNAL_FLAG_LMB_PRESSED;
 		}
 	}
 	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal 
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (point_inside_rect(mp, r) && gui_input_mb_released(&gui_get_ui_state()->gis, mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+		if (point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk]= gui_key_zero();
 			signal.flags |= GUI_SIGNAL_FLAG_LMB_RELEASED;
@@ -168,7 +168,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse outside box AND mouse button released and box was ACTIVE, reset hot/active
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (point_inside_rect(mp, r) && gui_input_mb_released(&gui_get_ui_state()->gis, mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+		if (point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk] = gui_key_zero();
 		}

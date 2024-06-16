@@ -1,5 +1,9 @@
 #include "gui.h"
 
+// Forward declared because I dont wanna expose these to the main API (gui.h)
+void gui_input_process_event_queue(void);
+void gui_input_clear_event_queue(void);
+
 guiState *ui_state;
 
 guiState *gui_get_ui_state() {
@@ -10,16 +14,15 @@ void gui_set_ui_state(guiState *state) {
 	ui_state = state;
 }
 
-// forward declared bc I don't want this function to be in the interface (gui.h)
-b32 gui_input_mb_down(const guiInputState *gis, GUI_MOUSE_BUTTON button);
 gui_style_default(guiStyle *style);
-
 guiStatus gui_state_update(){
 	guiState *state = gui_get_ui_state();
 
 	// Update all event stuff
 	gui_render_cmd_buf_clear(&state->rcmd_buf);
-	gui_input_process_events(&state->gis);
+	// We process all events and set our state (guiInputState)
+	gui_input_process_event_queue();
+	gui_input_clear_event_queue();
 
 	// At the end of every frame, if a box’s last_frame_touched_index < current_frame_index (where, on each frame, the frame index increments), then that box should be “pruned”.
 	state->current_frame_index += 1; // This is used to prune unused boxes
@@ -34,12 +37,15 @@ guiState *gui_state_init(){
 	state->arena = arena;
 	state->build_arenas[0] = arena_alloc();
 	state->build_arenas[1] = arena_alloc();
+	//TODO -- maybe gis should have its own init?
+	state->gis.event_arena = arena_alloc();
 	state->box_table_size = 4096;
 	state->box_table = push_array(arena, guiBoxHashSlot, state->box_table_size);
 	gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
 	gui_init_stacks(state);
 	return state;
 }
+
 
 Arena *gui_get_build_arena() {
 	return gui_get_ui_state()->build_arenas[gui_get_ui_state()->current_frame_index%2];

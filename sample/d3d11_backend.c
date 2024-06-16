@@ -66,7 +66,7 @@ static void FatalError(const char* message)
 
 static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    guiInputEvent e;
+    guiInputEventNode e = {0};
     switch (msg)
     {
         case WM_DESTROY:
@@ -78,31 +78,31 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
             e.type = GUI_INPUT_EVENT_TYPE_MOUSE_MOVE;
             e.param0 = *((u32*)((void*)(&x_pos_abs)));
             e.param1 = *((u32*)((void*)(&y_pos_abs)));
-            sample_push_event( e);
+            sample_push_event(e);
             break;
         case WM_LBUTTONDOWN:
             e.param0=GUI_LMB;e.param1=1;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event( e);
+            sample_push_event(e);
             break;
         case WM_RBUTTONDOWN:
             e.param0=GUI_RMB;e.param1=1;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event( e);
+            sample_push_event(e);
             break;
         case WM_MBUTTONDOWN:
             e.param0=GUI_MMB;e.param1=1;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event( e);
+            sample_push_event(e);
             break;
         case WM_LBUTTONUP:
             e.param0=GUI_LMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event( e);
+            sample_push_event(e);
             break;
         case WM_RBUTTONUP:
             e.param0=GUI_RMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event( e);
+            sample_push_event(e);
             break;
         case WM_MBUTTONUP:
             e.param0=GUI_MMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event( e);
+            sample_push_event(e);
             break;
 
     }
@@ -124,7 +124,7 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
         .hInstance = instance,
         .hIcon = LoadIcon(NULL, IDI_APPLICATION),
         .hCursor = LoadCursor(NULL, IDC_ARROW),
-        .lpszClassName = L"guiSample",
+        .lpszClassName = L"gui",
     };
     ATOM atom = RegisterClassExW(&wc);
     Assert(atom && "Failed to register window class");
@@ -140,7 +140,7 @@ void dxb_init(HINSTANCE instance, dxBackend *backend) {
     DWORD style = WS_OVERLAPPEDWINDOW;
 
     // create window
-    HWND window = CreateWindowExW(exstyle, wc.lpszClassName, L"guiSample", style,CW_USEDEFAULT, CW_USEDEFAULT, width, height,NULL, NULL, wc.hInstance, NULL);
+    HWND window = CreateWindowExW(exstyle, wc.lpszClassName, L"gui", style,CW_USEDEFAULT, CW_USEDEFAULT, width, height,NULL, NULL, wc.hInstance, NULL);
     Assert(window && "Failed to create window");
 
     // allocate a console to log stuff

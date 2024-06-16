@@ -2,34 +2,34 @@
 
 // TODO -- This input system FUCKING sucks, we need a new one that CONSUMES events!
 
-b32 gui_input_mb_is_state(const guiInputState *gis, GUI_MOUSE_BUTTON button, guiMouseButtonState state){
-	return ((gis->mb[button] & KEY_STATE_MASK) == state);
+b32 gui_input_mb_is_state(GUI_MOUSE_BUTTON button, guiMouseButtonState state){
+	return ((gui_get_ui_state()->gis.mb[button] & KEY_STATE_MASK) == state);
 }
-b32 gui_input_mb_down(const guiInputState *gis, GUI_MOUSE_BUTTON button) {
-	return gui_input_mb_is_state(gis, button, KEY_STATE_DOWN);
+b32 gui_input_mb_down(GUI_MOUSE_BUTTON button) {
+	return gui_input_mb_is_state(button, KEY_STATE_DOWN);
 }
-b32 gui_input_mb_up(const guiInputState *gis, GUI_MOUSE_BUTTON button) {
-	return gui_input_mb_is_state(gis, button, KEY_STATE_UP);
+b32 gui_input_mb_up(GUI_MOUSE_BUTTON button) {
+	return gui_input_mb_is_state(button, KEY_STATE_UP);
 }
-b32 gui_input_mb_pressed(const guiInputState *gis, GUI_MOUSE_BUTTON button) {
-	return gui_input_mb_is_state(gis, button, KEY_STATE_PRESSED);
+b32 gui_input_mb_pressed(GUI_MOUSE_BUTTON button) {
+	return gui_input_mb_is_state(button, KEY_STATE_PRESSED);
 }
-b32 gui_input_mb_released(const guiInputState *gis, GUI_MOUSE_BUTTON button) {
-	return gui_input_mb_is_state(gis, button, KEY_STATE_RELEASED);
+b32 gui_input_mb_released(GUI_MOUSE_BUTTON button) {
+	return gui_input_mb_is_state(button, KEY_STATE_RELEASED);
 }
 
-void gui_input_process_events(guiInputState *gis){
-	b32 mb_updated_this_frame [GUI_MOUSE_BUTTON_COUNT] = {0};
-	for (int i = 0; i < sb_len(gis->events); ++i){
-		guiInputEvent event = gis->events[i];
-		switch(event.type){
+void gui_input_process_event_queue(void){
+	guiInputState *gis = &gui_get_ui_state()->gis;
+	b32 mb_updated_this_frame[GUI_MOUSE_BUTTON_COUNT] = {0};
+	for (guiInputEventNode *e = gis->first; e != 0; e=e->next) {
+		switch(e->type){
 			case GUI_INPUT_EVENT_TYPE_MOUSE_MOVE:
-				gis->mouse_x = *((s32*)((void*)(&event.param0)));
-				gis->mouse_y = *((s32*)((void*)(&event.param1)));
+				gis->mouse_x = *((s32*)((void*)(&e->param0)));
+				gis->mouse_y = *((s32*)((void*)(&e->param1)));
 				break;
 			case GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT:
-				GUI_MOUSE_BUTTON button = event.param0;
-				b32 is_down = event.param1;
+				GUI_MOUSE_BUTTON button = e->param0;
+				b32 is_down = e->param1;
 				gis->mb[button] = (gis->mb[button] << 1) | (is_down & 1);
 				mb_updated_this_frame[(u32)button] = 1;
 				break;
@@ -37,7 +37,6 @@ void gui_input_process_events(guiInputState *gis){
 				break;
 		}
 	}
-	sb_free(gis->events);
 	for (int i = 0; i < GUI_MOUSE_BUTTON_COUNT; ++i){
 		GUI_MOUSE_BUTTON button = i;
 		if (0 == mb_updated_this_frame[button]){
@@ -47,11 +46,24 @@ void gui_input_process_events(guiInputState *gis){
 	}
 }
 
+Arena *gui_get_event_arena() {
+	return gui_get_ui_state()->gis.event_arena;
+}
 
-guiStatus gui_input_push_event(guiInputEvent e) {
+void gui_input_clear_event_queue(void){
+	guiInputState *gis = &gui_get_ui_state()->gis;
+	gis->first = 0;
+	gis->last = 0;
+	arena_clear(gui_get_event_arena());
+}
+
+
+guiStatus gui_input_push_event(guiInputEventNode e) {
 	guiState *state = gui_get_ui_state();
-
-	sb_push(state->gis.events, e);
-	//gui_input_process_events(&state->gis);
+	// We allocate the event in the current temp arena
+	guiInputEventNode *node = push_array(gui_get_event_arena(), guiInputEventNode, 1);
+	*node = e; // TODO -- let's just make a M_SET(src, dest, size) and M_SET_STRUCT(src, dst)
+	// We push it to our event queue
+	sll_queue_push(state->gis.first, state->gis.last, node);
 	return GUI_GUD;
 }
