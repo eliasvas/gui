@@ -657,6 +657,9 @@ static guiBox g_nil_box = {
 // UI stack stuff (for Style stacks and friends)
 //-----------------------------------------------------------------------------
 
+void gui_init_stacks(void);
+void gui_autopop_all_stacks(void);
+
 typedef struct guiParentNode guiParentNode; struct guiParentNode{guiParentNode *next; guiBox *v;};
 typedef struct guiPrefWidthNode guiPrefWidthNode; struct guiPrefWidthNode {guiPrefWidthNode *next; guiSize v;};
 typedef struct guiPrefHeightNode guiPrefHeightNode; struct guiPrefHeightNode {guiPrefHeightNode *next; guiSize v;};

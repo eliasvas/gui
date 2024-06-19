@@ -11,7 +11,6 @@ add_library(guiLib STATIC  gui/include/gui.h
                         gui/src/gui_input.c
                         gui/src/gui_render.c
                         gui/src/gui_state.c
-                        gui/src/gui_style.c
                         gui/src/gui_key.c
                         gui/src/gui_stacks.c
                         gui/src/gui_box.c

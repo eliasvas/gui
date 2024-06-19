@@ -46,18 +46,16 @@ void sample_update(){
 
         if (box_pressed) {
             rect left_button_rect = (rect){ww/2.f - 2 * bhs_w - pad_x, wh/2.f - bhs_h, ww/2.f - bhs_w - pad_x, wh/2.f + bhs_h};
-            gui_push_bg_color(v4(0.4,0.5,0.9,1.f));
+            gui_set_next_bg_color(v4(0.4,0.5,0.9,1.f));
             gui_push_rect(left_button_rect);
             gui_button("left");
             gui_pop_rect();
-            gui_pop_bg_color();
 
             rect right_button_rect = (rect){ww/2.f + bhs_w + pad_x, wh/2.f - bhs_h, ww/2.f + 2 *bhs_w + pad_x, wh/2.f + bhs_h};
-            gui_push_bg_color(v4(0.2,0.9,0.3,1.f));
+            gui_set_next_bg_color(v4(0.2,0.9,0.3,1.f));
             gui_push_rect(right_button_rect);
             gui_button("right");
             gui_pop_rect();
-            gui_pop_bg_color();
         }
         gui_pop_bg_color();
  

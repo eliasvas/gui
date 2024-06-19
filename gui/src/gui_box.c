@@ -89,6 +89,9 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		gui_draw_rect(box->r, color);
 	}
 
+	// pop all stacks (meaning, EAT all stack.set_next(..))
+	gui_autopop_all_stacks();
+
 	return box;
 }
 
@@ -155,7 +158,8 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
 		if (point_inside_rect(mp, r) && gui_input_mb_pressed(mk)) {
 			gui_get_ui_state()->active_box_keys[mk] = box->key;
-			signal.flags |= GUI_SIGNAL_FLAG_LMB_PRESSED;
+			// TODO -- This is pretty crappy logic, fix someday
+			signal.flags |= (GUI_SIGNAL_FLAG_LMB_PRESSED << mk);
 		}
 	}
 	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal 
@@ -163,7 +167,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 		if (point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk]= gui_key_zero();
-			signal.flags |= GUI_SIGNAL_FLAG_LMB_RELEASED;
+			signal.flags |= (GUI_SIGNAL_FLAG_LMB_RELEASED << mk);
 		}
 	}
 	// if mouse outside box AND mouse button released and box was ACTIVE, reset hot/active

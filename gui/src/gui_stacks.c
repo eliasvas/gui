@@ -85,6 +85,16 @@ void gui_init_stacks(guiState *state) {
 	state->bg_color_stack.auto_pop = 0;
 }
 
+void gui_autopop_all_stacks() {
+	guiState *state = gui_get_ui_state();
+	if (state->parent_stack.auto_pop) { gui_pop_parent();state->parent_stack.auto_pop = 0; }
+	if (state->fixed_x_stack.auto_pop) { gui_pop_fixed_x();state->fixed_x_stack.auto_pop = 0; }
+	if (state->fixed_y_stack.auto_pop) { gui_pop_fixed_y();state->fixed_y_stack.auto_pop = 0; }
+	if (state->pref_width_stack.auto_pop) { gui_pop_pref_width();state->pref_width_stack.auto_pop = 0; }
+	if (state->pref_height_stack.auto_pop) { gui_pop_pref_height();state->pref_height_stack.auto_pop = 0; }
+	if (state->bg_color_stack.auto_pop) { gui_pop_bg_color();state->bg_color_stack.auto_pop = 0; }
+}
+
 guiBox *gui_top_parent(void) { gui_stack_top_impl(gui_get_ui_state(), Parent, parent); }
 guiBox *gui_set_next_parent(guiBox *box) { gui_stack_set_next_impl(gui_get_ui_state(), Parent, parent, guiBox*, box); }
 guiBox *gui_push_parent(guiBox *box) { gui_stack_push_impl(gui_get_ui_state(), Parent, parent, guiBox*, box); }

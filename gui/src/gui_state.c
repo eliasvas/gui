@@ -14,7 +14,6 @@ void gui_set_ui_state(guiState *state) {
 	ui_state = state;
 }
 
-gui_style_default(guiStyle *style);
 guiStatus gui_state_update(){
 	guiState *state = gui_get_ui_state();
 
@@ -33,7 +32,6 @@ guiStatus gui_state_update(){
 guiState *gui_state_init(){
 	Arena *arena = arena_alloc();
 	guiState *state = push_array(arena, guiState, 1);
-	gui_style_default(&state->style);
 	state->arena = arena;
 	state->build_arenas[0] = arena_alloc();
 	state->build_arenas[1] = arena_alloc();
