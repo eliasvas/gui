@@ -14,8 +14,10 @@ void gui_set_ui_state(guiState *state) {
 	ui_state = state;
 }
 
-guiStatus gui_state_update(){
+guiStatus gui_state_update(f32 dt){
 	guiState *state = gui_get_ui_state();
+	state->dt = dt;
+
 
 	// Update all event stuff
 	gui_render_cmd_buf_clear(&state->rcmd_buf);

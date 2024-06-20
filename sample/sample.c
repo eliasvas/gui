@@ -23,7 +23,8 @@ void sample_update(){
     gui_get_ui_state()->win_dim.x = platform_get_windim().x;
     gui_get_ui_state()->win_dim.y = platform_get_windim().y;
     gui_build_begin();
-    gui_state_update();
+    // TODO -- we need an ACTUAL dt, from the platform layer, there should be a CALL
+    gui_state_update(1.f/60.f);
 
     //our test UI
     {
@@ -36,7 +37,8 @@ void sample_update(){
         f32 wh = platform_get_windim().y;
         rect base_button_rect = (rect){ww/2.f - bhs_w, wh/2.f - bhs_h, ww/2.f + bhs_w, wh/2.f + bhs_h};
 
-        gui_push_bg_color(v4(1.0,0.5,0.1,1.f));
+        gui_push_bg_color(v4(active_t/4.f + 0.6,0.5,0.1,1.f));
+        //guiBox *middle = gui_box_lookup_from_key("middle")->active_t;
         gui_push_rect(base_button_rect);
         u64 sf = (u64)gui_button("middle").flags;
         box_pressed |= (sf & GUI_SIGNAL_FLAG_LMB_PRESSED);

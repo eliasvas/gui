@@ -656,8 +656,6 @@ static guiBox g_nil_box = {
 //-----------------------------------------------------------------------------
 // UI stack stuff (for Style stacks and friends)
 //-----------------------------------------------------------------------------
-
-void gui_init_stacks(void);
 void gui_autopop_all_stacks(void);
 
 typedef struct guiParentNode guiParentNode; struct guiParentNode{guiParentNode *next; guiBox *v;};
@@ -770,6 +768,7 @@ typedef struct {
 	u64 current_frame_index;
 
 	vec2 win_dim;
+	f32 dt;
 
 	guiKey active_box_keys[GUI_MOUSE_BUTTON_COUNT];
 	guiKey hot_box_key;
@@ -790,7 +789,7 @@ typedef struct {
 } guiState;
 
 guiStatus gui_input_push_event(guiInputEventNode e);
-guiStatus gui_state_update();
+guiStatus gui_state_update(f32 dt);
 guiState *gui_state_init();
 
 void gui_set_ui_state(guiState *state);
