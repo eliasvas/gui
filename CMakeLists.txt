@@ -14,7 +14,8 @@ add_library(guiLib STATIC  gui/include/gui.h
                         gui/src/gui_key.c
                         gui/src/gui_stacks.c
                         gui/src/gui_box.c
-                        gui/src/gui.c
+                        gui/src/gui_build.c
+                        gui/src/gui_layout.c
                         gui/ext/stb/stb_truetype.h)
 target_include_directories(guiLib PUBLIC gui/include)
 

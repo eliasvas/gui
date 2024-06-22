@@ -61,8 +61,10 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->child_count = 0;
 		box->flags = 0;
 		box->last_frame_touched_index = gui_get_ui_state()->current_frame_index;
-		M_ZERO_ARRAY(box->computed_rel_position);
-		M_ZERO_ARRAY(box->computed_size);
+		// M_ZERO_ARRAY(box->pref_size);
+		// M_ZERO_STRUCT(&box->child_layout_axis);
+		// M_ZERO_STRUCT(&box->fixed_pos);
+		// M_ZERO_STRUCT(&box->fixed_size);
 	}
 
 	// hook into persistent table (if first time && not spacer)
@@ -81,12 +83,16 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	// fill the box's info stuff
 	{
 		box->key = key;
+		box->flags |= flags;
 		// We are doing all layouting here, we should probably just traverse the hierarchy like Ryan says
 		box->fixed_pos = (vec2){gui_top_fixed_x(), gui_top_fixed_y()};
-		box->pref_size = (vec2){gui_top_pref_width().value, gui_top_pref_height().value};
-		box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->pref_size.x, box->fixed_pos.y + box->pref_size.y};
+		//box->pref_size = (vec2){gui_top_pref_width().value, gui_top_pref_height().value};
+		box->fixed_size = (vec2){gui_top_fixed_width(), gui_top_fixed_height()};
+		box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->fixed_size.x, box->fixed_pos.y + box->fixed_size.y};
 		vec4 color = gui_top_bg_color();
-		gui_draw_rect(box->r, color);
+		if (box->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
+			gui_draw_rect(box->r, color);
+		}
 	}
 
 	// calculate hot_t and active_t for our box

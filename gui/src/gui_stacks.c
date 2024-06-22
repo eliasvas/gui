@@ -65,6 +65,18 @@ void gui_init_stacks(guiState *state) {
 	state->fixed_y_stack.bottom_val = 0;
 	state->fixed_y_stack.free = 0;
 	state->fixed_y_stack.auto_pop = 0;
+	// -- fixed_width stack initialization
+	state->fixed_width_nil_stack_top.v = 0;
+	state->fixed_width_stack.top = &state->fixed_width_nil_stack_top;
+	state->fixed_width_stack.bottom_val = 0;
+	state->fixed_width_stack.free = 0;
+	state->fixed_width_stack.auto_pop = 0;
+	// -- fixed_height stack initialization
+	state->fixed_height_nil_stack_top.v = 0;
+	state->fixed_height_stack.top = &state->fixed_height_nil_stack_top;
+	state->fixed_height_stack.bottom_val = 0;
+	state->fixed_height_stack.free = 0;
+	state->fixed_height_stack.auto_pop = 0;
 	// -- pref_width stack initialization
 	state->pref_width_nil_stack_top.v = (guiSize){GUI_SIZEKIND_PIXELS,250.0f,1.0};
 	state->pref_width_stack.top = &state->pref_width_nil_stack_top;
@@ -109,6 +121,16 @@ f32 gui_top_fixed_y(void) { gui_stack_top_impl(gui_get_ui_state(), FixedY, fixed
 f32 gui_set_next_fixed_y(f32 v) { gui_stack_set_next_impl(gui_get_ui_state(), FixedY, fixed_y, f32, v); }
 f32 gui_push_fixed_y(f32 v) { gui_stack_push_impl(gui_get_ui_state(), FixedY, fixed_y, f32, v); }
 f32 gui_pop_fixed_y(void) { gui_stack_pop_impl(gui_get_ui_state(), FixedY, fixed_y); }
+
+f32 gui_top_fixed_width(void) { gui_stack_top_impl(gui_get_ui_state(), FixedWidth, fixed_width); }
+f32 gui_set_next_fixed_width(f32 v) { gui_stack_set_next_impl(gui_get_ui_state(), FixedWidth, fixed_width, f32, v); }
+f32 gui_push_fixed_width(f32 v) { gui_stack_push_impl(gui_get_ui_state(), FixedWidth, fixed_width, f32, v); }
+f32 gui_pop_fixed_width(void) { gui_stack_pop_impl(gui_get_ui_state(), FixedWidth, fixed_width); }
+
+f32 gui_top_fixed_height(void) { gui_stack_top_impl(gui_get_ui_state(), FixedHeight, fixed_height); }
+f32 gui_set_next_fixed_height(f32 v) { gui_stack_set_next_impl(gui_get_ui_state(), FixedHeight, fixed_height, f32, v); }
+f32 gui_push_fixed_height(f32 v) { gui_stack_push_impl(gui_get_ui_state(), FixedHeight, fixed_height, f32, v); }
+f32 gui_pop_fixed_height(void) { gui_stack_pop_impl(gui_get_ui_state(), FixedHeight, fixed_height); }
 
 guiSize gui_top_pref_width(void) { gui_stack_top_impl(gui_get_ui_state(), PrefWidth, pref_width); }
 guiSize gui_set_next_pref_width(guiSize v) { gui_stack_set_next_impl(gui_get_ui_state(), PrefWidth, pref_width, guiSize, v); }
@@ -157,14 +179,23 @@ void gui_push_rect(rect r) {
   vec2 size = {abs(r.x1 - r.x0), abs(r.y1 - r.y0)};
   gui_push_fixed_x(r.x0);
   gui_push_fixed_y(r.y0);
-  gui_push_pref_size(AXIS2_X, (guiSize){GUI_SIZEKIND_PIXELS,size.x,1.0f});
-  gui_push_pref_size(AXIS2_Y, (guiSize){GUI_SIZEKIND_PIXELS,size.y,1.0f});
+  gui_push_fixed_width(size.x);
+  gui_push_fixed_height(size.y);
+//gui_push_pref_size(AXIS2_X, (guiSize){GUI_SIZEKIND_PIXELS,size.x,1.0f});
+//gui_push_pref_size(AXIS2_Y, (guiSize){GUI_SIZEKIND_PIXELS,size.y,1.0f});
 }
 
 void gui_pop_rect(void) {
   gui_pop_fixed_x();
   gui_pop_fixed_y();
-  gui_pop_pref_size(AXIS2_X);
-  gui_pop_pref_size(AXIS2_Y);
+  gui_pop_fixed_width();
+  gui_pop_fixed_height();
 }
 
+void gui_set_next_rect(rect r) {
+  vec2 size = {abs(r.x1 - r.x0), abs(r.y1 - r.y0)};
+  gui_set_next_fixed_x(r.x0);
+  gui_set_next_fixed_y(r.y0);
+  gui_set_next_fixed_width(size.x);
+  gui_set_next_fixed_height(size.y);
+}

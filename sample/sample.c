@@ -37,6 +37,7 @@ void sample_update(){
         f32 wh = platform_get_windim().y;
         rect base_button_rect = (rect){ww/2.f - bhs_w, wh/2.f - bhs_h, ww/2.f + bhs_w, wh/2.f + bhs_h};
 
+        f32 active_t = gui_box_lookup_from_key(0,gui_key_from_str("middle"))->active_t;
         gui_push_bg_color(v4(active_t/4.f + 0.6,0.5,0.1,1.f));
         //guiBox *middle = gui_box_lookup_from_key("middle")->active_t;
         gui_push_rect(base_button_rect);

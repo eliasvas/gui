@@ -629,13 +629,16 @@ struct guiBox {
 	// per-frame info, provided by builder code (the main gui interface, e.g do_button(..))
 	guiBoxFlags flags;
 	char str[GUI_BOX_MAX_STRING_SIZE]; // box's string data??? (e.g a label)
-	guiSize semantic_size[AXIS2_COUNT];
+	//guiSize semantic_size[AXIS2_COUNT];
 
 	// computed every frame
 	vec2 fixed_pos;
-	vec2 pref_size;
-	f32 computed_rel_position[AXIS2_COUNT]; // position relative to parent
-	f32 computed_size[AXIS2_COUNT]; // computed size in pixels
+	vec2 fixed_size;
+	guiSize pref_size[AXIS2_COUNT];
+	Axis2 child_layout_axis;
+
+	// f32 computed_rel_position[AXIS2_COUNT]; // position relative to parent
+	// f32 computed_size[AXIS2_COUNT]; // computed size in pixels
 	rect r; // final on-screen rectangular coordinates
 
 	//persistent data (across box's lifetime)
@@ -663,6 +666,8 @@ typedef struct guiPrefWidthNode guiPrefWidthNode; struct guiPrefWidthNode {guiPr
 typedef struct guiPrefHeightNode guiPrefHeightNode; struct guiPrefHeightNode {guiPrefHeightNode *next; guiSize v;};
 typedef struct guiFixedXNode guiFixedXNode; struct guiFixedXNode {guiFixedXNode *next; f32 v;};
 typedef struct guiFixedYNode guiFixedYNode; struct guiFixedYNode {guiFixedYNode *next; f32 v;};
+typedef struct guiFixedWidthNode guiFixedWidthNode; struct guiFixedWidthNode {guiFixedWidthNode *next; f32 v;};
+typedef struct guiFixedHeightNode guiFixedHeightNode; struct guiFixedHeightNode {guiFixedHeightNode *next; f32 v;};
 typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; vec4 v;};
 
 
@@ -691,6 +696,16 @@ f32 gui_set_next_fixed_y(f32 v);
 f32 gui_pop_fixed_y(void);
 f32 gui_top_fixed_y(void);
 
+f32 gui_push_fixed_width(f32 v);
+f32 gui_set_next_fixed_width(f32 v);
+f32 gui_pop_fixed_width(void);
+f32 gui_top_fixed_width(void);
+
+f32 gui_push_fixed_height(f32 v);
+f32 gui_set_next_fixed_height(f32 v);
+f32 gui_pop_fixed_height(void);
+f32 gui_top_fixed_height(void);
+
 guiSize gui_push_pref_width(guiSize v);
 guiSize gui_set_next_pref_width(guiSize v);
 guiSize gui_pop_pref_width(void);
@@ -708,6 +723,7 @@ vec4 gui_pop_bg_color(void);
 
 // pushes fixed widths heights (TODO -- i should probably add all the lower level stack functions in future)
 void gui_push_rect(rect r);
+void gui_set_next_rect(rect r);
 void gui_pop_rect(void);
 
 typedef u32 guiSignalFlags;
@@ -780,6 +796,10 @@ typedef struct {
 	struct { guiFixedXNode *top; f32 bottom_val; guiFixedXNode *free; b32 auto_pop; } fixed_x_stack;
 	guiFixedYNode fixed_y_nil_stack_top;
 	struct { guiFixedYNode *top; f32 bottom_val; guiFixedYNode *free; b32 auto_pop; } fixed_y_stack;
+	guiFixedWidthNode fixed_width_nil_stack_top;
+	struct { guiFixedWidthNode *top; f32 bottom_val; guiFixedWidthNode *free; b32 auto_pop; } fixed_width_stack;
+	guiFixedHeightNode fixed_height_nil_stack_top;
+	struct { guiFixedHeightNode *top; f32 bottom_val; guiFixedHeightNode *free; b32 auto_pop; } fixed_height_stack;
 	guiPrefWidthNode pref_width_nil_stack_top;
 	struct { guiPrefWidthNode *top; guiSize bottom_val; guiPrefWidthNode *free; b32 auto_pop; } pref_width_stack;
 	guiPrefHeightNode pref_height_nil_stack_top;
@@ -795,11 +815,6 @@ guiState *gui_state_init();
 void gui_set_ui_state(guiState *state);
 guiState * gui_get_ui_state();
 Arena *gui_get_build_arena();
-
-typedef struct {
-	float x,y,w,h;
-} guiRect;
-guiRect make_gui_rect(float x, float y, float w, float h);
 
 vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
