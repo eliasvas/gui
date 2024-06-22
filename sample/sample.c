@@ -65,6 +65,7 @@ void sample_update(){
     }
 
     gui_build_end();
+    gui_render_hierarchy();
 }
 
 void sample_push_input_event(guiInputEventNode e) {

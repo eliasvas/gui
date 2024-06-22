@@ -40,3 +40,19 @@ guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAt
 	cmd.color = col;
 	return gui_render_cmd_buf_add(cmd_buf, cmd);
 }
+
+guiStatus gui_draw_rect(rect r, vec4 color) {
+	guiState *state = gui_get_ui_state();
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,2,7,0);
+	return GUI_GUD;
+}
+
+void gui_render_hierarchy(void) {
+	guiState *state = gui_get_ui_state();
+	for(guiBox *box = state->root->first; !gui_box_is_nil(box); box = box->next)
+	{
+		if (box->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
+			gui_draw_rect(box->r, box->c);
+		}
+	}
+}

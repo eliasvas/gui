@@ -640,6 +640,7 @@ struct guiBox {
 	// f32 computed_rel_position[AXIS2_COUNT]; // position relative to parent
 	// f32 computed_size[AXIS2_COUNT]; // computed size in pixels
 	rect r; // final on-screen rectangular coordinates
+	vec4 c; // color (not good design wise)
 
 	//persistent data (across box's lifetime)
 	f32 hot_t;
@@ -820,5 +821,6 @@ vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
 guiStatus gui_draw_rect(rect r, vec4 color);
+void gui_render_hierarchy(void);
 
 #endif

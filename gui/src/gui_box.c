@@ -89,10 +89,8 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		//box->pref_size = (vec2){gui_top_pref_width().value, gui_top_pref_height().value};
 		box->fixed_size = (vec2){gui_top_fixed_width(), gui_top_fixed_height()};
 		box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->fixed_size.x, box->fixed_pos.y + box->fixed_size.y};
-		vec4 color = gui_top_bg_color();
-		if (box->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
-			gui_draw_rect(box->r, color);
-		}
+		box->c = gui_top_bg_color();
+		
 	}
 
 	// calculate hot_t and active_t for our box
