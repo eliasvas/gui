@@ -6,7 +6,7 @@ void gui_build_begin(void) {
 	//guiBox *empty_spacer = gui_box_build_from_str(0, "");
 
 	// NOTE: build top level's root guiBox
-	gui_push_child_layout_axis(AXIS2_X);
+	gui_set_next_child_layout_axis(AXIS2_Y);
 	guiBox *root = gui_box_build_from_str(0, "ImRootPlsDontPutSameHashSomewhereElse");
 	gui_push_parent(root);
     gui_get_ui_state()->root = root;
@@ -32,7 +32,6 @@ void gui_build_end(void) {
 	}
 	guiState *state = gui_get_ui_state();
 	gui_pop_parent();
-	gui_pop_child_layout_axis();
 
 	// prune unused boxes
 	for (u32 hash_slot = 0; hash_slot < state->box_table_size; hash_slot+=1) {
