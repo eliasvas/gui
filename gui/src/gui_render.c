@@ -41,16 +41,20 @@ guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAt
 	return gui_render_cmd_buf_add(cmd_buf, cmd);
 }
 
-guiStatus gui_draw_rect(rect r, vec4 color, b32 rounded) {
+guiStatus gui_draw_rect(rect r, vec4 color, guiBoxFlags flags) {
 	guiState *state = gui_get_ui_state();
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,rounded ? 2:0,rounded ? 4:0, 0);
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,(flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
+	if (flags & GUI_BOX_FLAG_DRAW_BORDER) {
+		vec4 color_dim = v4(color.x/2.f,color.y/2.f,color.z/2.f,1.f);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color_dim,1, (flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
+	}
 	return GUI_GUD;
 }
 
 void gui_render_hierarchy(guiBox *root) {
 	// render current box 
 	if (root->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
-		gui_draw_rect(root->r, root->c, (root->flags & GUI_BOX_FLAG_ROUNDED_EDGES));
+		gui_draw_rect(root->r, root->c, root->flags);
 	}
 
 	// iterate through hierarchy

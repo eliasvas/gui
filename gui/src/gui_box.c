@@ -85,6 +85,9 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	{
 		box->key = key;
 		box->flags |= flags;
+		// TODO (FIX) -- this is to reset the draw border each frame (its set when widget active)
+		box->flags &= ~(GUI_BOX_FLAG_DRAW_BORDER);
+		// -----
 		box->child_layout_axis = gui_top_child_layout_axis();
 		// We are doing all layouting here, we should probably just traverse the hierarchy like Ryan says
 		if (state->fixed_x_stack.top != &state->fixed_x_nil_stack_top) {
@@ -190,9 +193,13 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	signal.box = box;
 	rect r = box->r;
 	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+
+	if (!(box->flags & GUI_BOX_FLAG_CLICKABLE))return signal;
+
 	// if mouse inside box, the box is HOT
 	if (point_inside_rect(mp, r)) {
 		gui_get_ui_state()->hot_box_key = box->key;
+		box->flags |= GUI_BOX_FLAG_DRAW_BORDER;
 	}
 	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
@@ -233,14 +240,15 @@ guiSignal gui_spacer(guiSize size) {
 guiSignal gui_panel(char *str) {
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
-	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
-									GUI_BOX_FLAG_DRAW_BORDER|
+	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_DRAW_BORDER|
 									GUI_BOX_FLAG_DRAW_TEXT|
 									GUI_BOX_FLAG_DRAW_BACKGROUND|
+									GUI_BOX_FLAG_ROUNDED_EDGES|
 									GUI_BOX_FLAG_DRAW_HOT_ANIMATION|
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);
 	guiSignal signal = gui_get_signal_for_box(w);
+	signal.box = w;
 	return signal;
 }
 

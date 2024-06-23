@@ -843,7 +843,7 @@ Arena *gui_get_build_arena();
 vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
-guiStatus gui_draw_rect(rect r, vec4 color, b32 rounded);
+guiStatus gui_draw_rect(rect r, vec4 color, guiBoxFlags flags);
 void gui_render_hierarchy(guiBox *root);
 
 #endif

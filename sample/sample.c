@@ -30,6 +30,8 @@ void sample_update(){
     {
         gui_push_bg_color(v4(0.3,0.3,0.3,1.f));
 
+        gui_set_next_fixed_x(100);
+        gui_set_next_fixed_y(100);
         gui_set_next_child_layout_axis(AXIS2_X);
         guiSignal s0 = gui_panel("master");
         gui_push_parent(s0.box);
@@ -39,7 +41,7 @@ void sample_update(){
         gui_set_next_child_layout_axis(AXIS2_Y);
         guiSignal s = gui_panel("panel");
         gui_push_parent(s.box);
-        //gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 40.f, 1.f});
+        gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
         gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS, 40.f, 1.f});
         gui_set_next_bg_color(v4(0.1,0.1,0.1,1.f));
         gui_label("label");
