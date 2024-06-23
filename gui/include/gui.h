@@ -580,7 +580,7 @@ typedef enum {
 	GUI_SIZEKIND_NULL,
 	GUI_SIZEKIND_PIXELS, // direct size in pixels
 	GUI_SIZEKIND_TEXT_CONTENT, // axis' size determined by string dimensions
-	GUI_SIZEKIND_TEXT_PERCENT_OF_PARENT, // we want a percent of parent box's size in some axis
+	GUI_SIZEKIND_PERCENT_OF_PARENT, // we want a percent of parent box's size in some axis
 	GUI_SIZEKIND_CHILDREN_SUM, // size of given axis is sum of children sizes layed out in order
 } guiSizeKind;
 
@@ -611,6 +611,7 @@ enum {
 	GUI_BOX_FLAG_FIXED_Y               = (1<<7),
 	GUI_BOX_FLAG_FIXED_WIDTH           = (1<<8),
 	GUI_BOX_FLAG_FIXED_HEIGHT          = (1<<9),
+	GUI_BOX_FLAG_ROUNDED_EDGES         = (1<<10),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -740,6 +741,10 @@ void gui_push_rect(rect r);
 void gui_set_next_rect(rect r);
 void gui_pop_rect(void);
 
+guiSize gui_push_pref_size(Axis2 axis, guiSize v);
+guiSize gui_set_next_pref_size(Axis2 axis, guiSize v);
+guiSize gui_pop_pref_size(Axis2 axis);
+
 typedef u32 guiSignalFlags;
 enum {
 	GUI_SIGNAL_FLAG_LMB_PRESSED  = (1<<0),
@@ -766,7 +771,10 @@ guiKey gui_get_hot_box_key();
 guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b);
 
 
+guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
+guiSignal gui_label(char *str);
+guiSignal gui_spacer(guiSize size);
 
 
 //-----------------------------------------------------------------------------
@@ -835,7 +843,7 @@ Arena *gui_get_build_arena();
 vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
-guiStatus gui_draw_rect(rect r, vec4 color);
+guiStatus gui_draw_rect(rect r, vec4 color, b32 rounded);
 void gui_render_hierarchy(guiBox *root);
 
 #endif

@@ -49,6 +49,9 @@ void gui_build_end(void) {
 		print_gui_hierarchy();
 	}
 
+	// render eveything
+    gui_render_hierarchy(gui_get_ui_state()->root);
+
 	// advance frame index + clear previous frame's arena
 	state->current_frame_index += 1; // This is used to prune unused boxes
 	arena_clear(gui_get_build_arena());

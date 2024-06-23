@@ -50,7 +50,8 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 			sll_stack_pop(gui_get_ui_state()->first_free_box);
 		}
 		else {
-			box = push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
+			//box = push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
+			box = push_array_nz(gui_get_ui_state()->arena, guiBox, 1);
 		}
 		M_ZERO_STRUCT(box);
 	}
@@ -73,7 +74,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		dll_insert_NPZ(&g_nil_box, gui_get_ui_state()->box_table[hash_slot].hash_first, gui_get_ui_state()->box_table[hash_slot].hash_last, gui_get_ui_state()->box_table[hash_slot].hash_last, box, hash_next, hash_prev);
 	}
 
-	// hook into tree structure (no orphans allowed tho!)
+	// hook into tree structure
 	if (!gui_box_is_nil(parent)) {
 		dll_push_back_NPZ(&g_nil_box, parent->first, parent->last, box, next, prev);
 		parent->child_count += 1;
@@ -107,7 +108,9 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		//box->fixed_size = (vec2){gui_top_fixed_width(), gui_top_fixed_height()};
 		//box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->fixed_size.x, box->fixed_pos.y + box->fixed_size.y};
 		box->c = gui_top_bg_color();
-		box->c.r += box->active_t/3.0f;
+		if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
+			box->c.r += box->active_t/3.0f;
+		}
 	}
 
 	// calculate hot_t and active_t for our box
@@ -164,7 +167,9 @@ guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str) {
 	guiBox *parent = gui_top_parent();
 	guiKey key = gui_key_from_str(str);
 	guiBox *box = gui_box_build_from_key(flags, key);
-	strcpy(box->str, str);
+	if (str){
+		strcpy(box->str, str);
+	}
 	if (flags & GUI_BOX_FLAG_DRAW_TEXT)
 	{
 		//printf("Text should be written on [%s] box! fix!", str);
@@ -182,6 +187,7 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b){
 
 guiSignal gui_get_signal_for_box(guiBox *box) {
 	guiSignal signal = {0};
+	signal.box = box;
 	rect r = box->r;
 	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
 	// if mouse inside box, the box is HOT
@@ -214,7 +220,19 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	return signal;
 }
 
-guiSignal gui_button(char *str) {
+guiSignal gui_spacer(guiSize size) {
+	guiBox *parent = gui_top_parent();
+	gui_set_next_pref_size(parent->child_layout_axis, size);
+	//gui_push_pref_size(parent->child_layout_axis, size);
+	guiBox *w = gui_box_build_from_str(0, NULL);
+	guiSignal signal = gui_get_signal_for_box(w);
+	//gui_pop_pref_size(parent->child_layout_axis);
+	return signal;
+}
+
+guiSignal gui_panel(char *str) {
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
 	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
 									GUI_BOX_FLAG_DRAW_BORDER|
 									GUI_BOX_FLAG_DRAW_TEXT|
@@ -223,6 +241,26 @@ guiSignal gui_button(char *str) {
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);
 	guiSignal signal = gui_get_signal_for_box(w);
-	//return (signal.flags & GUI_SIGNAL_FLAG_LMB_PRESSED) > 0;
+	return signal;
+}
+
+guiSignal gui_label(char *str) {
+	// TODO -- probably, labels should be sized by text content!
+	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_TEXT|
+									GUI_BOX_FLAG_DRAW_BACKGROUND,
+									str);
+	guiSignal signal = gui_get_signal_for_box(w);
+	return signal;
+}
+guiSignal gui_button(char *str) {
+	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
+									GUI_BOX_FLAG_DRAW_BORDER|
+									GUI_BOX_FLAG_DRAW_TEXT|
+									GUI_BOX_FLAG_DRAW_BACKGROUND|
+									GUI_BOX_FLAG_ROUNDED_EDGES|
+									GUI_BOX_FLAG_DRAW_HOT_ANIMATION|
+									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
+									str);
+	guiSignal signal = gui_get_signal_for_box(w);
 	return signal;
 }

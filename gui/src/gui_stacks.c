@@ -166,9 +166,9 @@ guiSize gui_push_pref_size(Axis2 axis, guiSize v) {
   guiSize result;
   switch(axis)
   {
-    default: break;
     case AXIS2_X: {result = gui_push_pref_width(v);}break;
     case AXIS2_Y: {result = gui_push_pref_height(v);}break;
+    default: break;
   }
   return result;
 }
@@ -177,15 +177,18 @@ guiSize gui_pop_pref_size(Axis2 axis) {
   guiSize result;
   switch(axis)
   {
-    default: break;
     case AXIS2_X: {result = gui_pop_pref_width();}break;
     case AXIS2_Y: {result = gui_pop_pref_height();}break;
+    default: break;
   }
   return result;
 }
 
 guiSize gui_set_next_pref_size(Axis2 axis, guiSize v) {
-  return (axis == AXIS2_X ? gui_set_next_pref_width : gui_set_next_pref_height)(v);
+  if (axis == AXIS2_X){
+	return gui_set_next_pref_width(v);
+  }
+  return gui_set_next_pref_height(v);
 }
 
 

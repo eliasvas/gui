@@ -28,31 +28,38 @@ void sample_update(){
 
     //our test UI
     {
-        static b32 box_pressed = 0;
-
-        f32 pad_x = 10;
-        f32 bhs_w = 100;
-        f32 bhs_h = 50;
-        f32 ww = platform_get_windim().x;
-        f32 wh = platform_get_windim().y;
-        rect base_button_rect = (rect){ww/2.f - bhs_w, wh/2.f - bhs_h, ww/2.f + bhs_w, wh/2.f + bhs_h};
+        gui_push_bg_color(v4(0.3,0.3,0.3,1.f));
 
         gui_set_next_child_layout_axis(AXIS2_X);
-        gui_set_next_bg_color(v4(0.6,0.5,0.1,1.f));
-        guiSignal s = gui_button("one");
+        guiSignal s0 = gui_panel("master");
+        gui_push_parent(s0.box);
+
+        gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 10.f, 1.f});
+
+        gui_set_next_child_layout_axis(AXIS2_Y);
+        guiSignal s = gui_panel("panel");
         gui_push_parent(s.box);
-
+        //gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 40.f, 1.f});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS, 40.f, 1.f});
+        gui_set_next_bg_color(v4(0.1,0.1,0.1,1.f));
+        gui_label("label");
         gui_set_next_bg_color(v4(0.4,0.5,0.9,1.f));
-        gui_button("two");
-
-        gui_set_next_bg_color(v4(0.2,0.9,0.3,1.f));
-        gui_button("three");
+        gui_button("button1");
+        gui_set_next_bg_color(v4(0.4,0.9,0.4,1.f));
+        gui_button("button2");
+        gui_set_next_bg_color(v4(0.8,0.6,0.1,1.f));
+        gui_button("button3");
+        gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
         gui_pop_parent();
+
+        gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 10.f, 1.f});
+
+        gui_pop_parent();
+        gui_pop_bg_color();
  
     }
 
     gui_build_end();
-    gui_render_hierarchy(gui_get_ui_state()->root);
 }
 
 void sample_push_input_event(guiInputEventNode e) {

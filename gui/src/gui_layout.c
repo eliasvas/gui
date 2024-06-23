@@ -21,6 +21,35 @@ void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
 	}
 }
 
+void gui_layout_calc_downward_dependent_sizes(guiBox *root, Axis2 axis) {
+    guiState *state = gui_get_ui_state();
+    // add the size of all child boxes for ChildrenSum
+    switch(root->pref_size[axis].kind) {
+        case GUI_SIZEKIND_CHILDREN_SUM:
+            f32 sum = 0;
+            for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next)
+            {
+                if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {
+                    if (axis == root->child_layout_axis) {
+                        sum += child->fixed_size.raw[axis];
+                    } else {
+                        sum = maximum(sum, child->fixed_size.raw[axis]);
+                    }
+                }
+            }
+            root->fixed_size.raw[axis] = sum;
+            break;
+        default:
+            break;
+    }
+
+    // loop through all the hierarchy
+	for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next)
+	{
+        gui_layout_calc_downward_dependent_sizes(child, axis);
+	}
+}
+
 void gui_layout_calc_final_rects(guiBox *root, Axis2 axis) {
     f32 layout_pos = 0;
     // do layouting for all children (only root's children)
@@ -44,5 +73,6 @@ void gui_layout_calc_final_rects(guiBox *root, Axis2 axis) {
 
 void gui_layout_root(guiBox *root, Axis2 axis)  {
     gui_layout_calc_constant_sizes(root, axis);
+    gui_layout_calc_downward_dependent_sizes(root,axis);
     gui_layout_calc_final_rects(root, axis);
 }
