@@ -1,5 +1,5 @@
 # gui
-### _Gud™️ UI in C_
+### _Gud™️ UI library in C_
 
 This is an ever-changing UI library I work in my spare time.
 Main inspiration are Ryan's [blog posts](https://www.rfleury.com/p/ui-series-table-of-contents) on Immediate-Mode GUI design.

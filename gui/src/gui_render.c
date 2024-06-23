@@ -47,12 +47,14 @@ guiStatus gui_draw_rect(rect r, vec4 color) {
 	return GUI_GUD;
 }
 
-void gui_render_hierarchy(void) {
-	guiState *state = gui_get_ui_state();
-	for(guiBox *box = state->root->first; !gui_box_is_nil(box); box = box->next)
-	{
-		if (box->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
-			gui_draw_rect(box->r, box->c);
-		}
+void gui_render_hierarchy(guiBox *root) {
+	// render current box 
+	if (root->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
+		gui_draw_rect(root->r, root->c);
+	}
+
+	// iterate through hierarchy
+	for(guiBox *box = root->first; !gui_box_is_nil(box); box = box->next) {
+		gui_render_hierarchy(box);
 	}
 }

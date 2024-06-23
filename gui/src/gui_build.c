@@ -27,9 +27,6 @@ void gui_build_begin(void) {
 }
 
 void gui_build_end(void) {
-	if (gui_input_mb_pressed(GUI_RMB)) {
-		print_gui_hierarchy();
-	}
 	guiState *state = gui_get_ui_state();
 	gui_pop_parent();
 
@@ -46,6 +43,11 @@ void gui_build_end(void) {
 	// do layout pass
 	gui_layout_root(state->root, AXIS2_X);
 	gui_layout_root(state->root, AXIS2_Y);
+
+	// print hierarchy if need-be
+	if (gui_input_mb_pressed(GUI_RMB)) {
+		print_gui_hierarchy();
+	}
 
 	// advance frame index + clear previous frame's arena
 	state->current_frame_index += 1; // This is used to prune unused boxes

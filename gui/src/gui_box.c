@@ -164,6 +164,7 @@ guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str) {
 	guiBox *parent = gui_top_parent();
 	guiKey key = gui_key_from_str(str);
 	guiBox *box = gui_box_build_from_key(flags, key);
+	strcpy(box->str, str);
 	if (flags & GUI_BOX_FLAG_DRAW_TEXT)
 	{
 		//printf("Text should be written on [%s] box! fix!", str);

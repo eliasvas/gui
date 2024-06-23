@@ -37,48 +37,22 @@ void sample_update(){
         f32 wh = platform_get_windim().y;
         rect base_button_rect = (rect){ww/2.f - bhs_w, wh/2.f - bhs_h, ww/2.f + bhs_w, wh/2.f + bhs_h};
 
-        gui_set_next_child_layout_axis(AXIS2_Y);
+        gui_set_next_child_layout_axis(AXIS2_X);
         gui_set_next_bg_color(v4(0.6,0.5,0.1,1.f));
         guiSignal s = gui_button("one");
-        //gui_push_parent(s.box);
+        gui_push_parent(s.box);
 
         gui_set_next_bg_color(v4(0.4,0.5,0.9,1.f));
         gui_button("two");
-        //gui_pop_parent();
 
         gui_set_next_bg_color(v4(0.2,0.9,0.3,1.f));
         gui_button("three");
-
-
-
-        // gui_push_bg_color(v4(0.6,0.5,0.1,1.f));
-        // //guiBox *middle = gui_box_lookup_from_key("middle")->active_t;
-        // gui_push_rect(base_button_rect);
-        // u64 sf = (u64)gui_button("middle").flags;
-        // box_pressed |= (sf & GUI_SIGNAL_FLAG_LMB_PRESSED);
-        // box_pressed &= (!(sf & GUI_SIGNAL_FLAG_LMB_RELEASED) > 0);
-        // gui_pop_bg_color();
-        // gui_pop_rect();
-
-        // if (box_pressed) {
-        //     rect left_button_rect = (rect){ww/2.f - 2 * bhs_w - pad_x, wh/2.f - bhs_h, ww/2.f - bhs_w - pad_x, wh/2.f + bhs_h};
-        //     gui_set_next_bg_color(v4(0.4,0.5,0.9,1.f));
-        //     gui_push_rect(left_button_rect);
-        //     gui_button("left");
-        //     gui_pop_rect();
-
-        //     rect right_button_rect = (rect){ww/2.f + bhs_w + pad_x, wh/2.f - bhs_h, ww/2.f + 2 *bhs_w + pad_x, wh/2.f + bhs_h};
-        //     gui_set_next_bg_color(v4(0.2,0.9,0.3,1.f));
-        //     gui_push_rect(right_button_rect);
-        //     gui_button("right");
-        //     gui_pop_rect();
-        // }
-        // gui_pop_bg_color();
+        gui_pop_parent();
  
     }
 
     gui_build_end();
-    gui_render_hierarchy();
+    gui_render_hierarchy(gui_get_ui_state()->root);
 }
 
 void sample_push_input_event(guiInputEventNode e) {
