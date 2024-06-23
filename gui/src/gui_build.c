@@ -3,7 +3,10 @@ extern vec2 dxb_get_win_dim();
 
 void gui_build_begin(void) {
 	guiState *state = gui_get_ui_state();
-	//guiBox *empty_spacer = gui_box_build_from_str(0, "");
+	// FIXME: we init (overwrite) our per-frame stacks at the beginning of each frame,
+	// this shouldn't happen, somehow at end of frame (gui_build_end) the stacks are not completely clear
+	// INVESTIGATE
+	gui_init_stacks(state);
 
 	// NOTE: build top level's root guiBox
 	gui_set_next_child_layout_axis(AXIS2_Y);
@@ -55,5 +58,4 @@ void gui_build_end(void) {
 	// advance frame index + clear previous frame's arena
 	state->current_frame_index += 1; // This is used to prune unused boxes
 	arena_clear(gui_get_build_arena());
-	
 }

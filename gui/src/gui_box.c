@@ -44,14 +44,12 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	// if first frame, allocate the box, either from the free box list OR push a new box
 	// TODO -- Dis way, our arena will always have allocated the MAX box count ahead of time, maybe not the best way?
 	if (box_first_time) {
-		//printf("Inserting new key [%u]\n", (u32)key);
 		box = !box_is_spacer? gui_get_ui_state()->first_free_box : 0;
 		if (!gui_box_is_nil(box)) {
 			sll_stack_pop(gui_get_ui_state()->first_free_box);
 		}
 		else {
-			//box = push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
-			box = push_array_nz(gui_get_ui_state()->arena, guiBox, 1);
+			box = push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
 		}
 		M_ZERO_STRUCT(box);
 	}

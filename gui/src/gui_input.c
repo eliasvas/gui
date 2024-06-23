@@ -53,7 +53,6 @@ Arena *gui_get_event_arena() {
 void gui_input_clear_event_queue(void){
 	gui_get_ui_state()->gis.first = 0;
 	gui_get_ui_state()->gis.last= 0;
-	arena_clear(gui_get_event_arena());
 }
 
 
