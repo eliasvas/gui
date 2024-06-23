@@ -84,13 +84,30 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	{
 		box->key = key;
 		box->flags |= flags;
+		box->child_layout_axis = gui_top_child_layout_axis();
 		// We are doing all layouting here, we should probably just traverse the hierarchy like Ryan says
-		box->fixed_pos = (vec2){gui_top_fixed_x(), gui_top_fixed_y()};
-		//box->pref_size = (vec2){gui_top_pref_width().value, gui_top_pref_height().value};
-		box->fixed_size = (vec2){gui_top_fixed_width(), gui_top_fixed_height()};
-		box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->fixed_size.x, box->fixed_pos.y + box->fixed_size.y};
+		if (state->fixed_x_stack.top != &state->fixed_x_nil_stack_top) {
+			box->fixed_pos.raw[AXIS2_X] = state->fixed_x_stack.top->v;
+			box->flags |= GUI_BOX_FLAG_FIXED_X;
+		}
+		if (state->fixed_y_stack.top != &state->fixed_y_nil_stack_top) {
+			box->fixed_pos.raw[AXIS2_Y] = state->fixed_y_stack.top->v;
+			box->flags |= GUI_BOX_FLAG_FIXED_Y;
+		}
+		if (state->fixed_width_stack.top != &state->fixed_width_nil_stack_top) {
+			box->fixed_size.raw[AXIS2_X] = state->fixed_width_stack.top->v;
+			box->flags |= GUI_BOX_FLAG_FIXED_WIDTH;
+		}
+		if (state->fixed_height_stack.top != &state->fixed_height_nil_stack_top) {
+			box->fixed_size.raw[AXIS2_Y] = state->fixed_height_stack.top->v;
+			box->flags |= GUI_BOX_FLAG_FIXED_HEIGHT;
+		}
+		box->pref_size[AXIS2_X] = gui_top_pref_width();
+		box->pref_size[AXIS2_Y] = gui_top_pref_height();
+		//box->fixed_size = (vec2){gui_top_fixed_width(), gui_top_fixed_height()};
+		//box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->fixed_size.x, box->fixed_pos.y + box->fixed_size.y};
 		box->c = gui_top_bg_color();
-		
+		box->c.r += box->active_t/3.0f;
 	}
 
 	// calculate hot_t and active_t for our box

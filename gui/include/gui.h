@@ -42,7 +42,10 @@ typedef union {
 }vec4;
 #define v4(x,y,z,w) (vec4){x,y,z,w}
 
-typedef struct {f32 x0,y0,x1,y1;} rect;
+typedef union {
+    struct{f32 x0,y0,x1,y1;};
+    struct{vec2 p0,p1;};
+}rect;
 
 static b32 point_inside_rect(vec2 p, rect r) {
 	return ( (p.x <= r.x1) && (p.x >= r.x0) && (p.y >= r.y0) && (p.y <= r.y1) );
@@ -604,6 +607,10 @@ enum {
 	GUI_BOX_FLAG_DRAW_BACKGROUND       = (1<<3),
 	GUI_BOX_FLAG_DRAW_HOT_ANIMATION    = (1<<4),
 	GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION = (1<<5),
+	GUI_BOX_FLAG_FIXED_X               = (1<<6),
+	GUI_BOX_FLAG_FIXED_Y               = (1<<7),
+	GUI_BOX_FLAG_FIXED_WIDTH           = (1<<8),
+	GUI_BOX_FLAG_FIXED_HEIGHT          = (1<<9),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -670,6 +677,7 @@ typedef struct guiFixedYNode guiFixedYNode; struct guiFixedYNode {guiFixedYNode 
 typedef struct guiFixedWidthNode guiFixedWidthNode; struct guiFixedWidthNode {guiFixedWidthNode *next; f32 v;};
 typedef struct guiFixedHeightNode guiFixedHeightNode; struct guiFixedHeightNode {guiFixedHeightNode *next; f32 v;};
 typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; vec4 v;};
+typedef struct guiChildLayoutAxisNode guiChildLayoutAxisNode; struct guiChildLayoutAxisNode {guiChildLayoutAxisNode*next; Axis2 v;};
 
 
 guiKey gui_key_zero(void);
@@ -721,6 +729,11 @@ vec4 gui_top_bg_color(void);
 vec4 gui_set_next_bg_color(vec4 v);
 vec4 gui_push_bg_color(vec4 v);
 vec4 gui_pop_bg_color(void);
+
+Axis2 gui_top_child_layout_axis(void);
+Axis2 gui_set_next_child_layout_axis(Axis2 v);
+Axis2 gui_push_child_layout_axis(Axis2 v);
+Axis2 gui_pop_child_layout_axis(void);
 
 // pushes fixed widths heights (TODO -- i should probably add all the lower level stack functions in future)
 void gui_push_rect(rect r);
@@ -807,6 +820,8 @@ typedef struct {
 	struct { guiPrefHeightNode *top; guiSize bottom_val; guiPrefHeightNode *free; b32 auto_pop; } pref_height_stack;
 	guiBgColorNode bg_color_nil_stack_top;
 	struct { guiBgColorNode *top; vec4 bottom_val; guiBgColorNode *free; b32 auto_pop; } bg_color_stack;
+	guiChildLayoutAxisNode child_layout_axis_nil_stack_top;
+	struct { guiChildLayoutAxisNode *top; Axis2 bottom_val; guiChildLayoutAxisNode *free; b32 auto_pop; } child_layout_axis_stack;
 } guiState;
 
 guiStatus gui_input_push_event(guiInputEventNode e);
