@@ -21,8 +21,42 @@ void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
 	}
 }
 
+void gui_layout_calc_upward_dependent_sizes(guiBox *root, Axis2 axis) {
+    // try to find a parent with fixed size and get the percentage off of him 
+    switch(root->pref_size[axis].kind) {
+        case GUI_SIZEKIND_PERCENT_OF_PARENT:
+            guiBox *fixed_parent = &g_nil_box;
+            for(guiBox *box= root->parent; !gui_box_is_nil(box); box = box->parent)
+            {
+                if ( (box->flags & (GUI_BOX_FLAG_FIXED_WIDTH<<axis)) || 
+                     box->pref_size[axis].kind == GUI_SIZEKIND_PIXELS ||
+                     box->pref_size[axis].kind == GUI_SIZEKIND_TEXT_CONTENT||
+                     box->pref_size[axis].kind == GUI_SIZEKIND_PERCENT_OF_PARENT) 
+                {
+                    fixed_parent = box;
+                    break;
+                }
+            }
+            root->fixed_size.raw[axis] = fixed_parent->fixed_size.raw[axis] * root->pref_size[axis].value;
+            break;
+        default:
+            break;
+    }
+    // loop through all the hierarchy
+	for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next)
+	{
+        gui_layout_calc_upward_dependent_sizes(child, axis);
+	}
+}
+
+
 void gui_layout_calc_downward_dependent_sizes(guiBox *root, Axis2 axis) {
-    guiState *state = gui_get_ui_state();
+    // loop through all the hierarchy
+	for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next)
+	{
+        gui_layout_calc_downward_dependent_sizes(child, axis);
+	}
+
     // add the size of all child boxes for ChildrenSum
     switch(root->pref_size[axis].kind) {
         case GUI_SIZEKIND_CHILDREN_SUM:
@@ -42,12 +76,6 @@ void gui_layout_calc_downward_dependent_sizes(guiBox *root, Axis2 axis) {
         default:
             break;
     }
-
-    // loop through all the hierarchy
-	for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next)
-	{
-        gui_layout_calc_downward_dependent_sizes(child, axis);
-	}
 }
 
 void gui_layout_calc_final_rects(guiBox *root, Axis2 axis) {
@@ -73,6 +101,7 @@ void gui_layout_calc_final_rects(guiBox *root, Axis2 axis) {
 
 void gui_layout_root(guiBox *root, Axis2 axis)  {
     gui_layout_calc_constant_sizes(root, axis);
+    gui_layout_calc_upward_dependent_sizes(root,axis);
     gui_layout_calc_downward_dependent_sizes(root,axis);
     gui_layout_calc_final_rects(root, axis);
 }

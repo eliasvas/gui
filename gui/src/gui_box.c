@@ -236,15 +236,12 @@ guiSignal gui_spacer(guiSize size) {
 }
 
 guiSignal gui_panel(char *str) {
-	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
-	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
-	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_DRAW_BORDER|
-									GUI_BOX_FLAG_DRAW_TEXT|
-									GUI_BOX_FLAG_DRAW_BACKGROUND|
-									GUI_BOX_FLAG_ROUNDED_EDGES|
-									GUI_BOX_FLAG_DRAW_HOT_ANIMATION|
-									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
-									str);
+	// these are the default
+	// gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+	// gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND
+	//|GUI_BOX_FLAG_ROUNDED_EDGES
+	,str);
 	guiSignal signal = gui_get_signal_for_box(w);
 	signal.box = w;
 	return signal;
@@ -258,12 +255,13 @@ guiSignal gui_label(char *str) {
 	guiSignal signal = gui_get_signal_for_box(w);
 	return signal;
 }
+
 guiSignal gui_button(char *str) {
 	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
 									GUI_BOX_FLAG_DRAW_BORDER|
 									GUI_BOX_FLAG_DRAW_TEXT|
 									GUI_BOX_FLAG_DRAW_BACKGROUND|
-									GUI_BOX_FLAG_ROUNDED_EDGES|
+//									GUI_BOX_FLAG_ROUNDED_EDGES|
 									GUI_BOX_FLAG_DRAW_HOT_ANIMATION|
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);
