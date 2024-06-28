@@ -228,17 +228,13 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 guiSignal gui_spacer(guiSize size) {
 	guiBox *parent = gui_top_parent();
 	gui_set_next_pref_size(parent->child_layout_axis, size);
-	//gui_push_pref_size(parent->child_layout_axis, size);
 	guiBox *w = gui_box_build_from_str(0, NULL);
 	guiSignal signal = gui_get_signal_for_box(w);
-	//gui_pop_pref_size(parent->child_layout_axis);
 	return signal;
 }
 
+// TODO -- maybe panels can be non drawable?? just to get parents and stuff
 guiSignal gui_panel(char *str) {
-	// these are the default
-	// gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
-	// gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
 	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND
 	//|GUI_BOX_FLAG_ROUNDED_EDGES
 	,str);
@@ -261,7 +257,7 @@ guiSignal gui_button(char *str) {
 									GUI_BOX_FLAG_DRAW_BORDER|
 									GUI_BOX_FLAG_DRAW_TEXT|
 									GUI_BOX_FLAG_DRAW_BACKGROUND|
-//									GUI_BOX_FLAG_ROUNDED_EDGES|
+									GUI_BOX_FLAG_ROUNDED_EDGES|
 									GUI_BOX_FLAG_DRAW_HOT_ANIMATION|
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);

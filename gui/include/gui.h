@@ -499,6 +499,7 @@ typedef struct {
 typedef struct {
 	guiBakedChar cdata[96]; // ASCII 32..126 is 95 glyphs
 	guiFontAtlasTexture tex;
+	f32 ascent, descent, line_gap;
 } guiFontAtlas;
 
 guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath);
@@ -840,10 +841,11 @@ void gui_set_ui_state(guiState *state);
 guiState * gui_get_ui_state();
 Arena *gui_get_build_arena();
 
-vec2 gui_font_get_string_dim(guiFontAtlas *atlas, char* str);
+vec2 gui_font_get_string_dim(char* str);
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
-guiStatus gui_draw_rect(rect r, vec4 color, guiBoxFlags flags);
+guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color);
+guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
 
 #endif

@@ -9,7 +9,9 @@ void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
             root->fixed_size.raw[axis] = root->pref_size[axis].value;
             break;
         case GUI_SIZEKIND_TEXT_CONTENT:
-            root->fixed_size.raw[axis] = root->pref_size[axis].value;
+            f32 padding = root->pref_size[axis].value;
+            f32 text_size = gui_font_get_string_dim(root->str).raw[axis];
+            root->fixed_size.raw[axis] = padding + text_size;
             break;
         default:
             break;

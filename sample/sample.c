@@ -53,18 +53,46 @@ void sample_update(){
                 guiSignal children_panel = gui_panel("children_panel");
                 gui_push_parent(children_panel.box);
                 {
-                    gui_set_next_bg_color(v4(0.6,0.2,0.2,1.f));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,200.f,0.f});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,100.f,0.f});
+                    gui_set_next_child_layout_axis(AXIS2_X);
+                    gui_set_next_bg_color(v4(0.8,0.8,0.8,1.f));
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+                    guiSignal children_panel33 = gui_panel("children_panel33");
+                    gui_push_parent(children_panel33.box);
+
+                    gui_set_next_bg_color(v4(0.5,0.4,0.2,1.f));
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_button("button1");
                     
                     gui_set_next_bg_color(v4(0.2,0.6,0.2,1.f));
-                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 100.f, 1.f});
+                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
+                    gui_set_next_bg_color(v4(0.6,0.2,0.2,1.f));
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_button("button7");
+                    gui_pop_parent();
+
+                    
+                    gui_set_next_child_layout_axis(AXIS2_X);
+                    gui_set_next_bg_color(v4(0.8,0.8,0.8,1.f));
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
+                    guiSignal children_panel44 = gui_panel("children_panel44");
+                    gui_push_parent(children_panel44.box);
 
                     gui_set_next_bg_color(v4(0.2,0.2,0.6,1.f));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,200.f,0.f});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,100.f,0.f});
-                    gui_button("button3");
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_button("button4");
+                    
+                    gui_set_next_bg_color(v4(0.4,0.2,0.4,1.f));
+                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
+                    gui_set_next_bg_color(v4(0.6,0.2,0.2,1.f));
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
+                    gui_button("button9");
+                    gui_pop_parent();
                 }
                 gui_pop_parent();
             }
@@ -77,22 +105,22 @@ void sample_update(){
             guiSignal slave1_panel = gui_panel("slave1_panel");
             gui_push_parent(slave1_panel.box);
             {
-                gui_set_next_bg_color(v4(0.2,0.4,0.9,1.f));
+                gui_set_next_bg_color(v4(0.3,0.7,0.4,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
                 gui_label("label1");
 
-                gui_set_next_bg_color(v4(0.8,0.2,0.4,1.f));
+                gui_set_next_bg_color(v4(0.6,0.2,0.4,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
-                gui_button("button4");
+                gui_button("button8");
 
-                gui_set_next_bg_color(v4(0.1,0.2,0.2,1.f));
+                gui_set_next_bg_color(v4(0.3,0.4,0.9,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
                 gui_label("label2");
 
-                gui_set_next_bg_color(v4(0.6,0.4,0.4,1.f));
+                gui_set_next_bg_color(v4(0.2,0.7,0.2,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
                 gui_button("button5");
@@ -102,41 +130,6 @@ void sample_update(){
         gui_pop_parent();
         gui_pop_bg_color();
     }
-
-    //our test UI
-    // {
-    //     gui_push_bg_color(v4(0.3,0.3,0.3,1.f));
-
-    //     gui_set_next_fixed_x(100);
-    //     gui_set_next_fixed_y(100);
-    //     gui_set_next_child_layout_axis(AXIS2_X);
-    //     guiSignal s0 = gui_panel("master");
-    //     gui_push_parent(s0.box);
-
-    //     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 10.f, 1.f});
-
-    //     gui_set_next_child_layout_axis(AXIS2_Y);
-    //     guiSignal s = gui_panel("panel");
-    //     gui_push_parent(s.box);
-    //     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
-    //     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS, 40.f, 1.f});
-    //     gui_set_next_bg_color(v4(0.1,0.1,0.1,1.f));
-    //     gui_label("label");
-    //     gui_set_next_bg_color(v4(0.4,0.5,0.9,1.f));
-    //     gui_button("button1");
-    //     gui_set_next_bg_color(v4(0.4,0.9,0.4,1.f));
-    //     gui_button("button2");
-    //     gui_set_next_bg_color(v4(0.8,0.6,0.1,1.f));
-    //     gui_button("button3");
-    //     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
-    //     gui_pop_parent();
-
-    //     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 10.f, 1.f});
-
-    //     gui_pop_parent();
-    //     gui_pop_bg_color();
- 
-    // }
 
     gui_build_end();
 }
