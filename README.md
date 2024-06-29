@@ -7,7 +7,7 @@ An interactive demo can be viewed [here](https://pages.github.com/).
 ### Features
 - Zero dependencies C99 codebase
 - Loads of layouting options
-- Provided sample with multiple supported backends (D3D11✔️, SDL3🚧) 
+- Provided sample with multiple supported backends (win32/D3D11✔️, SDL3/GL🚧)
 ### Building
 - #### Deps
     - [git🧰](https://git-scm.com/downloads)
@@ -18,5 +18,5 @@ An interactive demo can be viewed [here](https://pages.github.com/).
     git clone https://github.com/eliasvas/gui gui/
     cd gui/
     cmake -S . -B build/ -D CMAKE_BUILD_TYPE=Release
-    cmake --build build --target run 
+    cmake --build build --target run
     ```
