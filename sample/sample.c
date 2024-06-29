@@ -64,7 +64,7 @@ void sample_update(){
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_button("button1");
-                    
+
                     gui_set_next_bg_color(v4(0.2,0.6,0.2,1.f));
                     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
                     gui_set_next_bg_color(v4(0.6,0.2,0.2,1.f));
@@ -73,7 +73,7 @@ void sample_update(){
                     gui_button("button7");
                     gui_pop_parent();
 
-                    
+
                     gui_set_next_child_layout_axis(AXIS2_X);
                     gui_set_next_bg_color(v4(0.8,0.8,0.8,1.f));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.f,0.f});
@@ -85,7 +85,7 @@ void sample_update(){
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_button("button4");
-                    
+
                     gui_set_next_bg_color(v4(0.4,0.2,0.4,1.f));
                     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.f});
                     gui_set_next_bg_color(v4(0.6,0.2,0.2,1.f));
