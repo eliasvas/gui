@@ -27,7 +27,6 @@ add_library(guiLib STATIC  gui/include/gui.h
                         gui/ext/stb/stb_truetype.h)
 target_include_directories(guiLib PUBLIC gui/include)
 
-# Build the D3D11 sample
 # IF (WIN32)
 #     add_executable(sample_d3d11 sample/sample.c sample/d3d11_backend.c)
 #     target_include_directories(sample_d3d11 PUBLIC gui/include)

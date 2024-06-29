@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 // globals
-GLuint vao,vbo,sp;
+GLuint vao,vbo,sp,atlas_tex,atlas_sampler;
 SDL_Window *window;
 SDL_GLContext glcontext;
 const char* vertexShaderSource =
@@ -188,24 +188,44 @@ typedef struct InstanceData {
     float border_thickness;
 }InstanceData;
 
-void fill_instance_vbo(GLuint instanceVBO, const InstanceData* instances, GLsizei instanceCount) {
+void fill_instance_vbo(GLuint instanceVBO, const InstanceData* instances, GLsizei instance_count) {
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, instanceCount * sizeof(InstanceData), instances, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, instance_count * sizeof(InstanceData), instances, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-GLuint create_instance_vbo(const InstanceData* instances, GLsizei instanceCount) {
+GLuint create_instance_vbo(const InstanceData* instances, GLsizei instance_count) {
     GLuint vbo;
-    glGenBuffers(1, &vbo);  // Generate VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);  // Bind VBO
-
-    // Fill VBO with instance data
-    glBufferData(GL_ARRAY_BUFFER, instanceCount * sizeof(InstanceData), instances, GL_STATIC_DRAW);
-
-    // Unbind VBO to clean state
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, instance_count * sizeof(InstanceData), instances, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return vbo;
+}
 
-    return vbo;  // Return the VBO ID
+GLuint create_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei height, GLuint* sampler) {
+    GLuint texture;
+
+    // Generate and bind texture
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Specify texture parameters
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    // Generate mipmaps
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // Create and configure sampler
+    glGenSamplers(1, sampler);
+    glSamplerParameteri(*sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glSamplerParameteri(*sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glSamplerParameteri(*sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glSamplerParameteri(*sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // Unbind texture and sampler to clean state
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return texture;
 }
 
 GLuint setup_instance_vao(GLuint vbo) {
@@ -217,27 +237,35 @@ GLuint setup_instance_vao(GLuint vbo) {
 
     glEnableVertexAttribArray(0); // inPos0
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, pos0));
+    glVertexAttribDivisor(0, 1);
 
     glEnableVertexAttribArray(1); // inPos1
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, pos1));
+    glVertexAttribDivisor(1, 1);
 
     glEnableVertexAttribArray(2); // inUV0
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, uv0));
+    glVertexAttribDivisor(2, 1);
 
     glEnableVertexAttribArray(3); // inUV1
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, uv1));
+    glVertexAttribDivisor(3, 1);
 
     glEnableVertexAttribArray(4); // inColor
     glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, color));
+    glVertexAttribDivisor(4, 1);
 
     glEnableVertexAttribArray(5); // inCornerRadius
     glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, corner_radius));
+    glVertexAttribDivisor(5, 1);
 
     glEnableVertexAttribArray(6); // inEdgeSoftness
     glVertexAttribPointer(6, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, edge_softness));
+    glVertexAttribDivisor(6, 1);
 
     glEnableVertexAttribArray(7); // inBorderThickness
     glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, sizeof(InstanceData), (void*)offsetof(InstanceData, border_thickness));
+    glVertexAttribDivisor(7, 1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -281,6 +309,8 @@ void platform_init(u8 *font_atlas_data) {
     SDL_Log("vao OK!");
     sp = create_sp(vertexShaderSource, fragmentShaderSource);
     SDL_Log("Shader program OK!");
+    atlas_tex = create_tex_and_sampler((GLubyte*)font_atlas_data, 512, 512,&atlas_sampler);
+    SDL_Log("Atlas texture OK!");
 }
 
 void platform_update() {
@@ -298,6 +328,7 @@ vec2 platform_get_windim() {
 
 void platform_render(guiRenderCommand *rcommands, u32 command_count)
 {
+    //printf("instance count: %d\n", command_count);
     float time = SDL_GetTicks() / 1000.f;
     float red = (sin(time) + 1) / 2.0;
     float green = (sin(time / 2) + 1) / 2.0;
@@ -308,7 +339,12 @@ void platform_render(guiRenderCommand *rcommands, u32 command_count)
     fill_instance_vbo(vbo, (InstanceData*)rcommands, command_count);
     glUseProgram(sp);
     glBindVertexArray(vao);
+    glUniform2f(glGetUniformLocation(sp, "winDim"), platform_get_windim().x, platform_get_windim().y);
+    glBindTexture(GL_TEXTURE_2D, atlas_tex);
+    glBindSampler(0, atlas_sampler);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, command_count);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindSampler(0, 0);
     glBindVertexArray(0);
     //---------
     SDL_GL_SwapWindow(window);

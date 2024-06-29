@@ -702,6 +702,7 @@ void platform_update(){
 }
 
 void platform_render(guiRenderCommand *rcommands, u32 command_count){
+    //printf("instance count: %d\n", command_count);
     dxb_resize_if_needed(&dxb);
     dxb_fill_instance_buffer_with_ui_commands(&dxb, rcommands, command_count);
     dxb_render_all(&dxb, rcommands, command_count);
