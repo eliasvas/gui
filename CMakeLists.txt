@@ -52,6 +52,7 @@ IF (WIN32)
     endif()
     include(FetchContent)
 
+    # Fetch and link SDL3
     FetchContent_Declare(
         SDL
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -59,7 +60,15 @@ IF (WIN32)
     )
     FetchContent_MakeAvailable(SDL)
 
+    # Fetch and link GLEW
+    FetchContent_Declare(
+        GLEW
+        GIT_REPOSITORY https://github.com/Perlmint/glew-cmake.git
+        GIT_TAG glew-cmake-2.1.0
+    )
+    FetchContent_MakeAvailable(GLEW)
+
     find_package(OpenGL REQUIRED)
-    target_link_libraries(sample_gl PUBLIC SDL3::SDL3 OpenGL::GL)
-    target_compile_definitions(sample_gl PUBLIC SDL_MAIN_USE_CALLBACKS)
+    target_link_libraries(sample_gl PUBLIC SDL3::SDL3 OpenGL::GL libglew_static)
+    target_link_libraries(sample_gl PUBLIC opengl32 gdi32 imm32)
 ENDIF()
