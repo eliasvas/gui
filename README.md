@@ -7,7 +7,13 @@ An interactive demo can be viewed [here](https://pages.github.com/).
 ### Features
 - Zero dependencies C99 codebase
 - Loads of layouting options
-- Provided sample with multiple supported backends (win32/D3D11✔️, SDL3/GL🚧)
+- Provided sample with multiple supported backends
+### sample
+| Backend         | Win | Linux | Mac | Web |
+|-----------------|:---:|:-----:|:---:|:---:|
+| [Direct3D11](https://github.com/eliasvas/gui/blob/main/sample/d3d11_backend.c)   | ✔️  |   ❌  | ❌  | ❌  |
+| [OpenGL](https://github.com/eliasvas/gui/blob/main/sample/gl_backend.c)      | ✔️  |  🚧   | ❌  | 🚧  |
+| [sdl_gpu](https://github.com/libsdl-org/SDL_shader_tools/blob/main/docs/README-SDL_gpu.md)     | 🚧  |  🚧   | 🚧  | ❌  |
 ### Building
 - #### Deps
     - [git🧰](https://git-scm.com/downloads)
