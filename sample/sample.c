@@ -10,7 +10,7 @@ void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
 
-sample_push_event(guiInputEventNode e){
+void sample_push_event(guiInputEventNode e){
     gui_input_push_event(e);
 }
 

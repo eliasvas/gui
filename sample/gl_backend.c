@@ -1,14 +1,19 @@
 #include "gui.h"
 #define SDL_MAIN_NOIMPL
-#include <SDL3/SDL.h>
 
-#ifdef EMSCRIPTEN
-    #include <SDL3/SDL_opengles2.h>
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+	#include <emscripten/html5.h>
+    #include <SDL.h>
+    #include <SDL_main.h>
+	#include <GLES3/gl3.h>
+    //#include <SDL_opengles2.h>
 #else
+    #include <SDL3/SDL.h>
+    #include <SDL3/SDL_main.h>
     #include <GL/glew.h>
 #endif
 
-#include <SDL3/SDL_main.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -18,7 +23,7 @@ GLuint vao,vbo,sp,atlas_tex,atlas_sampler;
 SDL_Window *window;
 SDL_GLContext glcontext;
 const char* vertexShaderSource =
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
     "#version 300 es\n"
 #else
     "#version 330 core\n"
@@ -73,7 +78,7 @@ const char* vertexShaderSource =
 "}\n";
 
 const char* fragmentShaderSource =
-#ifdef EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
     "#version 300 es\n"
 #else
     "#version 330 core\n"
@@ -225,7 +230,7 @@ GLuint create_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei heig
     glBindTexture(GL_TEXTURE_2D, texture);
 
     // Specify texture parameters
-    #ifdef EMSCRIPTEN
+    #ifdef __EMSCRIPTEN__
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pixels);
     #else
         glEnable(GL_FRAMEBUFFER_SRGB);
@@ -297,7 +302,7 @@ void platform_init(u8 *font_atlas_data) {
     if (SDL_Init(SDL_INIT_VIDEO)) {
         exit(1);
     }
-    #ifdef EMSCRIPTEN
+    #ifdef __EMSCRIPTEN__
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -313,7 +318,7 @@ void platform_init(u8 *font_atlas_data) {
         exit(1);
     }
     SDL_GL_MakeCurrent(window,glcontext);
-    #ifdef ENSCRIPTEN
+    #ifdef __EMSCRIPTEN__
         //glewInit();
     #else
         glewInit();

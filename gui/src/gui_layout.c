@@ -4,12 +4,13 @@
 void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
     guiState *state = gui_get_ui_state();
     // find the fixed size of the boxed
+    f32 padding;
     switch(root->pref_size[axis].kind) {
         case GUI_SIZEKIND_PIXELS:
             root->fixed_size.raw[axis] = root->pref_size[axis].value;
             break;
         case GUI_SIZEKIND_TEXT_CONTENT:
-            f32 padding = root->pref_size[axis].value;
+            padding = root->pref_size[axis].value;
             f32 text_size = gui_font_get_string_dim(root->str).raw[axis];
             root->fixed_size.raw[axis] = padding + text_size;
             break;
@@ -24,16 +25,17 @@ void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
 }
 
 void gui_layout_calc_upward_dependent_sizes(guiBox *root, Axis2 axis) {
-    // try to find a parent with fixed size and get the percentage off of him 
+    // try to find a parent with fixed size and get the percentage off of him
+    guiBox *fixed_parent = &g_nil_box;
     switch(root->pref_size[axis].kind) {
         case GUI_SIZEKIND_PERCENT_OF_PARENT:
-            guiBox *fixed_parent = &g_nil_box;
+            fixed_parent = &g_nil_box;
             for(guiBox *box= root->parent; !gui_box_is_nil(box); box = box->parent)
             {
-                if ( (box->flags & (GUI_BOX_FLAG_FIXED_WIDTH<<axis)) || 
+                if ( (box->flags & (GUI_BOX_FLAG_FIXED_WIDTH<<axis)) ||
                      box->pref_size[axis].kind == GUI_SIZEKIND_PIXELS ||
                      box->pref_size[axis].kind == GUI_SIZEKIND_TEXT_CONTENT||
-                     box->pref_size[axis].kind == GUI_SIZEKIND_PERCENT_OF_PARENT) 
+                     box->pref_size[axis].kind == GUI_SIZEKIND_PERCENT_OF_PARENT)
                 {
                     fixed_parent = box;
                     break;
@@ -60,9 +62,10 @@ void gui_layout_calc_downward_dependent_sizes(guiBox *root, Axis2 axis) {
 	}
 
     // add the size of all child boxes for ChildrenSum
+    f32 sum = 0;
     switch(root->pref_size[axis].kind) {
         case GUI_SIZEKIND_CHILDREN_SUM:
-            f32 sum = 0;
+            sum = 0;
             for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next)
             {
                 if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {

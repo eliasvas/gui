@@ -193,7 +193,7 @@ guiSize gui_set_next_pref_size(Axis2 axis, guiSize v) {
 
 
 void gui_push_rect(rect r) {
-  vec2 size = {abs(r.x1 - r.x0), abs(r.y1 - r.y0)};
+  vec2 size = {fabs(r.x1 - r.x0), fabs(r.y1 - r.y0)};
   gui_push_fixed_x(r.x0);
   gui_push_fixed_y(r.y0);
   gui_push_fixed_width(size.x);
@@ -210,7 +210,7 @@ void gui_pop_rect(void) {
 }
 
 void gui_set_next_rect(rect r) {
-  vec2 size = {abs(r.x1 - r.x0), abs(r.y1 - r.y0)};
+  vec2 size = {fabs(r.x1 - r.x0), fabs(r.y1 - r.y0)};
   gui_set_next_fixed_x(r.x0);
   gui_set_next_fixed_y(r.y0);
   gui_set_next_fixed_width(size.x);

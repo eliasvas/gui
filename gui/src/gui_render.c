@@ -43,10 +43,10 @@ guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAt
 
 guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box) {
 	guiState *state = gui_get_ui_state();
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color,(box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color,(box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
 	if (box->flags & GUI_BOX_FLAG_DRAW_BORDER) {
 		vec4 color_dim = v4(color.x/2.f,color.y/2.f,color.z/2.f,1.f);
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){abs(r.x1-r.x0), abs(r.y1-r.y0)}, color_dim,1, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color_dim,1, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_TEXT) {
 		// TODO -- text color stack
@@ -56,7 +56,7 @@ guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box) {
 }
 
 void gui_render_hierarchy(guiBox *root) {
-	// render current box 
+	// render current box
 	if (root->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
 		gui_draw_rect(root->r, root->c, root);
 	}

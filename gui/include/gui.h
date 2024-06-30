@@ -86,6 +86,15 @@ static b32 point_inside_rect(vec2 p, rect r) {
 	# error Cannot define thread_loc
 #endif
 
+#if defined(_WIN32)
+	#include <windows.h>
+#elif __EMSCRIPTEN__
+	#include <emscripten.h>
+	#include <sys/mman.h>
+#else
+	#include <sys/mman.h>
+#endif
+
 //-----------------------------------------------------------------------------
 // SIMPLE FILE I/O
 //-----------------------------------------------------------------------------
@@ -183,9 +192,13 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 	#define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RESERVE | MEM_RELEASE)
 	#define M_ZERO(p,s) (ZeroMemory(p,s))
 #else
-	#define M_ZERO(p,s) memset(p,0,s)
-	#error "Implement virtual memory stuff for this target (probably just mmap)"
+	#define M_RESERVE(bytes) mmap(NULL, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+	#define M_COMMIT(reserved_ptr, bytes) mmap(reserved_ptr, bytes, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+	#define M_ALLOC(bytes) mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+	#define M_RELEASE(base, bytes) munmap(base, bytes)
+	#define M_ZERO(p, s) memset(p, 0, s)
 #endif
+
 #define M_ZERO_STRUCT(p)  M_ZERO((p), sizeof(*(p)))
 #define M_ZERO_ARRAY(a)  M_ZERO((a), sizeof(a))
 
@@ -348,6 +361,8 @@ static void* arena_pop_amount(Arena *arena, u64 amount) {
 		u64 new_pos = total_pos - amount;
 		arena_pop_to_pos(arena, new_pos);
 	}
+	// FIXME -- WHY do we return NULL here?????????
+	return NULL;
 }
 
 static void arena_clear(Arena *arena) {
@@ -732,6 +747,7 @@ vec4 gui_set_next_bg_color(vec4 v);
 vec4 gui_push_bg_color(vec4 v);
 vec4 gui_pop_bg_color(void);
 
+void gui_layout_root(guiBox *root, Axis2 axis);
 Axis2 gui_top_child_layout_axis(void);
 Axis2 gui_set_next_child_layout_axis(Axis2 v);
 Axis2 gui_push_child_layout_axis(Axis2 v);
@@ -832,10 +848,17 @@ typedef struct {
 	guiChildLayoutAxisNode child_layout_axis_nil_stack_top;
 	struct { guiChildLayoutAxisNode *top; Axis2 bottom_val; guiChildLayoutAxisNode *free; b32 auto_pop; } child_layout_axis_stack;
 } guiState;
+void gui_init_stacks(guiState *state);
 
-guiStatus gui_input_push_event(guiInputEventNode e);
 guiStatus gui_state_update(f32 dt);
 guiState *gui_state_init();
+
+guiStatus gui_input_push_event(guiInputEventNode e);
+b32 gui_input_mb_down(GUI_MOUSE_BUTTON button);
+b32 gui_input_mb_up(GUI_MOUSE_BUTTON button);
+b32 gui_input_mb_pressed(GUI_MOUSE_BUTTON button);
+b32 gui_input_mb_released(GUI_MOUSE_BUTTON button);
+void gui_input_process_event_queue(void);
 
 void gui_set_ui_state(guiState *state);
 guiState * gui_get_ui_state();
@@ -847,5 +870,9 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
 guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color);
 guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
+void print_gui_hierarchy(void);
+
+void gui_build_begin(void);
+void gui_build_end(void);
 
 #endif
