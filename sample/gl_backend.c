@@ -1,9 +1,14 @@
 #include "gui.h"
 #define SDL_MAIN_NOIMPL
 #include <SDL3/SDL.h>
-//#include <SDL3/SDL_opengles2.h>
+
+#ifdef EMSCRIPTEN
+    #include <SDL3/SDL_opengles2.h>
+#else
+    #include <GL/glew.h>
+#endif
+
 #include <SDL3/SDL_main.h>
-#include <GL/glew.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,7 +18,11 @@ GLuint vao,vbo,sp,atlas_tex,atlas_sampler;
 SDL_Window *window;
 SDL_GLContext glcontext;
 const char* vertexShaderSource =
-"#version 330 core\n"
+#ifdef EMSCRIPTEN
+    "#version 300 es\n"
+#else
+    "#version 330 core\n"
+#endif
 "layout(location = 0) in vec2 inPos0;\n"
 "layout(location = 1) in vec2 inPos1;\n"
 "layout(location = 2) in vec2 inUV0;\n"
@@ -64,7 +73,11 @@ const char* vertexShaderSource =
 "}\n";
 
 const char* fragmentShaderSource =
-"#version 330 core\n"
+#ifdef EMSCRIPTEN
+    "#version 300 es\n"
+#else
+    "#version 330 core\n"
+#endif
 "\n"
 "in vec2 fragUV;\n"
 "in vec2 fragDstPos;\n"
@@ -212,7 +225,12 @@ GLuint create_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei heig
     glBindTexture(GL_TEXTURE_2D, texture);
 
     // Specify texture parameters
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
+    #ifdef EMSCRIPTEN
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pixels);
+    #else
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
+    #endif
 
     // Generate mipmaps
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -279,9 +297,15 @@ void platform_init(u8 *font_atlas_data) {
     if (SDL_Init(SDL_INIT_VIDEO)) {
         exit(1);
     }
-    // create a window
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    #ifdef EMSCRIPTEN
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    #else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    #endif
     window = SDL_CreateWindow("sample", 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     glcontext = SDL_GL_CreateContext(window);
@@ -289,7 +313,18 @@ void platform_init(u8 *font_atlas_data) {
         exit(1);
     }
     SDL_GL_MakeCurrent(window,glcontext);
-    glewInit();
+    #ifdef ENSCRIPTEN
+        //glewInit();
+    #else
+        glewInit();
+    #endif
+    {
+        int majorv, minorv, profilem;
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &majorv);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minorv);
+        SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profilem);
+        SDL_Log("OpenGL ES [%s] [%d.%d]\n", (SDL_GL_CONTEXT_PROFILE_ES == profilem) ? "true" : "false", majorv, minorv);
+    }
 
     SDL_ShowWindow(window);
     {
@@ -379,7 +414,6 @@ vec2 platform_get_windim() {
 
 void platform_render(guiRenderCommand *rcommands, u32 command_count)
 {
-    glEnable(GL_FRAMEBUFFER_SRGB);
     //printf("instance count: %d\n", command_count);
     //glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT);
