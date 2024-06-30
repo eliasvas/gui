@@ -108,6 +108,7 @@ const char* fragmentShaderSource =
 "    }\n"
 "\n"
 "    outColor = fragColor * tex * sdfFactor * borderFactor;\n"
+"    if (outColor.a < 0.05)discard;\n"
 "}\n";
 
 GLuint compile_shader(GLenum type, const char* source) {
@@ -211,7 +212,7 @@ GLuint create_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei heig
     glBindTexture(GL_TEXTURE_2D, texture);
 
     // Specify texture parameters
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
 
     // Generate mipmaps
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -309,14 +310,64 @@ void platform_init(u8 *font_atlas_data) {
     SDL_Log("vao OK!");
     sp = create_sp(vertexShaderSource, fragmentShaderSource);
     SDL_Log("Shader program OK!");
-    atlas_tex = create_tex_and_sampler((GLubyte*)font_atlas_data, 512, 512,&atlas_sampler);
+    font_atlas_data[0] = 0xFF;
+    atlas_tex = create_tex_and_sampler((GLubyte*)font_atlas_data, 1024, 1024,&atlas_sampler);
     SDL_Log("Atlas texture OK!");
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    // glBlendEquation(GL_FUNC_ADD);
 }
 
 void platform_update() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_EVENT_QUIT)exit(1);
+        guiInputEventNode e = {0};
+        switch (event.type) {
+            case SDL_EVENT_QUIT:
+                exit(1);
+            case SDL_EVENT_MOUSE_MOTION:
+                e.type = GUI_INPUT_EVENT_TYPE_MOUSE_MOVE;
+                e.param0 = event.motion.x;
+                e.param1 = event.motion.y;
+                sample_push_event(e);
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                e.type = GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
+                e.param1 = 1;
+                switch (event.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        e.param0 = GUI_LMB;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        e.param0 = GUI_RMB;
+                        break;
+                    case SDL_BUTTON_MIDDLE:
+                        e.param0 = GUI_MMB;
+                        break;
+                }
+                sample_push_event(e);
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+                e.type = GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
+                e.param1 = 0;
+                switch (event.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        e.param0 = GUI_LMB;
+                        break;
+                    case SDL_BUTTON_RIGHT:
+                        e.param0 = GUI_RMB;
+                        break;
+                    case SDL_BUTTON_MIDDLE:
+                        e.param0 = GUI_MMB;
+                        break;
+                }
+                sample_push_event(e);
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -328,12 +379,9 @@ vec2 platform_get_windim() {
 
 void platform_render(guiRenderCommand *rcommands, u32 command_count)
 {
+    glEnable(GL_FRAMEBUFFER_SRGB);
     //printf("instance count: %d\n", command_count);
-    float time = SDL_GetTicks() / 1000.f;
-    float red = (sin(time) + 1) / 2.0;
-    float green = (sin(time / 2) + 1) / 2.0;
-    float blue = (sin(time) * 2 + 1) / 2.0;
-    glClearColor(red, green, blue, 1.f);
+    //glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT);
     // Here we draw
     fill_instance_vbo(vbo, (InstanceData*)rcommands, command_count);
@@ -347,6 +395,7 @@ void platform_render(guiRenderCommand *rcommands, u32 command_count)
     glBindSampler(0, 0);
     glBindVertexArray(0);
     //---------
+    //glEnable(GL_FRAMEBUFFER_SRGB);
     SDL_GL_SwapWindow(window);
 }
 
