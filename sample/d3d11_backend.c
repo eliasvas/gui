@@ -78,31 +78,31 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
             e.type = GUI_INPUT_EVENT_TYPE_MOUSE_MOVE;
             e.param0 = *((u32*)((void*)(&x_pos_abs)));
             e.param1 = *((u32*)((void*)(&y_pos_abs)));
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
         case WM_LBUTTONDOWN:
             e.param0=GUI_LMB;e.param1=1;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
         case WM_RBUTTONDOWN:
             e.param0=GUI_RMB;e.param1=1;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
         case WM_MBUTTONDOWN:
             e.param0=GUI_MMB;e.param1=1;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
         case WM_LBUTTONUP:
             e.param0=GUI_LMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
         case WM_RBUTTONUP:
             e.param0=GUI_RMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
         case WM_MBUTTONUP:
             e.param0=GUI_MMB;e.param1=0;e.type=GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
-            sample_push_event(e);
+            gui_input_push_event(e);
             break;
 
     }

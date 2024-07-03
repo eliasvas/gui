@@ -18,7 +18,7 @@ guiKey gui_key_zero(void){
 guiKey gui_key_from_str(char *s) {
 	guiKey res = gui_key_zero();
 	if (s && strlen(s) != 0) {
-		res = gui_key_make(djb2(s));	
+		res = gui_key_make(djb2((u8*)s));
 	}
 	return res;
 }

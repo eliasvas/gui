@@ -10,10 +10,6 @@ void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
 
-void sample_push_event(guiInputEventNode e){
-    gui_input_push_event(e);
-}
-
 void sample_init(){
     guiState *gui_state = gui_state_init();
     gui_set_ui_state(gui_state);
@@ -60,7 +56,8 @@ void sample_update(){
                     guiSignal children_panel33 = gui_panel("children_panel33");
                     gui_push_parent(children_panel33.box);
 
-                    gui_set_next_bg_color(v4(0.5,0.4,0.2,1.f));
+                    //gui_set_next_bg_color(v4(0.5,0.4,0.2,1.f));
+                    gui_set_next_bg_color(v4(1.0,0,0,1.f));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.f});
                     gui_button("button1");
@@ -138,15 +135,28 @@ void sample_push_input_event(guiInputEventNode e) {
     gui_input_push_event(e);
 }
 
-int main(){
-    sample_init();
-    arena_test();
-    ll_test();
-    platform_init(gui_get_ui_state()->atlas.tex.data);
+void mainLoop() {
     for (;;){
         sample_update();
         platform_update();
         platform_render(&gui_get_ui_state()->rcmd_buf.commands[0], gui_render_cmd_buf_count(&gui_get_ui_state()->rcmd_buf));
     }
+}
+
+int main(){
+    sample_init();
+    arena_test();
+    ll_test();
+    platform_init(gui_get_ui_state()->atlas.tex.data);
+
+    // EMSCRIPTEN BULLSHIT
+    #ifdef __EMSCRIPTEN__
+        int fps = 0; // Use browser's requestAnimationFrame
+        emscripten_set_main_loop_arg(mainLoop, NULL, fps, 1);
+    #else
+        while(1)
+            mainLoop();
+    #endif
+
     platform_deinit();
 }

@@ -1,17 +1,16 @@
 #include "gui.h"
 #define SDL_MAIN_NOIMPL
 
+#include <SDL.h>
+#include <SDL_main.h>
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
 	#include <emscripten/html5.h>
-    #include <SDL.h>
-    #include <SDL_main.h>
 	#include <GLES3/gl3.h>
     //#include <SDL_opengles2.h>
 #else
-    #include <SDL3/SDL.h>
-    #include <SDL3/SDL_main.h>
     #include <GL/glew.h>
+    #include <GL/wglew.h>
 #endif
 
 #include <math.h>
@@ -22,12 +21,9 @@
 GLuint vao,vbo,sp,atlas_tex,atlas_sampler;
 SDL_Window *window;
 SDL_GLContext glcontext;
-const char* vertexShaderSource =
-#ifdef __EMSCRIPTEN__
-    "#version 300 es\n"
-#else
-    "#version 330 core\n"
-#endif
+const char* gui_vs =
+"#version 300 es\n"
+"precision mediump float;\n"
 "layout(location = 0) in vec2 inPos0;\n"
 "layout(location = 1) in vec2 inPos1;\n"
 "layout(location = 2) in vec2 inUV0;\n"
@@ -77,13 +73,9 @@ const char* vertexShaderSource =
 "    fragHalfSize = dstHalfSize;\n"
 "}\n";
 
-const char* fragmentShaderSource =
-#ifdef __EMSCRIPTEN__
-    "#version 300 es\n"
-#else
-    "#version 330 core\n"
-#endif
-"\n"
+const char* gui_fs =
+"#version 300 es\n"
+"precision mediump float;\n"
 "in vec2 fragUV;\n"
 "in vec2 fragDstPos;\n"
 "in vec2 fragDstCenter;\n"
@@ -109,7 +101,7 @@ const char* fragmentShaderSource =
 "\n"
 "    float softness = fragEdgeSoftness + 0.001;\n"
 "    float cornerRadius = fragCornerRadius;\n"
-"    vec2 softnessPadding = vec2(max(0, softness * 2.0 - 1.0), max(0, softness * 2.0 - 1.0));\n"
+"    vec2 softnessPadding = vec2(max(0.0, softness * 2.0 - 1.0), max(0.0, softness * 2.0 - 1.0));\n"
 "\n"
 "    float dist = roundedRectSDF(fragDstPos, fragDstCenter, fragHalfSize - softnessPadding, cornerRadius);\n"
 "    float sdfFactor = 1.0 - smoothstep(0.0, 2.0 * softness, dist);\n"
@@ -126,7 +118,7 @@ const char* fragmentShaderSource =
 "    }\n"
 "\n"
 "    outColor = fragColor * tex * sdfFactor * borderFactor;\n"
-"    if (outColor.a < 0.05)discard;\n"
+"    if (outColor.a < 0.05) discard;\n"
 "}\n";
 
 GLuint compile_shader(GLenum type, const char* source) {
@@ -151,13 +143,13 @@ GLuint compile_shader(GLenum type, const char* source) {
     return shader;
 }
 
-GLuint create_sp(const char* vertexShaderSource, const char* fragmentShaderSource) {
-    GLuint vertexShader = compile_shader(GL_VERTEX_SHADER, vertexShaderSource);
+GLuint create_sp(const char* gui_vs, const char* gui_fs) {
+    GLuint vertexShader = compile_shader(GL_VERTEX_SHADER, gui_vs);
     if (vertexShader == 0) {
         return 0;
     }
 
-    GLuint fragmentShader = compile_shader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    GLuint fragmentShader = compile_shader(GL_FRAGMENT_SHADER, gui_fs);
     if (fragmentShader == 0) {
         glDeleteShader(vertexShader);
         return 0;
@@ -174,7 +166,7 @@ GLuint create_sp(const char* vertexShaderSource, const char* fragmentShaderSourc
         GLint maxLength = 0;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
-        char errorLog[256];
+        char errorLog[512];
         glGetProgramInfoLog(program, maxLength, &maxLength, errorLog);
         SDL_Log("Shader compilation error: %s",errorLog);
 
@@ -222,7 +214,7 @@ GLuint create_instance_vbo(const InstanceData* instances, GLsizei instance_count
     return vbo;
 }
 
-GLuint create_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei height, GLuint* sampler) {
+GLuint create_atlas_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei height, GLuint* sampler) {
     GLuint texture;
 
     // Generate and bind texture
@@ -233,19 +225,22 @@ GLuint create_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsizei heig
     #ifdef __EMSCRIPTEN__
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pixels);
     #else
-        glEnable(GL_FRAMEBUFFER_SRGB);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
     #endif
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     // Generate mipmaps
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // Create and configure sampler
-    glGenSamplers(1, sampler);
-    glSamplerParameteri(*sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glSamplerParameteri(*sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glSamplerParameteri(*sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glSamplerParameteri(*sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glGenSamplers(1, sampler);
+    // glSamplerParameteri(*sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    // glSamplerParameteri(*sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glSamplerParameteri(*sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glSamplerParameteri(*sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     // Unbind texture and sampler to clean state
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -307,11 +302,21 @@ void platform_init(u8 *font_atlas_data) {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     #else
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+
+        SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 8);
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
     #endif
-    window = SDL_CreateWindow("sample", 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("sample",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     glcontext = SDL_GL_CreateContext(window);
     if (!glcontext) {
@@ -322,6 +327,8 @@ void platform_init(u8 *font_atlas_data) {
         //glewInit();
     #else
         glewInit();
+        assert(GLEW_ARB_ES3_compatibility);
+        glEnable(GL_FRAMEBUFFER_SRGB);
     #endif
     {
         int majorv, minorv, profilem;
@@ -333,14 +340,14 @@ void platform_init(u8 *font_atlas_data) {
 
     SDL_ShowWindow(window);
     {
-        int width, height, bbwidth, bbheight;
+        int width, height;//, bbwidth, bbheight;
         SDL_GetWindowSize(window, &width, &height);
-        SDL_GetWindowSizeInPixels(window, &bbwidth, &bbheight);
+        //SDL_GetWindowSizeInPixels(window, &bbwidth, &bbheight);
         SDL_Log("Window size: %ix%i", width, height);
-        SDL_Log("Backbuffer size: %ix%i", bbwidth, bbheight);
-        if (width != bbwidth){
-            SDL_Log("This is a highdpi environment.");
-        }
+        //SDL_Log("Backbuffer size: %ix%i", bbwidth, bbheight);
+        // if (width != bbwidth){
+        //     SDL_Log("this is a highdpi environment.");
+        // }
     }
     SDL_Log("Application started successfully!");
     vbo = create_instance_vbo(NULL, 0);
@@ -348,14 +355,15 @@ void platform_init(u8 *font_atlas_data) {
     SDL_Log("vbo OK!");
     vao = setup_instance_vao(vbo);
     SDL_Log("vao OK!");
-    sp = create_sp(vertexShaderSource, fragmentShaderSource);
+    sp = create_sp(gui_vs, gui_fs);
     SDL_Log("Shader program OK!");
     font_atlas_data[0] = 0xFF;
-    atlas_tex = create_tex_and_sampler((GLubyte*)font_atlas_data, 1024, 1024,&atlas_sampler);
+    atlas_tex = create_atlas_tex_and_sampler((GLubyte*)font_atlas_data, 1024, 1024,&atlas_sampler);
     SDL_Log("Atlas texture OK!");
+    glDisable(GL_BLEND);
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    // glBlendEquation(GL_FUNC_ADD);
+    //glBlendEquation(GL_ONE);
 }
 
 void platform_update() {
@@ -363,16 +371,16 @@ void platform_update() {
     while (SDL_PollEvent(&event)) {
         guiInputEventNode e = {0};
         switch (event.type) {
-            case SDL_EVENT_QUIT:
+            case SDL_QUIT:
                 exit(1);
-            case SDL_EVENT_MOUSE_MOTION:
+            case SDL_MOUSEMOTION:
                 e.type = GUI_INPUT_EVENT_TYPE_MOUSE_MOVE;
                 e.param0 = event.motion.x;
                 e.param1 = event.motion.y;
-                sample_push_event(e);
+                gui_input_push_event(e);
                 break;
 
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_MOUSEBUTTONDOWN:
                 e.type = GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
                 e.param1 = 1;
                 switch (event.button.button) {
@@ -386,10 +394,10 @@ void platform_update() {
                         e.param0 = GUI_MMB;
                         break;
                 }
-                sample_push_event(e);
+                gui_input_push_event(e);
                 break;
 
-            case SDL_EVENT_MOUSE_BUTTON_UP:
+            case SDL_MOUSEBUTTONUP:
                 e.type = GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
                 e.param1 = 0;
                 switch (event.button.button) {
@@ -403,7 +411,7 @@ void platform_update() {
                         e.param0 = GUI_MMB;
                         break;
                 }
-                sample_push_event(e);
+                gui_input_push_event(e);
                 break;
             default:
                 break;
@@ -428,13 +436,12 @@ void platform_render(guiRenderCommand *rcommands, u32 command_count)
     glBindVertexArray(vao);
     glUniform2f(glGetUniformLocation(sp, "winDim"), platform_get_windim().x, platform_get_windim().y);
     glBindTexture(GL_TEXTURE_2D, atlas_tex);
-    glBindSampler(0, atlas_sampler);
+    //glBindSampler(0, atlas_sampler);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, command_count);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glBindSampler(0, 0);
+    //glBindSampler(0, 0);
     glBindVertexArray(0);
     //---------
-    //glEnable(GL_FRAMEBUFFER_SRGB);
     SDL_GL_SwapWindow(window);
 }
 
