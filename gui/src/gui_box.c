@@ -106,8 +106,6 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		}
 		box->pref_size[AXIS2_X] = gui_top_pref_width();
 		box->pref_size[AXIS2_Y] = gui_top_pref_height();
-		//box->fixed_size = (vec2){gui_top_fixed_width(), gui_top_fixed_height()};
-		//box->r = (rect){box->fixed_pos.x, box->fixed_pos.y, box->fixed_pos.x + box->fixed_size.x, box->fixed_pos.y + box->fixed_size.y};
 		box->c = gui_top_bg_color();
 		if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
 			box->c.r += box->active_t/3.0f;
@@ -205,9 +203,16 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 			gui_get_ui_state()->active_box_keys[mk] = box->key;
 			// TODO -- This is pretty crappy logic, fix someday
 			signal.flags |= (GUI_SIGNAL_FLAG_LMB_PRESSED << mk);
+			gui_drag_set_current_mp();
 		}
 	}
-	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal 
+	// if current box is active, set is as dragging
+	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
+		if (gui_key_match(gui_get_active_box_key(mk), box->key)) {
+			signal.flags |= (GUI_SIGNAL_FLAG_DRAGGING);
+		}
+	}
+	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
 		if (point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
@@ -262,5 +267,11 @@ guiSignal gui_button(char *str) {
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);
 	guiSignal signal = gui_get_signal_for_box(w);
+	// This is just debug code for dragging, FIXME: remove dis when we make a slider
+	if (signal.flags & GUI_SIGNAL_FLAG_DRAGGING) {
+		vec2 mp    =  gui_drag_get_start_mp();
+		vec2 delta =  gui_drag_get_delta();
+		printf("box [%s] being dragged, current drag_pos=[%f,%f], delta=[%f,%f]\n", str, mp.x,mp.y,delta.x,delta.y);
+	}
 	return signal;
 }

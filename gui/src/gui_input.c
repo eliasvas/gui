@@ -66,3 +66,23 @@ guiStatus gui_input_push_event(guiInputEventNode e) {
 	sll_queue_push(state->gis.first, state->gis.last, node);
 	return GUI_GUD;
 }
+
+
+vec2 gui_drag_get_start_mp() {
+	return gui_get_ui_state()->drag_start_mp;
+}
+
+void gui_drag_set_current_mp() {
+	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+	gui_drag_set_mp(mp);
+}
+
+void gui_drag_set_mp(vec2 mp) {
+	gui_get_ui_state()->drag_start_mp = mp;
+}
+
+vec2 gui_drag_get_delta() {
+	vec2 drag_pos = gui_get_ui_state()->drag_start_mp;
+	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+	return v2(drag_pos.x - mp.x, drag_pos.y - mp.y);
+}

@@ -771,6 +771,8 @@ enum {
 	GUI_SIGNAL_FLAG_MMB_RELEASED = (1<<5),
 	GUI_SIGNAL_FLAG_RMB_RELEASED = (1<<6),
 	GUI_SIGNAL_FLAG_MOUSE_HOVER  = (1<<7),
+	// TODO -- maybe we need one dragging for each mouse key
+	GUI_SIGNAL_FLAG_DRAGGING     = (1<<8),
 	// ...
 };
 
@@ -828,6 +830,8 @@ typedef struct {
 	guiKey active_box_keys[GUI_MOUSE_BUTTON_COUNT];
 	guiKey hot_box_key;
 
+	vec2 drag_start_mp;
+
 	// all the stacks! (there are a lot!)
 	guiParentNode parent_nil_stack_top;
 	struct { guiParentNode *top; guiBox * bottom_val; guiParentNode *free; b32 auto_pop; } parent_stack;
@@ -853,6 +857,11 @@ void gui_init_stacks(guiState *state);
 guiStatus gui_state_update(f32 dt);
 guiState *gui_state_init();
 
+
+vec2 gui_drag_get_start_mp();
+void gui_drag_set_mp(vec2 mp);
+vec2 gui_drag_get_delta();
+void gui_drag_set_current_mp();
 guiStatus gui_input_push_event(guiInputEventNode e);
 b32 gui_input_mb_down(GUI_MOUSE_BUTTON button);
 b32 gui_input_mb_up(GUI_MOUSE_BUTTON button);
