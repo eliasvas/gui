@@ -31,6 +31,7 @@ typedef union {
     struct{f32 x,y;};
     struct{f32 u,v;};
     struct{f32 r,g;};
+    struct{f32 min,max;};
     f32 raw[2];
 }vec2;
 #define v2(x,y) (vec2){x,y}
@@ -592,6 +593,23 @@ guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAt
 //-----------------------------------------------------------------------------
 // UI CORE STUFF
 //-----------------------------------------------------------------------------
+typedef struct guiScrollPoint
+{
+  u64 idx; // current index (between min/max)
+  f32 off; // fractional offset
+}guiScrollPoint;
+
+typedef struct guiSliderData {
+	guiScrollPoint point;
+	f32 scroll_space_pixels;
+}guiSliderData;
+
+
+guiScrollPoint gui_scroll_point_make(u64 idx, f32 off);
+void gui_scroll_point_target_idx(guiScrollPoint *p, s64 idx);
+void gui_scroll_point_clamp_idx(guiScrollPoint *p, vec2 range);
+guiSliderData gui_slider_data_make(guiScrollPoint sp, f32 px);
+
 typedef enum {
 	GUI_SIZEKIND_NULL,
 	GUI_SIZEKIND_PIXELS, // direct size in pixels
@@ -628,6 +646,8 @@ enum {
 	GUI_BOX_FLAG_FIXED_WIDTH           = (1<<8),
 	GUI_BOX_FLAG_FIXED_HEIGHT          = (1<<9),
 	GUI_BOX_FLAG_ROUNDED_EDGES         = (1<<10),
+	// TODO -- add logic for flag disabled.. (probably disable signals and rendering)
+	GUI_BOX_FLAG_DISABLED              = (1<<11),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -792,6 +812,7 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b);
 
 guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
+guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data);
 guiSignal gui_label(char *str);
 guiSignal gui_spacer(guiSize size);
 

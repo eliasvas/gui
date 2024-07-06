@@ -37,6 +37,7 @@ add_library(guiLib STATIC  gui/include/gui.h
                         gui/src/gui_box.c
                         gui/src/gui_build.c
                         gui/src/gui_layout.c
+                        gui/src/gui_misc.c
                         gui/ext/stb/stb_truetype.h)
 target_include_directories(guiLib PUBLIC gui/include)
 

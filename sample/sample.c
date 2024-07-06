@@ -9,10 +9,17 @@ vec2 platform_get_windim();
 void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
+guiSliderData *sd1;
+guiSliderData *sd2;
 
 void sample_init(){
     guiState *gui_state = gui_state_init();
     gui_set_ui_state(gui_state);
+
+    sd1 = ALLOC(sizeof(guiSliderData));
+    *sd1 = gui_slider_data_make(gui_scroll_point_make(40,0), 0);
+    sd2 = ALLOC(sizeof(guiSliderData));
+    *sd2 = gui_slider_data_make(gui_scroll_point_make(0,0), 0);
 }
 
 void sample_update(){
@@ -102,24 +109,24 @@ void sample_update(){
             guiSignal slave1_panel = gui_panel("slave1_panel");
             gui_push_parent(slave1_panel.box);
             {
-                gui_set_next_bg_color(v4(0.3,0.7,0.4,1.f));
+                gui_set_next_bg_color(v4(0.6,0.2,0.4,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
+                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/5.f,0.f});
+                gui_slider("slider1", AXIS2_X, v2(0,100), sd1);
+
+                gui_set_next_bg_color(v4(0.3,0.4,0.9,1.f));
+                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
+                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/5.f,0.f});
                 gui_label("label1");
 
                 gui_set_next_bg_color(v4(0.6,0.2,0.4,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
-                gui_button("button8");
-
-                gui_set_next_bg_color(v4(0.3,0.4,0.9,1.f));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
-                gui_label("label2");
+                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,2.f/5.f,0.f});
+                gui_slider("slider2", AXIS2_Y, v2(0,50), sd2);
 
                 gui_set_next_bg_color(v4(0.2,0.7,0.2,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/4.f,0.f});
+                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/5.f,0.f});
                 gui_button("button5");
             }
             gui_pop_parent();

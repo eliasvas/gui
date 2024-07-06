@@ -84,5 +84,5 @@ void gui_drag_set_mp(vec2 mp) {
 vec2 gui_drag_get_delta() {
 	vec2 drag_pos = gui_get_ui_state()->drag_start_mp;
 	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
-	return v2(drag_pos.x - mp.x, drag_pos.y - mp.y);
+	return v2(mp.x - drag_pos.x, mp.y - drag_pos.y);
 }

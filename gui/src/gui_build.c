@@ -8,6 +8,9 @@ void gui_build_begin(void) {
 	// INVESTIGATE
 	gui_init_stacks(state);
 
+	// FIXME: dragging currently kinda broken
+	gui_drag_set_current_mp();
+
 	// NOTE: build top level's root guiBox
 	gui_set_next_child_layout_axis(AXIS2_Y);
 	guiBox *root = gui_box_build_from_str(0, "ImRootPlsDontPutSameHashSomewhereElse");
