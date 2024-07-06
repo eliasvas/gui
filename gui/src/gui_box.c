@@ -260,11 +260,11 @@ guiSignal gui_label(char *str) {
 // TODO -- maybe an axis can be provided and do slider in that axis
 guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data) {
 	guiSignal signal;
-	// first we make the 'container' to hold all slider widget and set as parent
-	char container_text[256];
-	sprintf(container_text, "container_%s", str);
+	vec4 parent_color = gui_top_bg_color();
+	char slider_text[256];
+	sprintf(slider_text, "slider_%s", str);
 	gui_set_next_child_layout_axis(axis);
-	guiBox *container = gui_box_build_from_str( GUI_BOX_FLAG_DRAW_BORDER| GUI_BOX_FLAG_DRAW_BACKGROUND| GUI_BOX_FLAG_ROUNDED_EDGES, container_text);
+	guiBox *container = gui_box_build_from_str( GUI_BOX_FLAG_DRAW_BORDER|GUI_BOX_FLAG_DRAW_TEXT| GUI_BOX_FLAG_DRAW_BACKGROUND| GUI_BOX_FLAG_ROUNDED_EDGES, str);
 	guiSignal csignal = gui_get_signal_for_box(container);
 	gui_push_parent(container);
 	{
@@ -272,24 +272,28 @@ guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data)
 		f32 val_count = (val_range.max - val_range.min);
 		f32 percent = currentp.idx / val_count;
 		// TODO -- fix this logic, we mult by 0.8 because 0.2 is used by slider widget
-		gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, percent * 0.8, 1.0f});
+		gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, percent * (1.0 - 0.1 * (axis+1)), 1.0f});
 
 		if (axis == AXIS2_X) {
-			gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.2,0.f});
+			gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.1,0.f});
 			gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,0.f});
 		}else {
 			gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.2,0.f});
 			gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,0.f});
 		}
-		guiBox *slider = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE | GUI_BOX_FLAG_DRAW_TEXT | GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION | GUI_BOX_FLAG_DRAW_HOT_ANIMATION | GUI_BOX_FLAG_DRAW_BACKGROUND| GUI_BOX_FLAG_ROUNDED_EDGES, str);
+
+		parent_color.b += 0.2;
+		gui_set_next_bg_color(parent_color);
+		guiBox *slider = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE | GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION | GUI_BOX_FLAG_DRAW_HOT_ANIMATION | GUI_BOX_FLAG_DRAW_BACKGROUND| GUI_BOX_FLAG_ROUNDED_EDGES, slider_text);
 		signal = gui_get_signal_for_box(slider);
 		if (signal.flags & GUI_SIGNAL_FLAG_DRAGGING)
 		{
 			guiScrollPoint originalp = data->point;
 			vec2 delta = gui_drag_get_delta();
-			u64 new_idx = maximum(0,originalp.idx + delta.raw[axis]);
+			u64 new_idx = minimum(maximum(0,originalp.idx + delta.raw[axis]),val_count);
 			gui_scroll_point_target_idx(&data->point, new_idx);
-			gui_scroll_point_clamp_idx(&data->point, val_range);
+			data->value = data->point.idx+val_range.min;
+			//gui_scroll_point_clamp_idx(&data->point, val_range);
 		}
 	}
 	gui_pop_parent();

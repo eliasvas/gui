@@ -601,7 +601,7 @@ typedef struct guiScrollPoint
 
 typedef struct guiSliderData {
 	guiScrollPoint point;
-	f32 scroll_space_pixels;
+	f32 value; // the actual value being calulated through the scroll point (updated each frame)
 }guiSliderData;
 
 

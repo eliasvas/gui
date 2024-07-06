@@ -366,6 +366,12 @@ void platform_init(u8 *font_atlas_data) {
     //glBlendEquation(GL_ONE);
 }
 
+vec2 platform_get_windim() {
+    int ww,wh;
+    SDL_GetWindowSize(window, &ww, &wh);
+    return v2(ww,wh);
+}
+
 void platform_update() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -417,13 +423,12 @@ void platform_update() {
                 break;
         }
     }
+
+    vec2 windim = platform_get_windim();
+    glViewport(0,0,windim.x,windim.y);
 }
 
-vec2 platform_get_windim() {
-    int ww,wh;
-    SDL_GetWindowSize(window, &ww, &wh);
-    return v2(ww,wh);
-}
+
 
 void platform_render(guiRenderCommand *rcommands, u32 command_count)
 {

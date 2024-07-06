@@ -114,15 +114,15 @@ void sample_update(){
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/5.f,0.f});
                 gui_slider("slider1", AXIS2_X, v2(0,100), sd1);
 
-                gui_set_next_bg_color(v4(0.3,0.4,0.9,1.f));
+                gui_set_next_bg_color(v4(0.3,0.2,0.2,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f/5.f,0.f});
-                gui_label("label1");
+                gui_button("button3");
 
-                gui_set_next_bg_color(v4(0.6,0.2,0.4,1.f));
+                gui_set_next_bg_color(v4(0.6,0.2,0.0,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,2.f/5.f,0.f});
-                gui_slider("slider2", AXIS2_Y, v2(0,50), sd2);
+                gui_slider("slider2", AXIS2_Y, v2(10,60), sd2);
 
                 gui_set_next_bg_color(v4(0.2,0.7,0.2,1.f));
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.f,0.f});
