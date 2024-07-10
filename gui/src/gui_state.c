@@ -34,11 +34,12 @@ guiState *gui_state_init(){
 	state->arena = arena;
 	state->build_arenas[0] = arena_alloc();
 	state->build_arenas[1] = arena_alloc();
-	//TODO -- maybe gis should have its own init?
+	// TODO -- maybe gis should have its own init?
 	state->gis.event_arena = arena_alloc();
 	state->box_table_size = 4096;
 	state->box_table = push_array(arena, guiBoxHashSlot, state->box_table_size);
-	gui_font_load_from_file(&state->atlas, "C:/windows/fonts/times.ttf");
+	gui_font_load_from_file(&state->atlas, "../fonts/roboto.ttf");
+	//gui_font_load_from_file(&state->atlas, "../fonts/font_awesome.ttf");
 	gui_init_stacks(state);
 	return state;
 }

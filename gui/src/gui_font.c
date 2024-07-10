@@ -32,22 +32,26 @@ guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath){
 	return status;
 }
 
-
 guiBakedChar gui_font_atlas_get_char(guiFontAtlas *atlas, char c){
 	guiBakedChar bc = atlas->cdata[c-32];
 	return bc;
 }
+
+guiBakedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint){
+	return gui_font_atlas_get_char(atlas, codepoint);
+}
+
 
 
 
 // calculates how much 'up' we need to go on y axis to draw a string correctly
 f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char *str) {
 	assert(str);
-	guiBakedChar bc = gui_font_atlas_get_char(atlas, (u8)str[0]);
+	guiBakedChar bc = gui_font_atlas_get_codepoint(atlas, (u8)str[0]);
 	f32 first_yoff = bc.yoff;
 	f32 yoff_up = 0;
 	for (u32 i = 0; i < strlen(str);++i) {
-		bc = gui_font_atlas_get_char(atlas, (u8)str[i]);
+		bc = gui_font_atlas_get_codepoint(atlas, (u8)str[i]);
 		f32 up_left_y = bc.yoff;
 		yoff_up = minimum(yoff_up, up_left_y);
 	}
@@ -58,7 +62,7 @@ f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char *str) {
 vec2 gui_font_get_string_dim(char *str) {
 	guiState *state = gui_get_ui_state();
 	if (!str) return v2(0,0);
-	
+
 	f32 text_height = state->atlas.ascent - state->atlas.descent;
 	f32 text_width = 0;
 
@@ -77,9 +81,9 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
 	vec2 text_dim = gui_font_get_string_dim(str);
 	f32 text_x = pos.x;
 	f32 text_y = pos.y;
-	
+
 	for (u32 i = 0; i < strlen(str); i+=1) {
-		guiBakedChar b = gui_font_atlas_get_char(&state->atlas, str[i]);
+		guiBakedChar b = gui_font_atlas_get_codepoint(&state->atlas, (char)str[i]);
 		f32 x0 = text_x + b.xoff;
         f32 y0 = text_y + b.yoff + state->atlas.ascent;
         f32 x1 = x0 + (b.x1 - b.x0);

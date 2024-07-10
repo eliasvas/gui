@@ -17,8 +17,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 
-option(USE_OPENGL "Build with OpenGL support" ON)
-option(USE_D3D11 "Build with Direct3D 11 support" OFF)
+
+option(USE_OPENGL "Build with OpenGL support" OFF)
+option(USE_D3D11 "Build with Direct3D 11 support" ON)
 option(USE_SDL_GPU "Build with SDL_gpu support" OFF)
 
 set(CMAKE_C_STANDARD 99)
@@ -40,6 +41,9 @@ add_library(guiLib STATIC  gui/include/gui.h
                         gui/src/gui_misc.c
                         gui/ext/stb/stb_truetype.h)
 target_include_directories(guiLib PUBLIC gui/include)
+add_custom_target(Fonts COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/fonts ${CMAKE_CURRENT_BINARY_DIR}/fonts)
+add_dependencies(guiLib Fonts)
+
 
 if (USE_D3D11)
     add_executable(sample_d3d11 sample/sample.c sample/d3d11_backend.c)
@@ -49,7 +53,6 @@ if (USE_D3D11)
 endif()
 
 if(USE_OPENGL)
-
     add_executable(sample_gl sample/sample.c sample/gl_backend.c)
     target_include_directories(sample_gl PUBLIC gui/include)
     target_link_libraries(sample_gl PUBLIC guiLib)

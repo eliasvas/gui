@@ -520,7 +520,7 @@ typedef struct {
 
 guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath);
 
-guiBakedChar gui_font_atlas_get_char(guiFontAtlas *atlas, char c);
+guiBakedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint);
 
 //-----------------------------------------------------------------------------
 // INPUT
@@ -648,6 +648,13 @@ enum {
 	GUI_BOX_FLAG_ROUNDED_EDGES         = (1<<10),
 	// TODO -- add logic for flag disabled.. (probably disable signals and rendering)
 	GUI_BOX_FLAG_DISABLED              = (1<<11),
+	// TODO -- add support for FLOATING_Axis, to skip layout on that axis
+	// also, useful for the label on top of slider container in slider widget!
+	GUI_BOX_FLAG_FLOATING_X            = (1<<12),
+	GUI_BOX_FLAG_FLOATING_Y            = (1<<13),
+	// TODO -- add support for OVERFLOW_Axis, to allow overflow (i.e skip size-constraing solving on axis)
+	GUI_BOX_FLAG_OVERFLOW_X            = (1<<14),
+	GUI_BOX_FLAG_OVERFLOW_Y            = (1<<15),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -904,5 +911,22 @@ void print_gui_hierarchy(void);
 
 void gui_build_begin(void);
 void gui_build_end(void);
+
+#define FA_GLYPH_glass                "\f000"
+#define FA_GLYPH_music                "\f001"
+#define FA_GLYPH_search               "\f002"
+#define FA_GLYPH_envelope             "\f003"
+#define FA_GLYPH_heart                "\f004"
+#define FA_GLYPH_star                 "\f005"
+#define FA_GLYPH_star_empty           "\f006"
+#define FA_GLYPH_user                 "\f007"
+#define FA_GLYPH_film                 "\f008"
+#define FA_GLYPH_th_large             "\f009"
+#define FA_GLYPH_th                   "\f00a"
+#define FA_GLYPH_th_list              "\f00b"
+#define FA_GLYPH_ok                   "\f00c"
+#define FA_GLYPH_remove               "\f00d"
+#define FA_GLYPH_zoom_in              "\f00e"
+
 
 #endif
