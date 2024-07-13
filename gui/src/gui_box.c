@@ -275,7 +275,7 @@ guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data)
 		f32 val_count = (val_range.max - val_range.min);
 		f32 percent = currentp.idx / val_count;
 		// TODO -- fix this logic, we mult by 0.8 because 0.2 is used by slider widget
-		gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, percent * (1.0 - 0.1 * (axis+1)), 1.0f});
+		gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, percent * (1.0 - 0.1 * (axis+1)), 0.0f});
 
 		if (axis == AXIS2_X) {
 			gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.1,0.f});

@@ -125,6 +125,7 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
                 child_fixup_array[child_idx] = child_weighed_size;
             }
 
+            child_idx = 0;
             for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next, ++child_idx) {
                 // this percentage will be applied to ALL child widgets
                 f32 fixup_needed = (violation / (f32)total_weighed_size);
