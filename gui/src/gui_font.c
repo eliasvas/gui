@@ -30,13 +30,13 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 
 
 
-	const char *unicode_font_path = "../fonts/font_awesome.ttf";
+	const char *unicode_font_path = "../fonts/fa.ttf";
 	ttf_buffer = fu_read_all(unicode_font_path, &byte_count);
 	assert(byte_count && "Couldn't read the unicode ttf");
-	u32 char_count = 2;
-	u32 start_uchar = FA_GLYPH_star;
+	u32 start_uchar = FA_ICON_DOWN_OPEN;
+	u32 char_count = FA_ICON_HEART_EMPTY - start_uchar;
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_ICON_SIZE, start_uchar, char_count, (stbtt_packedchar*)atlas->udata);
-	atlas->base_unicode_codepoint = FA_GLYPH_star;
+	atlas->base_unicode_codepoint = FA_ICON_DOWN_OPEN;
 	fu_dealloc_all(ttf_buffer);
 
 	stbtt_PackEnd(&pack_context);

@@ -96,17 +96,17 @@ void sample_update(){
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
-                    gui_icon("icon1", FA_GLYPH_star);
+                    gui_icon("icon1", FA_ICON_DOWN_BIG);
 
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
-                    gui_icon("icon2", FA_GLYPH_star);
+                    gui_icon("icon2", FA_ICON_UP_BIG);
 
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
-                    gui_icon("icon3", FA_GLYPH_star+1);
+                    gui_icon("icon3", FA_ICON_LEFT_BIG);
 
 
 
