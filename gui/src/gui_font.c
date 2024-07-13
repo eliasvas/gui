@@ -5,6 +5,7 @@
 
 // TODO -- This field should be configurable
 #define GUI_BASE_TEXT_SIZE 32
+#define GUI_BASE_ICON_SIZE 32
 
 // This function will load both Roboto and FontAwesome to one atlas, along with sizing info
 guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
@@ -13,52 +14,33 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	atlas->tex.height = 1024;
 	atlas->tex.data = ALLOC(atlas->tex.width*atlas->tex.height*sizeof(u8));
 
-	const char *ascii_font_path = "../fonts/roboto.ttf";
+	u8 *ttf_buffer = NULL;
+	u32 byte_count=0;
+
 	//gui_font_load_from_file(atlas, ascii_font_path);
 	stbtt_pack_context pack_context;
 	stbtt_PackBegin(&pack_context, atlas->tex.data, atlas->tex.width, atlas->tex.height, 0, 1, NULL);
 
-	u8 *ttf_buffer = ALLOC(1<<20);
-	u32 byte_count = fread(ttf_buffer, 1, 1<<20, fopen(ascii_font_path, "rb"));
-	assert(byte_count);
+	const char *ascii_font_path = "../fonts/roboto.ttf";
+	ttf_buffer = fu_read_all(ascii_font_path, &byte_count);
+	assert(byte_count && "Couldn't read the ASCII ttf");
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_TEXT_SIZE, 32, 96, (stbtt_packedchar*)atlas->cdata);
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
+	fu_dealloc_all(ttf_buffer);
 
 
 
 	const char *unicode_font_path = "../fonts/font_awesome.ttf";
-	byte_count = fread(ttf_buffer, 1, 1<<20, fopen(unicode_font_path, "rb"));
-	assert(byte_count);
+	ttf_buffer = fu_read_all(unicode_font_path, &byte_count);
+	assert(byte_count && "Couldn't read the unicode ttf");
 	u32 char_count = 2;
 	u32 start_uchar = FA_GLYPH_star;
-	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_TEXT_SIZE, start_uchar, char_count, (stbtt_packedchar*)atlas->udata);
+	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_ICON_SIZE, start_uchar, char_count, (stbtt_packedchar*)atlas->udata);
 	atlas->base_unicode_codepoint = FA_GLYPH_star;
-	//assert(atlas->udata[0].xoff);
+	fu_dealloc_all(ttf_buffer);
 
 	stbtt_PackEnd(&pack_context);
-	return status;
-}
 
-guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath){
-	guiStatus status = GUI_GUD;
-	atlas->tex.width = 1024;
-	atlas->tex.height = 1024;
-	atlas->tex.data = ALLOC(atlas->tex.width*atlas->tex.height*sizeof(u8));
-
-	u8 *ttf_buffer = ALLOC(1<<20);
-	u32 byte_count = fread(ttf_buffer, 1, 1<<20, fopen(filepath, "rb"));
-	stbtt_BakeFontBitmap(ttf_buffer,0, GUI_BASE_TEXT_SIZE, atlas->tex.data,1024,1024, 32,96, (stbtt_bakedchar *)atlas->cdata);
-
-	if (ttf_buffer == NULL) {
-		printf("Error allocating ttf's storage");
-		status = GUI_BAD;
-		return status;
-	}else if (byte_count == 0) {
-		printf("Couldn't read font file: [%s]", filepath);
-	}
-	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-
-	FREE(ttf_buffer);
 	return status;
 }
 
@@ -108,7 +90,7 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
 	f32 text_y = pos.y;
 
 	for (u32 i = 0; i < strlen(str); i+=1) {
-		guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, (char)str[i]);
+		guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, (u32)str[i]);
 		f32 x0 = text_x + b.xoff;
         f32 y0 = text_y + b.yoff + state->atlas.ascent;
         f32 x1 = x0 + (b.x1 - b.x0);
@@ -129,6 +111,16 @@ guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color) {
 	return gui_draw_string_in_pos(str, v2(text_x, text_y), color);
 }
 
+guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, vec4 color) {
+	guiState *state = gui_get_ui_state();
+	vec2 text_dim = gui_font_get_icon_dim(codepoint);
+	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
+	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
+
+	return gui_draw_icon_in_pos(codepoint, v2(text_x, text_y), color);
+}
+
+
 guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, vec4 color) {
 	guiState *state = gui_get_ui_state();
 	vec2 text_dim = gui_font_get_icon_dim(codepoint);
@@ -137,7 +129,7 @@ guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, vec4 color) {
 
 	guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, codepoint);
 	f32 x0 = text_x + b.xoff;
-	f32 y0 = text_y + b.yoff + state->atlas.ascent;
+	f32 y0 = text_y;
 	f32 x1 = x0 + (b.x1 - b.x0);
 	f32 y1 = y0 + (b.y1 - b.y0);
 	gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, codepoint, (vec2){x0,y0}, (vec2){x1-x0,y1-y0},color);

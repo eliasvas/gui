@@ -53,6 +53,9 @@ guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box) {
 		// TODO -- text color stack
 		gui_draw_string_in_rect(box->str, r, v4(1,1,1,1));
 	}
+	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
+		gui_draw_icon_in_rect(box->icon_codepoint, r, v4(1,1,1,1));
+	}
 	return GUI_GUD;
 }
 

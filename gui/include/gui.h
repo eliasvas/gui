@@ -1,9 +1,9 @@
 #ifndef GUI_H
 #define GUI_H
 
-//-----------------------------------------------------------------------------
+//##########################
 // BASE
-//-----------------------------------------------------------------------------
+//##########################
 
 #include <stdint.h>
 #include <time.h>
@@ -96,10 +96,10 @@ static b32 point_inside_rect(vec2 p, rect r) {
 	#include <sys/mman.h>
 #endif
 
-//-----------------------------------------------------------------------------
+//##########################
 // SIMPLE FILE I/O
-//-----------------------------------------------------------------------------
-static u8 *read_entire_file(const char *src_filepath, u32 *byte_count) {
+//##########################
+static u8 *fu_read_all(const char *src_filepath, u32 *byte_count) {
 	u8 *buffer = NULL;
 	*byte_count = 0;
 	FILE *file = fopen(src_filepath, "rb");
@@ -117,7 +117,7 @@ static u8 *read_entire_file(const char *src_filepath, u32 *byte_count) {
 	}
 	return buffer;
 }
-static b32 write_buffer_to_file(const char *dst_filepath, u8 *buffer, u32 byte_count) {
+static b32 fu_write_all(const char *dst_filepath, u8 *buffer, u32 byte_count) {
 	b32 res = 0;
 	FILE *file = fopen(dst_filepath, "wb");
 	if (file){
@@ -127,14 +127,14 @@ static b32 write_buffer_to_file(const char *dst_filepath, u8 *buffer, u32 byte_c
 	}
 	return res;
 }
-static void free_entire_file(u8 *buffer) {
+static void fu_dealloc_all(u8 *buffer) {
 	FREE(buffer);
 	buffer = NULL;
 }
 
-//-----------------------------------------------------------------------------
+//##########################
 // STRETCHY BUFFER IMPLEMENTATION
-//-----------------------------------------------------------------------------
+//##########################
 
 typedef struct
 {
@@ -182,9 +182,10 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 }
 */
 
-//-----------------------------------------------------------------------------
+//##########################
 //	ARENA ALLOCATOR (64-Bit)
-//-----------------------------------------------------------------------------
+//##########################
+
 #if defined(_WIN32)
 	#include <windows.h>
 	#define M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
@@ -435,9 +436,9 @@ void foo(){
 }
 */
 
-//-----------------------------------------------------------------------------
+//##########################
 // DATA STRUCTURES (mainly for use in conj. with Arena)
-//-----------------------------------------------------------------------------
+//##########################
 
 #define sll_stack_push_N(f,n,next) ((n)->next=(f), (f)=(n))
 #define sll_stack_pop_N(f,next) ((f==0)?((f)=(f)):((f)=(f)->next))
@@ -469,9 +470,9 @@ static void ll_test() { ArenaTemp temp = arena_get_scratch(NULL); printf("--Link
 
 
 
-//-----------------------------------------------------------------------------
+//##########################
 // GENERIC HASH FUNCTION
-//-----------------------------------------------------------------------------
+//##########################
 static u64 djb2(u8 *str) {
 	if (!str) return 0;
 	u64 hash = 5381;
@@ -486,24 +487,14 @@ typedef enum {
 	GUI_BAD
 }guiStatus;
 
-//-----------------------------------------------------------------------------
-// STYLE
-//-----------------------------------------------------------------------------
-
-typedef struct {
-	vec4 base_text_color;
-	vec4 base_background_color;
-}guiStyle;
-
-
-//-----------------------------------------------------------------------------
+//##########################
 // FONT
-//-----------------------------------------------------------------------------
+//##########################
 typedef struct
 {
 	unsigned short x0,y0,x1,y1; // coordinates of bbox in bitmap
 	f32 xoff,yoff,xadvance;
-   f32 xoff2,yoff2;
+	f32 xoff2,yoff2;
 } guiPackedChar;
 
 //always TEX_FORMAT_R8
@@ -528,9 +519,9 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas);
 
 guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint);
 
-//-----------------------------------------------------------------------------
+//##########################
 // INPUT
-//-----------------------------------------------------------------------------
+//##########################
 
 typedef enum {
 	GUI_LMB,
@@ -573,9 +564,9 @@ typedef struct {
 	guiInputEventNode *last;
 } guiInputState;
 
-//-----------------------------------------------------------------------------
+//##########################
 // RENDERER
-//-----------------------------------------------------------------------------
+//##########################
 
 typedef struct {
     vec2 pos0;
@@ -596,9 +587,11 @@ u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
 guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
 guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, vec2 p0, vec2 dim, vec4 col);
-//-----------------------------------------------------------------------------
+
+//##########################
 // UI CORE STUFF
-//-----------------------------------------------------------------------------
+//##########################
+
 typedef struct guiScrollPoint
 {
   u64 idx; // current index (between min/max)
@@ -661,6 +654,7 @@ enum {
 	// TODO -- add support for OVERFLOW_Axis, to allow overflow (i.e skip size-constraing solving on axis)
 	GUI_BOX_FLAG_OVERFLOW_X            = (1<<14),
 	GUI_BOX_FLAG_OVERFLOW_Y            = (1<<15),
+	GUI_BOX_FLAG_DRAW_ICON             = (1<<16),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -699,6 +693,8 @@ struct guiBox {
 	rect r; // final on-screen rectangular coordinates
 	vec4 c; // color (not good design wise)
 
+	u32 icon_codepoint; // in case this box represents an icon, this is its codepoint
+
 	//persistent data (across box's lifetime)
 	f32 hot_t;
 	f32 active_t;
@@ -714,9 +710,10 @@ static guiBox g_nil_box = {
 	&g_nil_box
 };
 
-//-----------------------------------------------------------------------------
+//##########################
 // UI stack stuff (for Style stacks and friends)
-//-----------------------------------------------------------------------------
+//##########################
+
 void gui_autopop_all_stacks(void);
 
 typedef struct guiParentNode guiParentNode; struct guiParentNode{guiParentNode *next; guiBox *v;};
@@ -827,12 +824,13 @@ guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
 guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data);
 guiSignal gui_label(char *str);
+guiSignal gui_icon(char *str, u32 icon_codepoint);
 guiSignal gui_spacer(guiSize size);
 
 
-//-----------------------------------------------------------------------------
+//##########################
 // INTERFACE
-//-----------------------------------------------------------------------------
+//##########################
 
 typedef struct guiBoxHashSlot guiBoxHashSlot;
 struct guiBoxHashSlot
@@ -855,7 +853,6 @@ typedef struct {
 	guiRenderCommandBuffer rcmd_buf;
 	guiFontAtlas atlas;
 	guiInputState gis;
-	guiStyle style;
 	u64 current_frame_index;
 
 	vec2 win_dim;
@@ -910,6 +907,7 @@ Arena *gui_get_build_arena();
 vec2 gui_font_get_string_dim(char* str);
 vec2 gui_font_get_icon_dim(u32 codepoint);
 guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, vec4 color);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, vec4 color);
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
 guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color);
 guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box);

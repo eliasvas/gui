@@ -11,7 +11,13 @@ void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
             break;
         case GUI_SIZEKIND_TEXT_CONTENT:
             padding = root->pref_size[axis].value;
-            f32 text_size = gui_font_get_string_dim(root->str).raw[axis];
+            f32 text_size;
+            if (!(root->flags & GUI_BOX_FLAG_DRAW_ICON))
+            {
+                text_size = gui_font_get_string_dim(root->str).raw[axis];
+            }else {
+                text_size = gui_font_get_icon_dim(root->icon_codepoint).raw[axis];
+            }
             root->fixed_size.raw[axis] = padding + text_size;
             break;
         default:

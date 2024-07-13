@@ -169,10 +169,6 @@ guiBox *gui_box_build_from_str(guiBoxFlags flags, char *str) {
 	if (str){
 		strcpy(box->str, str);
 	}
-	if (flags & GUI_BOX_FLAG_DRAW_TEXT)
-	{
-		//printf("Text should be written on [%s] box! fix!", str);
-	}
 	return box;
 }
 
@@ -245,6 +241,13 @@ guiSignal gui_panel(char *str) {
 	,str);
 	guiSignal signal = gui_get_signal_for_box(w);
 	signal.box = w;
+	return signal;
+}
+
+guiSignal gui_icon(char *str, u32 icon_codepoint) {
+	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_ICON | GUI_BOX_FLAG_DRAW_BACKGROUND, str);
+	w->icon_codepoint = icon_codepoint;
+	guiSignal signal = gui_get_signal_for_box(w);
 	return signal;
 }
 
