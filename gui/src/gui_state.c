@@ -38,8 +38,9 @@ guiState *gui_state_init(){
 	state->gis.event_arena = arena_alloc();
 	state->box_table_size = 4096;
 	state->box_table = push_array(arena, guiBoxHashSlot, state->box_table_size);
-	gui_font_load_from_file(&state->atlas, "../fonts/roboto.ttf");
-	//gui_font_load_from_file(&state->atlas, "../fonts/font_awesome.ttf");
+
+	gui_font_load_default_font(&state->atlas);
+
 	gui_init_stacks(state);
 	return state;
 }

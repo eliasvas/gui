@@ -503,7 +503,8 @@ typedef struct
 {
 	unsigned short x0,y0,x1,y1; // coordinates of bbox in bitmap
 	f32 xoff,yoff,xadvance;
-} guiBakedChar;
+   f32 xoff2,yoff2;
+} guiPackedChar;
 
 //always TEX_FORMAT_R8
 typedef struct {
@@ -513,14 +514,19 @@ typedef struct {
 } guiFontAtlasTexture;
 
 typedef struct {
-	guiBakedChar cdata[96]; // ASCII 32..126 is 95 glyphs
+	guiPackedChar cdata[96]; // ASCII 32..126 is 95 glyphs
+	// TODO -- maybe not all our Unicode glyphs are packed one after another.. what next? we need a HashMap!
+	guiPackedChar udata[200]; // 200 Unicode glyphs
+	u32 unicode_base_address;
 	guiFontAtlasTexture tex;
 	f32 ascent, descent, line_gap;
+	u32 base_unicode_codepoint;
 } guiFontAtlas;
 
 guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath);
+guiStatus gui_font_load_default_font(guiFontAtlas *atlas);
 
-guiBakedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint);
+guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint);
 
 //-----------------------------------------------------------------------------
 // INPUT
@@ -589,7 +595,7 @@ guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
 u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
 guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
-guiStatus gui_render_cmd_buf_add_char(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, char c, vec2 p0, vec2 dim, vec4 col);
+guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, vec2 p0, vec2 dim, vec4 col);
 //-----------------------------------------------------------------------------
 // UI CORE STUFF
 //-----------------------------------------------------------------------------
@@ -902,7 +908,8 @@ guiState * gui_get_ui_state();
 Arena *gui_get_build_arena();
 
 vec2 gui_font_get_string_dim(char* str);
-f32 gui_font_get_string_y_to_add(guiFontAtlas *atlas, char* str);
+vec2 gui_font_get_icon_dim(u32 codepoint);
+guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, vec4 color);
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
 guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color);
 guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box);
@@ -912,21 +919,6 @@ void print_gui_hierarchy(void);
 void gui_build_begin(void);
 void gui_build_end(void);
 
-#define FA_GLYPH_glass                "\f000"
-#define FA_GLYPH_music                "\f001"
-#define FA_GLYPH_search               "\f002"
-#define FA_GLYPH_envelope             "\f003"
-#define FA_GLYPH_heart                "\f004"
-#define FA_GLYPH_star                 "\f005"
-#define FA_GLYPH_star_empty           "\f006"
-#define FA_GLYPH_user                 "\f007"
-#define FA_GLYPH_film                 "\f008"
-#define FA_GLYPH_th_large             "\f009"
-#define FA_GLYPH_th                   "\f00a"
-#define FA_GLYPH_th_list              "\f00b"
-#define FA_GLYPH_ok                   "\f00c"
-#define FA_GLYPH_remove               "\f00d"
-#define FA_GLYPH_zoom_in              "\f00e"
-
+#define FA_GLYPH_star                 0xE806
 
 #endif

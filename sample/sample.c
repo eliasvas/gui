@@ -140,6 +140,9 @@ void sample_update(){
         gui_pop_bg_color();
     }
 
+    // To test out unicode character drawing
+    gui_draw_icon_in_pos(FA_GLYPH_star, v2(0,0), v4(1,0,0.5,1));
+
     gui_build_end();
 }
 
