@@ -108,6 +108,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->pref_size[AXIS2_Y] = gui_top_pref_height();
 		box->c = gui_top_bg_color();
 		box->text_color = gui_top_text_color();
+		box->text_scale = gui_top_text_scale();
 		if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
 			box->c.r += box->active_t/3.0f;
 		}
@@ -289,6 +290,7 @@ guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data)
 		parent_color.b += 0.2;
 		gui_set_next_bg_color(parent_color);
 		guiBox *slider = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE | GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION | GUI_BOX_FLAG_DRAW_HOT_ANIMATION | GUI_BOX_FLAG_DRAW_BACKGROUND| GUI_BOX_FLAG_ROUNDED_EDGES, slider_text);
+		//gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, 1.0 - percent * (1.0 * (axis+1)), 0.0f});
 		signal = gui_get_signal_for_box(slider);
 		if (signal.flags & GUI_SIGNAL_FLAG_DRAGGING)
 		{

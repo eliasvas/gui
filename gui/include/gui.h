@@ -693,6 +693,7 @@ struct guiBox {
 	rect r; // final on-screen rectangular coordinates
 	vec4 c; // color (not good design wise)
 	vec4 text_color; // text color (not good design wise)
+	f32 text_scale;
 
 	u32 icon_codepoint; // in case this box represents an icon, this is its codepoint
 
@@ -727,6 +728,7 @@ typedef struct guiFixedHeightNode guiFixedHeightNode; struct guiFixedHeightNode 
 typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; vec4 v;};
 typedef struct guiTextColorNode guiTextColorNode; struct guiTextColorNode {guiTextColorNode *next; vec4 v;};
 typedef struct guiChildLayoutAxisNode guiChildLayoutAxisNode; struct guiChildLayoutAxisNode {guiChildLayoutAxisNode*next; Axis2 v;};
+typedef struct guiTextScaleNode guiTextScaleNode; struct guiTextScaleNode {guiTextScaleNode *next; f32 v;};
 
 
 guiKey gui_key_zero(void);
@@ -783,6 +785,11 @@ vec4 gui_top_text_color(void);
 vec4 gui_set_next_text_color(vec4 v);
 vec4 gui_push_text_color(vec4 v);
 vec4 gui_pop_text_color(void);
+
+f32 gui_top_text_scale(void);
+f32 gui_set_next_text_scale(f32 v);
+f32 gui_push_text_scale(f32 v);
+f32 gui_pop_text_scale(void);
 
 void gui_layout_root(guiBox *root, Axis2 axis);
 Axis2 gui_top_child_layout_axis(void);
@@ -867,6 +874,7 @@ typedef struct {
 
 	guiKey active_box_keys[GUI_MOUSE_BUTTON_COUNT];
 	guiKey hot_box_key;
+	f32 global_text_scale;
 
 	vec2 drag_start_mp;
 
@@ -891,6 +899,8 @@ typedef struct {
 	struct { guiTextColorNode *top; vec4 bottom_val; guiTextColorNode *free; b32 auto_pop; } text_color_stack;
 	guiChildLayoutAxisNode child_layout_axis_nil_stack_top;
 	struct { guiChildLayoutAxisNode *top; Axis2 bottom_val; guiChildLayoutAxisNode *free; b32 auto_pop; } child_layout_axis_stack;
+	guiTextScaleNode text_scale_nil_stack_top;
+	struct { guiTextScaleNode *top; f32 bottom_val; guiTextScaleNode *free; b32 auto_pop; } text_scale_stack;
 } guiState;
 void gui_init_stacks(guiState *state);
 
@@ -913,12 +923,12 @@ void gui_set_ui_state(guiState *state);
 guiState * gui_get_ui_state();
 Arena *gui_get_build_arena();
 
-vec2 gui_font_get_string_dim(char* str);
-vec2 gui_font_get_icon_dim(u32 codepoint);
-guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, vec4 color);
-guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, vec4 color);
-guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color);
-guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color);
+vec2 gui_font_get_string_dim(char* str, f32 scale);
+vec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
+guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, f32 scale, vec4 color);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, f32 scale, vec4 color);
+guiStatus gui_draw_string_in_pos(char *str, vec2 pos, f32 scale, vec4 color);
+guiStatus gui_draw_string_in_rect(char *str, rect r, f32 scale, vec4 color);
 guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
 void print_gui_hierarchy(void);

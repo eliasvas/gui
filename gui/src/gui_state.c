@@ -42,6 +42,8 @@ guiState *gui_state_init(){
 	gui_font_load_default_font(&state->atlas);
 
 	gui_init_stacks(state);
+
+	state->global_text_scale = 1.0f;
 	return state;
 }
 

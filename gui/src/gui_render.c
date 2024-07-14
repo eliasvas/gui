@@ -51,10 +51,10 @@ guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box) {
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_TEXT) {
 		// TODO -- text color stack
-		gui_draw_string_in_rect(box->str, r, box->text_color);
+		gui_draw_string_in_rect(box->str, r, box->text_scale, box->text_color);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
-		gui_draw_icon_in_rect(box->icon_codepoint, r, box->text_color);
+		gui_draw_icon_in_rect(box->icon_codepoint, r, box->text_scale, box->text_color);
 	}
 	return GUI_GUD;
 }

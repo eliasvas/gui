@@ -13,6 +13,7 @@ void gui_build_begin(void) {
 
 	// NOTE: build top level's root guiBox
 	gui_set_next_child_layout_axis(AXIS2_Y);
+	gui_push_text_scale(gui_get_ui_state()->global_text_scale);
 	guiBox *root = gui_box_build_from_str(0, "ImRootPlsDontPutSameHashSomewhereElse");
 	gui_push_parent(root);
     gui_get_ui_state()->root = root;
@@ -34,6 +35,7 @@ void gui_build_begin(void) {
 
 void gui_build_end(void) {
 	guiState *state = gui_get_ui_state();
+	gui_pop_text_scale();
 	gui_pop_parent();
 
 	// prune unused boxes

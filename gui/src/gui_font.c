@@ -50,7 +50,7 @@ guiPackedChar gui_font_atlas_get_char(guiFontAtlas *atlas, char c){
 }
 
 // FIMXE: the whole font API is bullshit
-// we should make a GlyphInfo struct and use a HashMap for searching
+// we should make a GlyphInfo struct and use a HashMap for searching unicode codepoints
 guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint){
 	if (codepoint < 256)
 		return gui_font_atlas_get_char(atlas, codepoint);
@@ -60,7 +60,7 @@ guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint){
 
 
 // calculates width/height of a string in pixels
-vec2 gui_font_get_string_dim(char *str) {
+vec2 gui_font_get_string_dim(char *str, f32 scale) {
 	guiState *state = gui_get_ui_state();
 	if (!str) return v2(0,0);
 
@@ -72,66 +72,65 @@ vec2 gui_font_get_string_dim(char *str) {
 		text_width += b.xadvance;
 	}
 
-	return v2(text_width, text_height);
+	return v2(text_width * scale, text_height * scale);
 }
 
-vec2 gui_font_get_icon_dim(u32 codepoint) {
+vec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
 	guiState *state = gui_get_ui_state();
 	guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, codepoint);
-	return v2(b.x1-b.x0, b.y1-b.y0);
+	vec2 dim = v2(b.x1-b.x0, b.y1-b.y0);
+	return v2(dim.x * scale, dim.y * scale);
 }
 
 // Shouldn't these 2 functions be in gui_render?? hmmmmm, also why are they called gui_draw??
 // TODO -- we need a text color stack i think
-guiStatus gui_draw_string_in_pos(char *str, vec2 pos, vec4 color) {
+guiStatus gui_draw_string_in_pos(char *str, vec2 pos, f32 scale, vec4 color) {
 	guiState *state = gui_get_ui_state();
-	vec2 text_dim = gui_font_get_string_dim(str);
+	vec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = pos.x;
 	f32 text_y = pos.y;
 
 	for (u32 i = 0; i < strlen(str); i+=1) {
 		guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, (u32)str[i]);
-		f32 x0 = text_x + b.xoff;
-        f32 y0 = text_y + b.yoff + state->atlas.ascent;
-        f32 x1 = x0 + (b.x1 - b.x0);
-        f32 y1 = y0 + (b.y1 - b.y0);
+		f32 x0 = text_x + b.xoff * scale;
+        f32 y0 = text_y + (b.yoff + state->atlas.ascent) * scale;
+        f32 x1 = x0 + (b.x1 - b.x0) * scale;
+        f32 y1 = y0 + (b.y1 - b.y0) * scale;
 		gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, str[i], (vec2){x0,y0}, (vec2){x1-x0,y1-y0},color);
-		text_x += b.xadvance;
+		text_x += b.xadvance * scale;
 	}
 
 	return GUI_GUD;
 }
 
-guiStatus gui_draw_string_in_rect(char *str, rect r, vec4 color) {
-	guiState *state = gui_get_ui_state();
-	vec2 text_dim = gui_font_get_string_dim(str);
+guiStatus gui_draw_string_in_rect(char *str, rect r, f32 scale, vec4 color) {
+	vec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
 
-	return gui_draw_string_in_pos(str, v2(text_x, text_y), color);
+	return gui_draw_string_in_pos(str, v2(text_x, text_y), scale, color);
 }
 
-guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, vec4 color) {
-	guiState *state = gui_get_ui_state();
-	vec2 text_dim = gui_font_get_icon_dim(codepoint);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, f32 scale, vec4 color) {
+	vec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
 
-	return gui_draw_icon_in_pos(codepoint, v2(text_x, text_y), color);
+	return gui_draw_icon_in_pos(codepoint, v2(text_x, text_y), scale, color);
 }
 
 
-guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, vec4 color) {
+guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, f32 scale, vec4 color) {
 	guiState *state = gui_get_ui_state();
-	vec2 text_dim = gui_font_get_icon_dim(codepoint);
+	vec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
 	f32 text_x = pos.x;
 	f32 text_y = pos.y;
 
 	guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, codepoint);
-	f32 x0 = text_x + b.xoff;
+	f32 x0 = text_x + b.xoff * scale;
 	f32 y0 = text_y;
-	f32 x1 = x0 + (b.x1 - b.x0);
-	f32 y1 = y0 + (b.y1 - b.y0);
+	f32 x1 = x0 + (b.x1 - b.x0) * scale;
+	f32 y1 = y0 + (b.y1 - b.y0) * scale;
 	gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, codepoint, (vec2){x0,y0}, (vec2){x1-x0,y1-y0},color);
 
 	return GUI_GUD;

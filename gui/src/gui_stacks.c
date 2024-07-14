@@ -107,6 +107,12 @@ void gui_init_stacks(guiState *state) {
 	state->child_layout_axis_stack.bottom_val = state->child_layout_axis_nil_stack_top.v;
 	state->child_layout_axis_stack.free = 0;
 	state->child_layout_axis_stack.auto_pop = 0;
+	// -- text_scale stack initialization
+	state->text_scale_nil_stack_top.v = 1.0f;
+	state->text_scale_stack.top = &state->text_scale_nil_stack_top;
+	state->text_scale_stack.bottom_val = state->text_scale_nil_stack_top.v;
+	state->text_scale_stack.free = 0;
+	state->text_scale_stack.auto_pop = 0;
 }
 
 void gui_autopop_all_stacks() {
@@ -121,6 +127,7 @@ void gui_autopop_all_stacks() {
 	if (state->bg_color_stack.auto_pop) { gui_pop_bg_color();state->bg_color_stack.auto_pop = 0; }
 	if (state->text_color_stack.auto_pop) { gui_pop_text_color();state->text_color_stack.auto_pop = 0; }
 	if (state->child_layout_axis_stack.auto_pop) { gui_pop_child_layout_axis();state->child_layout_axis_stack.auto_pop = 0; }
+	if (state->text_scale_stack.auto_pop) { gui_pop_text_scale();state->text_scale_stack.auto_pop = 0; }
 }
 
 guiBox *gui_top_parent(void) { gui_stack_top_impl(gui_get_ui_state(), Parent, parent); }
@@ -173,6 +180,10 @@ Axis2 gui_set_next_child_layout_axis(Axis2 v) { gui_stack_set_next_impl(gui_get_
 Axis2 gui_push_child_layout_axis(Axis2 v) { gui_stack_push_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis, Axis2, v); }
 Axis2 gui_pop_child_layout_axis(void) { gui_stack_pop_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis); }
 
+f32 gui_top_text_scale(void) { gui_stack_top_impl(gui_get_ui_state(), TextScale, text_scale); }
+f32 gui_set_next_text_scale(f32 v) { gui_stack_set_next_impl(gui_get_ui_state(), TextScale, text_scale, f32, v); }
+f32 gui_push_text_scale(f32 v) { gui_stack_push_impl(gui_get_ui_state(), TextScale, text_scale, f32, v); }
+f32 gui_pop_text_scale(void) { gui_stack_pop_impl(gui_get_ui_state(), TextScale, text_scale); }
 
 guiSize gui_push_pref_size(Axis2 axis, guiSize v) {
   guiSize result;

@@ -52,65 +52,66 @@ void sample_update(){
             {
                 gui_set_next_child_layout_axis(AXIS2_Y);
                 gui_set_next_bg_color(v4(0.8,0.8,0.8,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
+                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
                 gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
                 guiSignal children_panel = gui_panel("children_panel");
                 gui_push_parent(children_panel.box);
                 {
                     gui_set_next_child_layout_axis(AXIS2_X);
                     gui_set_next_bg_color(v4(0.8,0.8,0.8,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
                     guiSignal children_panel33 = gui_panel("children_panel33");
                     gui_push_parent(children_panel33.box);
 
                     //gui_set_next_bg_color(v4(0.5,0.4,0.2,1.0));
                     gui_set_next_text_color(v4(0.0,1,0,1.0));
                     gui_set_next_bg_color(v4(1.0,0,0,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
                     gui_button("button1");
 
                     gui_set_next_bg_color(v4(0.2,0.6,0.2,1.0));
-                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.0});
+                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 0.5});
+
                     gui_set_next_bg_color(v4(0.6,0.2,0.2,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
                     gui_button("button7");
                     gui_pop_parent();
 
 
                     gui_set_next_child_layout_axis(AXIS2_X);
                     gui_set_next_bg_color(v4(0.8,0.8,0.8,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
                     guiSignal children_panel44 = gui_panel("children_panel44");
                     gui_push_parent(children_panel44.box);
 
                     gui_set_next_text_color(v4(1.0,0,0,1.0));
                     gui_set_next_bg_color(v4(0.2,0.2,0.6,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
                     gui_button("button4");
 
-                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.0});
+                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 0.5});
 
                     gui_set_next_text_color(v4(1.0,0,0,1.0));
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
                     gui_icon("icon1", FA_ICON_DOWN_BIG);
 
                     gui_set_next_text_color(v4(0.0,1,0,1.0));
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
                     gui_icon("icon2", FA_ICON_UP_BIG);
 
                     gui_set_next_text_color(v4(0.0,0,1,1.0));
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
+                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
+                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
                     gui_icon("icon3", FA_ICON_LEFT_BIG);
 
 
