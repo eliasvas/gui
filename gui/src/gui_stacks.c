@@ -89,13 +89,19 @@ void gui_init_stacks(guiState *state) {
 	state->pref_height_stack.bottom_val = state->pref_height_nil_stack_top.v;
 	state->pref_height_stack.free = 0;
 	state->pref_height_stack.auto_pop = 0;
-	// -- pref_height stack initialization
+	// -- bg_color stack initialization
 	state->bg_color_nil_stack_top.v = v4(0,0,0,0);
 	state->bg_color_stack.top = &state->bg_color_nil_stack_top;
 	state->bg_color_stack.bottom_val = state->bg_color_nil_stack_top.v;
 	state->bg_color_stack.free = 0;
 	state->bg_color_stack.auto_pop = 0;
-	// -- pref_height stack initialization
+	// -- text_color stack initialization
+	state->text_color_nil_stack_top.v = v4(1,1,1,1);
+	state->text_color_stack.top = &state->text_color_nil_stack_top;
+	state->text_color_stack.bottom_val = state->text_color_nil_stack_top.v;
+	state->text_color_stack.free = 0;
+	state->text_color_stack.auto_pop = 0;
+	// -- child_layout_axis stack initialization
 	state->child_layout_axis_nil_stack_top.v = AXIS2_X;
 	state->child_layout_axis_stack.top = &state->child_layout_axis_nil_stack_top;
 	state->child_layout_axis_stack.bottom_val = state->child_layout_axis_nil_stack_top.v;
@@ -113,6 +119,7 @@ void gui_autopop_all_stacks() {
 	if (state->pref_width_stack.auto_pop) { gui_pop_pref_width();state->pref_width_stack.auto_pop = 0; }
 	if (state->pref_height_stack.auto_pop) { gui_pop_pref_height();state->pref_height_stack.auto_pop = 0; }
 	if (state->bg_color_stack.auto_pop) { gui_pop_bg_color();state->bg_color_stack.auto_pop = 0; }
+	if (state->text_color_stack.auto_pop) { gui_pop_text_color();state->text_color_stack.auto_pop = 0; }
 	if (state->child_layout_axis_stack.auto_pop) { gui_pop_child_layout_axis();state->child_layout_axis_stack.auto_pop = 0; }
 }
 
@@ -156,6 +163,11 @@ vec4 gui_set_next_bg_color(vec4 v) { gui_stack_set_next_impl(gui_get_ui_state(),
 vec4 gui_push_bg_color(vec4 v) { gui_stack_push_impl(gui_get_ui_state(), BgColor, bg_color, vec4, v); }
 vec4 gui_pop_bg_color(void) { gui_stack_pop_impl(gui_get_ui_state(), BgColor, bg_color); }
 
+vec4 gui_top_text_color(void) { gui_stack_top_impl(gui_get_ui_state(), TextColor, text_color); }
+vec4 gui_set_next_text_color(vec4 v) { gui_stack_set_next_impl(gui_get_ui_state(), TextColor, text_color, vec4, v); }
+vec4 gui_push_text_color(vec4 v) { gui_stack_push_impl(gui_get_ui_state(), TextColor, text_color, vec4, v); }
+vec4 gui_pop_text_color(void) { gui_stack_pop_impl(gui_get_ui_state(), TextColor, text_color); }
+
 Axis2 gui_top_child_layout_axis(void) { gui_stack_top_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis); }
 Axis2 gui_set_next_child_layout_axis(Axis2 v) { gui_stack_set_next_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis, Axis2, v); }
 Axis2 gui_push_child_layout_axis(Axis2 v) { gui_stack_push_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis, Axis2, v); }
@@ -198,8 +210,6 @@ void gui_push_rect(rect r) {
   gui_push_fixed_y(r.y0);
   gui_push_fixed_width(size.x);
   gui_push_fixed_height(size.y);
-//gui_push_pref_size(AXIS2_X, (guiSize){GUI_SIZEKIND_PIXELS,size.x,1.0f});
-//gui_push_pref_size(AXIS2_Y, (guiSize){GUI_SIZEKIND_PIXELS,size.y,1.0f});
 }
 
 void gui_pop_rect(void) {

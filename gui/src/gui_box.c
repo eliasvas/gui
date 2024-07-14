@@ -107,6 +107,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->pref_size[AXIS2_X] = gui_top_pref_width();
 		box->pref_size[AXIS2_Y] = gui_top_pref_height();
 		box->c = gui_top_bg_color();
+		box->text_color = gui_top_text_color();
 		if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
 			box->c.r += box->active_t/3.0f;
 		}

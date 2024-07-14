@@ -65,6 +65,7 @@ void sample_update(){
                     gui_push_parent(children_panel33.box);
 
                     //gui_set_next_bg_color(v4(0.5,0.4,0.2,1.0));
+                    gui_set_next_text_color(v4(0.0,1,0,1.0));
                     gui_set_next_bg_color(v4(1.0,0,0,1.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
@@ -86,6 +87,7 @@ void sample_update(){
                     guiSignal children_panel44 = gui_panel("children_panel44");
                     gui_push_parent(children_panel44.box);
 
+                    gui_set_next_text_color(v4(1.0,0,0,1.0));
                     gui_set_next_bg_color(v4(0.2,0.2,0.6,1.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,1.0});
@@ -93,16 +95,19 @@ void sample_update(){
 
                     gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 1.0});
 
+                    gui_set_next_text_color(v4(1.0,0,0,1.0));
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_icon("icon1", FA_ICON_DOWN_BIG);
 
+                    gui_set_next_text_color(v4(0.0,1,0,1.0));
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_icon("icon2", FA_ICON_UP_BIG);
 
+                    gui_set_next_text_color(v4(0.0,0,1,1.0));
                     gui_set_next_bg_color(v4(0.0,0,0,0.0));
                     gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});
                     gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,1.0});

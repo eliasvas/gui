@@ -692,6 +692,7 @@ struct guiBox {
 	// f32 computed_size[AXIS2_COUNT]; // computed size in pixels
 	rect r; // final on-screen rectangular coordinates
 	vec4 c; // color (not good design wise)
+	vec4 text_color; // text color (not good design wise)
 
 	u32 icon_codepoint; // in case this box represents an icon, this is its codepoint
 
@@ -724,6 +725,7 @@ typedef struct guiFixedYNode guiFixedYNode; struct guiFixedYNode {guiFixedYNode 
 typedef struct guiFixedWidthNode guiFixedWidthNode; struct guiFixedWidthNode {guiFixedWidthNode *next; f32 v;};
 typedef struct guiFixedHeightNode guiFixedHeightNode; struct guiFixedHeightNode {guiFixedHeightNode *next; f32 v;};
 typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; vec4 v;};
+typedef struct guiTextColorNode guiTextColorNode; struct guiTextColorNode {guiTextColorNode *next; vec4 v;};
 typedef struct guiChildLayoutAxisNode guiChildLayoutAxisNode; struct guiChildLayoutAxisNode {guiChildLayoutAxisNode*next; Axis2 v;};
 
 
@@ -776,6 +778,11 @@ vec4 gui_top_bg_color(void);
 vec4 gui_set_next_bg_color(vec4 v);
 vec4 gui_push_bg_color(vec4 v);
 vec4 gui_pop_bg_color(void);
+
+vec4 gui_top_text_color(void);
+vec4 gui_set_next_text_color(vec4 v);
+vec4 gui_push_text_color(vec4 v);
+vec4 gui_pop_text_color(void);
 
 void gui_layout_root(guiBox *root, Axis2 axis);
 Axis2 gui_top_child_layout_axis(void);
@@ -880,6 +887,8 @@ typedef struct {
 	struct { guiPrefHeightNode *top; guiSize bottom_val; guiPrefHeightNode *free; b32 auto_pop; } pref_height_stack;
 	guiBgColorNode bg_color_nil_stack_top;
 	struct { guiBgColorNode *top; vec4 bottom_val; guiBgColorNode *free; b32 auto_pop; } bg_color_stack;
+	guiTextColorNode text_color_nil_stack_top;
+	struct { guiTextColorNode *top; vec4 bottom_val; guiTextColorNode *free; b32 auto_pop; } text_color_stack;
 	guiChildLayoutAxisNode child_layout_axis_nil_stack_top;
 	struct { guiChildLayoutAxisNode *top; Axis2 bottom_val; guiChildLayoutAxisNode *free; b32 auto_pop; } child_layout_axis_stack;
 } guiState;
