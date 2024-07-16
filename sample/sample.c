@@ -36,10 +36,8 @@ void sample_update(){
         gui_set_next_fixed_x(100);
         gui_set_next_fixed_y(100);
         gui_set_next_fixed_width(600);
-        gui_set_next_fixed_width(400);
+        gui_set_next_fixed_height(400);
         gui_set_next_child_layout_axis(AXIS2_X);
-        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,600.f,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,400.f,1.0});
         guiSignal master_panel = gui_panel("master_panel");
         gui_push_parent(master_panel.box);
         {

@@ -95,11 +95,13 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
     if (axis != root->child_layout_axis) {
         f32 max_allowed_size = root->fixed_size.raw[axis];
         for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next) {
-            f32 child_size = child->fixed_size.raw[axis];
-            f32 fixup_needed = child_size - max_allowed_size;
-            fixup_needed = maximum(0, minimum(fixup_needed, child_size));
-            if (fixup_needed > 0) {
-                child->fixed_size.raw[axis] -= fixup_needed;
+            if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {
+                f32 child_size = child->fixed_size.raw[axis];
+                f32 fixup_needed = child_size - max_allowed_size;
+                fixup_needed = maximum(0, minimum(fixup_needed, child_size));
+                if (fixup_needed > 0) {
+                    child->fixed_size.raw[axis] -= fixup_needed;
+                }
             }
         }
     }
@@ -111,8 +113,10 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
         f32 total_weighed_size = 0;
         f32 child_count = root->child_count;
         for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next) {
-            total_size += child->fixed_size.raw[axis];
-            total_weighed_size += child->fixed_size.raw[axis] * (1.0f - child->pref_size[axis].strictness);
+            if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {
+                total_size += child->fixed_size.raw[axis];
+                total_weighed_size += child->fixed_size.raw[axis] * (1.0f - child->pref_size[axis].strictness);
+            }
         }
         f32 violation = total_size - max_allowed_size;
 
@@ -120,20 +124,24 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
             f32 *child_fixup_array = push_array(gui_get_build_arena(), f32, root->child_count);
             u32 child_idx = 0;
             for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next, ++child_idx) {
-                f32 child_weighed_size = child->fixed_size.raw[axis] * (1.0f - child->pref_size[axis].strictness);
-                child_weighed_size = maximum(0.0f, child_weighed_size);
-                child_fixup_array[child_idx] = child_weighed_size;
+                if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {
+                    f32 child_weighed_size = child->fixed_size.raw[axis] * (1.0f - child->pref_size[axis].strictness);
+                    child_weighed_size = maximum(0.0f, child_weighed_size);
+                    child_fixup_array[child_idx] = child_weighed_size;
+                }
             }
 
             child_idx = 0;
             for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next, ++child_idx) {
-                // this percentage will be applied to ALL child widgets
-                f32 fixup_needed = (violation / (f32)total_weighed_size);
-                fixup_needed = minimum(maximum(0.0f,fixup_needed),1.0f);
-                // if (fixup_needed > 0.0f) {
-                //     printf("violation : %f, total_weighed_size: %f\n", violation, total_weighed_size);
-                // }
-                child->fixed_size.raw[axis] -= fixup_needed * child_fixup_array[child_idx];
+                if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {
+                    // this percentage will be applied to ALL child widgets
+                    f32 fixup_needed = (violation / (f32)total_weighed_size);
+                    fixup_needed = minimum(maximum(0.0f,fixup_needed),1.0f);
+                    // if (fixup_needed > 0.0f) {
+                    //     printf("violation : %f, total_weighed_size: %f\n", violation, total_weighed_size);
+                    // }
+                    child->fixed_size.raw[axis] -= fixup_needed * child_fixup_array[child_idx];
+                }
             }
         }
 

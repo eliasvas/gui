@@ -60,7 +60,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->child_count = 0;
 		box->flags = 0;
 		box->last_frame_touched_index = gui_get_ui_state()->current_frame_index;
-		// M_ZERO_ARRAY(box->pref_size);
+		M_ZERO_ARRAY(box->pref_size);
 		// M_ZERO_STRUCT(&box->child_layout_axis);
 		// M_ZERO_STRUCT(&box->fixed_pos);
 		// M_ZERO_STRUCT(&box->fixed_size);
@@ -96,16 +96,20 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 			box->fixed_pos.raw[AXIS2_Y] = state->fixed_y_stack.top->v;
 			box->flags |= GUI_BOX_FLAG_FIXED_Y;
 		}
+		// FIXED_WIDTH/HEIGHT have NO pref size (GUI_SIZEKIND_NULL) so their fixed_size will stay the same
 		if (state->fixed_width_stack.top != &state->fixed_width_nil_stack_top) {
 			box->fixed_size.raw[AXIS2_X] = state->fixed_width_stack.top->v;
 			box->flags |= GUI_BOX_FLAG_FIXED_WIDTH;
+			printf("here %s\n", box->str);
+		}else {
+			box->pref_size[AXIS2_X] = gui_top_pref_width();
 		}
 		if (state->fixed_height_stack.top != &state->fixed_height_nil_stack_top) {
 			box->fixed_size.raw[AXIS2_Y] = state->fixed_height_stack.top->v;
 			box->flags |= GUI_BOX_FLAG_FIXED_HEIGHT;
+		}else {
+			box->pref_size[AXIS2_Y] = gui_top_pref_height();
 		}
-		box->pref_size[AXIS2_X] = gui_top_pref_width();
-		box->pref_size[AXIS2_Y] = gui_top_pref_height();
 		box->c = gui_top_bg_color();
 		box->text_color = gui_top_text_color();
 		box->text_scale = gui_top_text_scale();

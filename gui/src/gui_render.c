@@ -50,7 +50,6 @@ guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box) {
 		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color_dim,1, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_TEXT) {
-		// TODO -- text color stack
 		gui_draw_string_in_rect(box->str, r, box->text_scale, box->text_color);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {

@@ -82,8 +82,7 @@ vec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
 	return v2(dim.x * scale, dim.y * scale);
 }
 
-// Shouldn't these 2 functions be in gui_render?? hmmmmm, also why are they called gui_draw??
-// TODO -- we need a text color stack i think
+// Shouldn't these functions be in gui_render?? hmmmmm, also why are they called gui_draw??
 guiStatus gui_draw_string_in_pos(char *str, vec2 pos, f32 scale, vec4 color) {
 	guiState *state = gui_get_ui_state();
 	vec2 text_dim = gui_font_get_string_dim(str,scale);
