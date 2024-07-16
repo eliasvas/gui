@@ -37,6 +37,8 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	u32 char_count = FA_ICON_HEART_EMPTY - start_uchar;
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_ICON_SIZE, start_uchar, char_count, (stbtt_packedchar*)atlas->udata);
 	atlas->base_unicode_codepoint = FA_ICON_DOWN_OPEN;
+	// FIXME -- why are we doing getscaledfontvmetrics two times? its shadowed i think
+	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
 	fu_dealloc_all(ttf_buffer);
 
 	stbtt_PackEnd(&pack_context);
@@ -78,8 +80,9 @@ vec2 gui_font_get_string_dim(char *str, f32 scale) {
 vec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
 	guiState *state = gui_get_ui_state();
 	guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, codepoint);
+	f32 text_height = state->atlas.ascent - state->atlas.descent;
 	vec2 dim = v2(b.x1-b.x0, b.y1-b.y0);
-	return v2(dim.x * scale, dim.y * scale);
+	return v2(dim.x * scale, text_height * scale);
 }
 
 // Shouldn't these functions be in gui_render?? hmmmmm, also why are they called gui_draw??
@@ -127,7 +130,7 @@ guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, f32 scale, vec4 color) {
 
 	guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, codepoint);
 	f32 x0 = text_x + b.xoff * scale;
-	f32 y0 = text_y;
+	f32 y0 = text_y + (b.yoff + state->atlas.ascent) * scale;
 	f32 x1 = x0 + (b.x1 - b.x0) * scale;
 	f32 y1 = y0 + (b.y1 - b.y0) * scale;
 	gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, codepoint, (vec2){x0,y0}, (vec2){x1-x0,y1-y0},color);

@@ -837,6 +837,14 @@ guiSignal gui_label(char *str);
 guiSignal gui_icon(char *str, u32 icon_codepoint);
 guiSignal gui_spacer(guiSize size);
 
+typedef struct guiSimpleWindowData guiSimpleWindowData;
+struct guiSimpleWindowData {
+	vec2 pos,dim;
+	char name[64];
+};
+void gui_swindow_begin(guiSimpleWindowData *window);
+void gui_swindow_end(guiSimpleWindowData *window);
+
 
 //##########################
 // INTERFACE

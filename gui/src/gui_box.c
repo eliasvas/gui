@@ -100,7 +100,6 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		if (state->fixed_width_stack.top != &state->fixed_width_nil_stack_top) {
 			box->fixed_size.raw[AXIS2_X] = state->fixed_width_stack.top->v;
 			box->flags |= GUI_BOX_FLAG_FIXED_WIDTH;
-			printf("here %s\n", box->str);
 		}else {
 			box->pref_size[AXIS2_X] = gui_top_pref_width();
 		}
@@ -321,3 +320,59 @@ guiSignal gui_button(char *str) {
 	guiSignal signal = gui_get_signal_for_box(w);
 	return signal;
 }
+
+void gui_swindow_do_header(guiSimpleWindowData *window) {
+	char panel_name[128];
+	sprintf(panel_name, "header_panel_%s", window->name);
+	//gui_set_next_child_layout_axis(AXIS2_Y);
+	gui_set_next_bg_color(v4(0.3,0.3,0.3,1.0));
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
+	guiSignal panel = gui_panel(panel_name);
+	gui_push_parent(panel.box);
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0f,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
+	gui_label(window->name);
+	gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, 1.0, 0.0});
+	char icon_name[128];
+	sprintf(icon_name, "icon_header_panel_%s", window->name);
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0f,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
+	gui_icon(icon_name, FA_ICON_CANCEL_CIRCLED);
+	gui_pop_parent();
+}
+
+void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
+	char main_panel_name[128];
+	sprintf(main_panel_name, "main_panel_%s", window->name);
+	gui_set_next_child_layout_axis(AXIS2_Y);
+	gui_set_next_bg_color(v4(0.4,0.4,0.4,1.0));
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,0.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
+	guiSignal panel = gui_panel(main_panel_name);
+	gui_push_parent(panel.box);
+}
+
+void gui_swindow_begin(guiSimpleWindowData *window) {
+	gui_set_next_bg_color(v4(0.2,0.2,0.2,1.0));
+	gui_set_next_fixed_x(window->pos.x);
+	gui_set_next_fixed_y(window->pos.y);
+	gui_set_next_fixed_width(window->dim.x);
+	gui_set_next_fixed_height(window->dim.y);
+	gui_set_next_child_layout_axis(AXIS2_Y);
+	char main_window_area_name[128];
+	sprintf(main_window_area_name, "main_area_%s", window->name);
+	guiSignal master_panel = gui_panel(main_window_area_name);
+	gui_push_parent(master_panel.box);
+	gui_swindow_do_header(window);
+	//will do the main panel AND set it as parent for next calls
+	gui_swindow_do_main_panel(window);
+}
+
+void gui_swindow_end(guiSimpleWindowData *window) {
+	// pop the main_window_area panel
+	gui_pop_parent();
+	// pop the main_panel panel
+	gui_pop_parent();
+}
+

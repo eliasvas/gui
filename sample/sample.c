@@ -11,6 +11,7 @@ void platform_deinit();
 
 guiSliderData *sd1;
 guiSliderData *sd2;
+guiSimpleWindowData *wdata;
 
 void sample_init(){
     guiState *gui_state = gui_state_init();
@@ -20,6 +21,10 @@ void sample_init(){
     *sd1 = gui_slider_data_make(gui_scroll_point_make(40,0), 0);
     sd2 = ALLOC(sizeof(guiSliderData));
     *sd2 = gui_slider_data_make(gui_scroll_point_make(0,0), 0);
+    wdata = ALLOC(sizeof(guiSimpleWindowData));
+    wdata->dim = v2(400,300);
+    wdata->pos = v2(100,100);
+    sprintf(wdata->name, "TestWindow");
 }
 
 void sample_update(){
@@ -29,135 +34,37 @@ void sample_update(){
     // TODO -- we need an ACTUAL dt, from the platform layer, there should be a CALL
     gui_state_update(1.0/60.f);
 
-    // another UI test
     {
-
-        gui_push_bg_color(v4(0.3,0.3,0.3,1.0));
-        gui_set_next_fixed_x(100);
-        gui_set_next_fixed_y(100);
-        gui_set_next_fixed_width(600);
-        gui_set_next_fixed_height(400);
-        gui_set_next_child_layout_axis(AXIS2_X);
-        guiSignal master_panel = gui_panel("master_panel");
-        gui_push_parent(master_panel.box);
-        {
-            gui_set_next_child_layout_axis(AXIS2_Y);
-            gui_set_next_bg_color(v4(0.6,0.6,0.6,1.0));
-            gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.5f,1.0});
-            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-            guiSignal slave2_panel = gui_panel("slave2_panel");
-            gui_push_parent(slave2_panel.box);
-            {
-                gui_set_next_child_layout_axis(AXIS2_Y);
-                gui_set_next_bg_color(v4(0.8,0.8,0.8,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
-                guiSignal children_panel = gui_panel("children_panel");
-                gui_push_parent(children_panel.box);
-                {
-                    gui_set_next_child_layout_axis(AXIS2_X);
-                    gui_set_next_bg_color(v4(0.8,0.8,0.8,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
-                    guiSignal children_panel33 = gui_panel("children_panel33");
-                    gui_push_parent(children_panel33.box);
-
-                    //gui_set_next_bg_color(v4(0.5,0.4,0.2,1.0));
-                    gui_set_next_text_color(v4(0.0,1,0,1.0));
-                    gui_set_next_bg_color(v4(1.0,0,0,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
-                    gui_button("button1");
-
-                    gui_set_next_bg_color(v4(0.2,0.6,0.2,1.0));
-                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 0.5});
-
-                    gui_set_next_bg_color(v4(0.6,0.2,0.2,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
-                    gui_button("button7");
-                    gui_pop_parent();
+        gui_swindow_begin(wdata);
 
 
-                    gui_set_next_child_layout_axis(AXIS2_X);
-                    gui_set_next_bg_color(v4(0.8,0.8,0.8,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,0.5});
-                    guiSignal children_panel44 = gui_panel("children_panel44");
-                    gui_push_parent(children_panel44.box);
+        gui_set_next_bg_color(v4(0.6,0.2,0.4,1.0));
+        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/6.0,0.5});
+        gui_slider("slider1", AXIS2_X, v2(0,100), sd1);
 
-                    gui_set_next_text_color(v4(1.0,0,0,1.0));
-                    gui_set_next_bg_color(v4(0.2,0.2,0.6,1.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.f,0.5});
-                    gui_button("button4");
-
-                    gui_spacer((guiSize){GUI_SIZEKIND_PIXELS, 5.f, 0.5});
-
-                    gui_set_next_text_color(v4(1.0,0,0,1.0));
-                    gui_set_next_bg_color(v4(0.0,0,0,0.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
-                    gui_icon("icon1", FA_ICON_DOWN_BIG);
-
-                    gui_set_next_text_color(v4(0.0,1,0,1.0));
-                    gui_set_next_bg_color(v4(0.0,0,0,0.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
-                    gui_icon("icon2", FA_ICON_UP_BIG);
-
-                    gui_set_next_text_color(v4(0.0,0,1,1.0));
-                    gui_set_next_bg_color(v4(0.0,0,0,0.0));
-                    gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
-                    gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0.f,0.5});
-                    gui_icon("icon3", FA_ICON_LEFT_BIG);
-
-
-
-                    gui_pop_parent();
-                }
-                gui_pop_parent();
-
-            }
-            gui_pop_parent();
-
-            gui_set_next_child_layout_axis(AXIS2_Y);
-            gui_set_next_bg_color(v4(0.4,0.4,0.4,1.0));
-            gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.5f,1.0});
-            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-            guiSignal slave1_panel = gui_panel("slave1_panel");
-            gui_push_parent(slave1_panel.box);
-            {
-                gui_set_next_bg_color(v4(0.6,0.2,0.4,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
-                gui_slider("slider1", AXIS2_X, v2(0,100), sd1);
-
-                gui_set_next_bg_color(v4(0.3,0.2,0.2,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
-                gui_button("button3");
-
-                gui_set_next_bg_color(v4(0.6,0.2,0.0,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,2.f/5.f,0.5});
-                gui_slider("slider2", AXIS2_Y, v2(10,60), sd2);
-
-                gui_set_next_bg_color(v4(0.2,0.7,0.2,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
-                gui_button("button5");
-
-                gui_set_next_bg_color(v4(0.7,0.4,0.2,1.0));
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,2.0,1.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.f,0.5});
-                gui_button("buttonover");
+        for (u32 i = 0; i < 5; ++i) {
+            char panel_name[128];
+            sprintf(panel_name,"panel_abc%d", i);
+            gui_set_next_child_layout_axis(AXIS2_X);
+            gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
+            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/6.0,1.0});
+            guiSignal s = gui_panel(panel_name);
+            gui_push_parent(s.box);
+            for (u32 j = i; j < 5; ++j) {
+                char button_name[128];
+                sprintf(button_name, "b%d%d", i, j);
+                gui_set_next_bg_color(v4(0.6,0.4,0.5,1.0));
+                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
+                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
+                gui_button(button_name);
             }
             gui_pop_parent();
         }
-        gui_pop_parent();
-        gui_pop_bg_color();
+
+        gui_swindow_end(wdata);
     }
+
     gui_build_end();
 }
 
