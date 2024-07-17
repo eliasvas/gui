@@ -263,6 +263,14 @@ guiSignal gui_icon(char *str, u32 icon_codepoint) {
 	return signal;
 }
 
+guiSignal gui_clickable_region(char *str) {
+	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE,
+									str);
+	guiSignal signal = gui_get_signal_for_box(w);
+	return signal;
+}
+
+
 guiSignal gui_label(char *str) {
 	// TODO -- probably, labels should be sized by text content!
 	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_TEXT|
@@ -329,23 +337,32 @@ guiSignal gui_button(char *str) {
 }
 
 void gui_swindow_do_header(guiSimpleWindowData *window) {
-	char panel_name[128];
-	sprintf(panel_name, "header_panel_%s", window->name);
+	char wname[128];
+	sprintf(wname, "header_panel_%s", window->name);
 	//gui_set_next_child_layout_axis(AXIS2_Y);
 	gui_set_next_bg_color(v4(0.3,0.3,0.3,1.0));
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,1.0});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
-	guiSignal panel = gui_panel(panel_name);
+	guiSignal panel = gui_panel(wname);
 	gui_push_parent(panel.box);
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0f,1.0});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
+	gui_set_next_text_color(v4(1.0,0.7,0.7,1.0));
 	gui_label(window->name);
-	gui_spacer((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, 1.0, 0.0});
-	char icon_name[128];
-	sprintf(icon_name, "icon_header_panel_%s", window->name);
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,0.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
+	sprintf(wname, "clickable_reg%s", window->name);
+	guiSignal clickable_region_sig = gui_clickable_region(wname);
+	b32 is_clickable_region_active = gui_key_match(clickable_region_sig.box->key, gui_get_active_box_key(GUI_LMB));
+	if (is_clickable_region_active) {
+		vec2 md = gui_drag_get_delta();
+		window->pos.x += md.x;
+		window->pos.y += md.y;
+	}
+	sprintf(wname, "icon_header_panel_%s", window->name);
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0f,1.0});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
-	guiSignal icon = gui_icon(icon_name, FA_ICON_CANCEL_CIRCLED2);
+	guiSignal icon = gui_icon(wname, FA_ICON_CANCEL_CIRCLED2);
 	u32 codepoint = gui_key_match(icon.box->key, gui_get_active_box_key(GUI_LMB)) ? FA_ICON_CANCEL_CIRCLED2 : FA_ICON_CANCEL_CIRCLED;
 	icon.box->icon_codepoint = codepoint;
 	if (icon.flags & GUI_SIGNAL_FLAG_LMB_RELEASED) {

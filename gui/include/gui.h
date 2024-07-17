@@ -834,6 +834,7 @@ guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
 guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data);
 guiSignal gui_label(char *str);
+guiSignal gui_clickable_region(char *str);
 guiSignal gui_icon(char *str, u32 icon_codepoint);
 guiSignal gui_spacer(guiSize size);
 
