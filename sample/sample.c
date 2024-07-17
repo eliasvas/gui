@@ -24,6 +24,7 @@ void sample_init(){
     wdata = ALLOC(sizeof(guiSimpleWindowData));
     wdata->dim = v2(400,300);
     wdata->pos = v2(100,100);
+    wdata->active = 1;
     sprintf(wdata->name, "TestWindow");
 }
 
@@ -34,21 +35,25 @@ void sample_update(){
     // TODO -- we need an ACTUAL dt, from the platform layer, there should be a CALL
     gui_state_update(1.0/60.f);
 
-    {
+    if (gui_input_mb_pressed(GUI_MMB)){
+        wdata->active = 1;
+    }
+
+    if (wdata->active){
         gui_swindow_begin(wdata);
 
 
         gui_set_next_bg_color(v4(0.6,0.2,0.4,1.0));
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/6.0,0.5});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
         gui_slider("slider1", AXIS2_X, v2(0,100), sd1);
 
-        for (u32 i = 0; i < 5; ++i) {
+        for (u32 i = 0; i < 4; ++i) {
             char panel_name[128];
             sprintf(panel_name,"panel_abc%d", i);
             gui_set_next_child_layout_axis(AXIS2_X);
             gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/6.0,1.0});
+            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,1.0});
             guiSignal s = gui_panel(panel_name);
             gui_push_parent(s.box);
             for (u32 j = i; j < 5; ++j) {

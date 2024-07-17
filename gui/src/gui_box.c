@@ -114,6 +114,11 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->text_scale = gui_top_text_scale();
 		if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
 			box->c.r += box->active_t/3.0f;
+			if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
+				box->text_color.r -= box->active_t/3.0f;
+				box->text_color.g -= box->active_t/3.0f;
+				box->text_color.b -= box->active_t/3.0f;
+			}
 		}
 	}
 
@@ -196,7 +201,9 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	// if mouse inside box, the box is HOT
 	if (point_inside_rect(mp, r)) {
 		gui_get_ui_state()->hot_box_key = box->key;
-		box->flags |= GUI_BOX_FLAG_DRAW_BORDER;
+		if (!(box->flags & GUI_BOX_FLAG_DRAW_ICON)) {
+			box->flags |= GUI_BOX_FLAG_DRAW_BORDER;
+		}
 	}
 	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
@@ -250,7 +257,7 @@ guiSignal gui_panel(char *str) {
 }
 
 guiSignal gui_icon(char *str, u32 icon_codepoint) {
-	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_ICON | GUI_BOX_FLAG_DRAW_BACKGROUND, str);
+	guiBox *w = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_ICON | GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION | GUI_BOX_FLAG_CLICKABLE, str);
 	w->icon_codepoint = icon_codepoint;
 	guiSignal signal = gui_get_signal_for_box(w);
 	return signal;
@@ -338,7 +345,12 @@ void gui_swindow_do_header(guiSimpleWindowData *window) {
 	sprintf(icon_name, "icon_header_panel_%s", window->name);
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0f,1.0});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,1.0,1.0});
-	gui_icon(icon_name, FA_ICON_CANCEL_CIRCLED);
+	guiSignal icon = gui_icon(icon_name, FA_ICON_CANCEL_CIRCLED2);
+	u32 codepoint = gui_key_match(icon.box->key, gui_get_active_box_key(GUI_LMB)) ? FA_ICON_CANCEL_CIRCLED2 : FA_ICON_CANCEL_CIRCLED;
+	icon.box->icon_codepoint = codepoint;
+	if (icon.flags & GUI_SIGNAL_FLAG_LMB_RELEASED) {
+		window->active = 0;
+	}
 	gui_pop_parent();
 }
 

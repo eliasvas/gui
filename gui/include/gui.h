@@ -841,6 +841,7 @@ typedef struct guiSimpleWindowData guiSimpleWindowData;
 struct guiSimpleWindowData {
 	vec2 pos,dim;
 	char name[64];
+	b32 active;
 };
 void gui_swindow_begin(guiSimpleWindowData *window);
 void gui_swindow_end(guiSimpleWindowData *window);
