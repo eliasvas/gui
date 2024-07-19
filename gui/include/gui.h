@@ -187,18 +187,20 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 //##########################
 
 #if defined(_WIN32)
-	#include <windows.h>
-	#define M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
-	#define M_COMMIT(reserved_ptr, bytes) VirtualAlloc(reserved_ptr, bytes, MEM_COMMIT, PAGE_READWRITE)
-	#define M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)
-	#define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RESERVE | MEM_RELEASE)
-	#define M_ZERO(p,s) (ZeroMemory(p,s))
+    #include <windows.h>
+    #define M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
+    #define M_COMMIT(reserved_ptr, bytes) VirtualAlloc(reserved_ptr, bytes, MEM_COMMIT, PAGE_READWRITE)
+    #define M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)
+    #define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RELEASE)
+    #define M_ZERO(p, s) (ZeroMemory(p, s))
 #else
-	#define M_RESERVE(bytes) mmap(NULL, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
-	#define M_COMMIT(reserved_ptr, bytes) mmap(reserved_ptr, bytes, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
-	#define M_ALLOC(bytes) mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
-	#define M_RELEASE(base, bytes) munmap(base, bytes)
-	#define M_ZERO(p, s) memset(p, 0, s)
+    #include <sys/mman.h>
+    #include <string.h>
+    #define M_RESERVE(bytes) mmap(NULL, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0)
+    #define M_COMMIT(reserved_ptr, bytes) mmap(reserved_ptr, bytes, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+    #define M_ALLOC(bytes) mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+    #define M_RELEASE(base, bytes) munmap(base, bytes)
+    #define M_ZERO(p, s) memset(p, 0, s)
 #endif
 
 #define M_ZERO_STRUCT(p)  M_ZERO((p), sizeof(*(p)))
@@ -406,7 +408,7 @@ static ArenaTemp arena_get_scratch(Arena *conflict) {
 	return res;
 }
 
-static void arena_test() { printf("------Arena test!-----\n"); printf("---------------------\n"); ArenaTemp temp = arena_get_scratch(NULL); Arena *arena = arena_alloc(); u8 arr[5560]; u8 *mem = arena_push_nz(arena, kilobytes(1)); memcpy(mem, arr, 2560); mem = arena_push(arena, gigabytes(0.1)); printf("arena_current_pos=[%llud]", arena_current_pos(arena)); ArenaTemp t = arena_begin_temp(arena); void *large_mem = arena_push(arena, gigabytes(1)); printf("\nafter [10GB] arena_current_pos=[%llud]", arena_current_pos(arena)); printf("\nafter [10GB] temp_arena_current_pos=[%llud]", arena_current_pos(t.arena)); arena_end_temp(&t); printf("\nafter [POP] arena_current_pos=[%llud]\n", arena_current_pos(arena)); for (int i = 0; i < 9; ++i) { mem[i] = '0'+(9 - i); } printf("%s\n", &mem[0]); arena_release(arena); arena_end_temp(&temp); printf("---------------------\n"); }
+static void arena_test() { printf("------Arena test!-----\n"); printf("---------------------\n"); ArenaTemp temp = arena_get_scratch(NULL); Arena *arena = arena_alloc(); u8 arr[5560]; u8 *mem = arena_push_nz(arena, kilobytes(1)); memcpy(mem, arr, 2560); mem = arena_push(arena, gigabytes(0.1)); printf("arena_current_pos=[%lud]", arena_current_pos(arena)); ArenaTemp t = arena_begin_temp(arena); void *large_mem = arena_push(arena, gigabytes(1)); printf("\nafter [10GB] arena_current_pos=[%lud]", arena_current_pos(arena)); printf("\nafter [10GB] temp_arena_current_pos=[%lud]", arena_current_pos(t.arena)); arena_end_temp(&t); printf("\nafter [POP] arena_current_pos=[%lud]\n", arena_current_pos(arena)); for (int i = 0; i < 9; ++i) { mem[i] = '0'+(9 - i); } printf("%s\n", &mem[0]); arena_end_temp(&temp); printf("---------------------\n"); }
 /*
 // WHY we need to pass conflict arena in arena_get_scratch(..);
 void* bar(Arena *arena){

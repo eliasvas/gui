@@ -9,8 +9,14 @@
 	#include <GLES3/gl3.h>
     //#include <SDL_opengles2.h>
 #else
-    #include <GL/glew.h>
-    #include <GL/wglew.h>
+    #ifdef _WIN32
+        #include <GL/glew.h>
+        #include <GL/wglew.h>
+    #else
+        #include <SDL_syswm.h>
+	    #include <GLES3/gl3.h>
+        #include <GLES/egl.h>
+    #endif
 #endif
 
 #include <math.h>
@@ -301,7 +307,7 @@ void platform_init(u8 *font_atlas_data) {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    #else
+    #elif _WIN32
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -315,7 +321,12 @@ void platform_init(u8 *font_atlas_data) {
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 8);
         SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+    #else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     #endif
+    
     window = SDL_CreateWindow("sample",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
     glcontext = SDL_GL_CreateContext(window);
@@ -325,7 +336,7 @@ void platform_init(u8 *font_atlas_data) {
     SDL_GL_MakeCurrent(window,glcontext);
     #ifdef __EMSCRIPTEN__
         //glewInit();
-    #else
+    #elif _WIN32
         glewInit();
         assert(GLEW_ARB_ES3_compatibility);
         glEnable(GL_FRAMEBUFFER_SRGB);

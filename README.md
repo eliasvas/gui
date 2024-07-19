@@ -12,7 +12,7 @@ An interactive demo can be viewed [here](https://pages.github.com/).
 | Backend         | Win | Linux | Mac | Web |
 |-----------------|:---:|:-----:|:---:|:---:|
 | [Direct3D11](https://github.com/eliasvas/gui/blob/main/sample/d3d11_backend.c)   | ✔️  |   ❌  | ❌  | ❌  |
-| [OpenGL](https://github.com/eliasvas/gui/blob/main/sample/gl_backend.c)      | ✔️  |  🚧   | ❌  | 🚧  |
+| [OpenGL](https://github.com/eliasvas/gui/blob/main/sample/gl_backend.c)      | ✔️  |  ✔️   | ❌  | 🚧  |
 | [sdl_gpu](https://github.com/libsdl-org/SDL_shader_tools/blob/main/docs/README-SDL_gpu.md)     | 🚧  |  🚧   | 🚧  | ❌  |
 ### Building
 - #### Deps
