@@ -18,8 +18,8 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 
 
-option(USE_OPENGL "Build with OpenGL support" OFF)
-option(USE_D3D11 "Build with Direct3D 11 support" ON)
+option(USE_OPENGL "Build with OpenGL support" ON)
+option(USE_D3D11 "Build with Direct3D 11 support" OFF)
 option(USE_SDL_GPU "Build with SDL_gpu support" OFF)
 
 set(CMAKE_C_STANDARD 99)
@@ -64,7 +64,7 @@ if(USE_OPENGL)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${USE_FLAGS}")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${USE_FLAGS}")
         set(CMAKE_EXECUTABLE_SUFFIX .html)
-    else()
+    elseif(CMAKE_SYSTEM_NAME MATCHES Windows)
         include(FetchContent)
         FetchContent_Declare(
             SDL
@@ -83,5 +83,8 @@ if(USE_OPENGL)
         find_package(OpenGL REQUIRED)
         target_link_libraries(sample_gl PUBLIC SDL2::SDL2 OpenGL::GL libglew_static)
         target_link_libraries(sample_gl PUBLIC opengl32 gdi32 imm32)
+    else()
+        find_package(SDL2 REQUIRED)
+        target_link_libraries(sample_gl, m SDL2::SDL2 EGL GLESv1_CM)
     endif()
 endif()
