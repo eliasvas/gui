@@ -33,8 +33,8 @@ typedef union {
     struct{f32 r,g;};
     struct{f32 min,max;};
     f32 raw[2];
-}vec2;
-#define v2(x,y) (vec2){x,y}
+}guiVec2;
+#define gv2(x,y) (guiVec2){x,y}
 
 typedef union {
     struct{f32 x,y,z,w;};
@@ -45,17 +45,17 @@ typedef union {
 
 typedef union {
     struct{f32 x0,y0,x1,y1;};
-    struct{vec2 p0,p1;};
-}rect;
+    struct{guiVec2 p0,p1;};
+}guiRect;
 
-static b32 point_inside_rect(vec2 p, rect r) {
+static b32 gui_point_inside_rect(guiVec2 p, guiRect r) {
 	return ( (p.x <= r.x1) && (p.x >= r.x0) && (p.y >= r.y0) && (p.y <= r.y1) );
 }
 
-#define kilobytes(val) ((val)*1024LL)
-#define megabytes(val) ((kilobytes(val))*1024LL)
-#define gigabytes(val) ((megabytes(val))*1024LL)
-#define terabytes(val) ((gigabytes(val))*1024LL)
+#define KB(val) ((val)*1024LL)
+#define MB(val) ((KB(val))*1024LL)
+#define GB(val) ((MB(val))*1024LL)
+#define TB(val) ((GB(val))*1024LL)
 
 #define PI 3.1415926535897f
 #define align_pow2(val, align) (((val) + ((align) - 1)) & ~(((val) - (val)) + (align) - 1))
@@ -99,7 +99,7 @@ static b32 point_inside_rect(vec2 p, rect r) {
 //##########################
 // SIMPLE FILE I/O
 //##########################
-static u8 *fu_read_all(const char *src_filepath, u32 *byte_count) {
+static u8 *gui_fu_read_all(const char *src_filepath, u32 *byte_count) {
 	u8 *buffer = NULL;
 	*byte_count = 0;
 	FILE *file = fopen(src_filepath, "rb");
@@ -117,7 +117,7 @@ static u8 *fu_read_all(const char *src_filepath, u32 *byte_count) {
 	}
 	return buffer;
 }
-static b32 fu_write_all(const char *dst_filepath, u8 *buffer, u32 byte_count) {
+static b32 gui_fu_write_all(const char *dst_filepath, u8 *buffer, u32 byte_count) {
 	b32 res = 0;
 	FILE *file = fopen(dst_filepath, "wb");
 	if (file){
@@ -127,7 +127,7 @@ static b32 fu_write_all(const char *dst_filepath, u8 *buffer, u32 byte_count) {
 	}
 	return res;
 }
-static void fu_dealloc_all(u8 *buffer) {
+static void gui_fu_dealloc_all(u8 *buffer) {
 	FREE(buffer);
 	buffer = NULL;
 }
@@ -142,22 +142,22 @@ typedef struct
     u32 cap;
     char buf[0];
 }sbHdr;
-#define sb__hdr(b) ((sbHdr*)((char*)b - offsetof(sbHdr, buf)))
-#define sb_len(b) ((b) ? sb__hdr(b)->len : 0)
-#define sb_cap(b) ((b) ? sb__hdr(b)->cap : 0)
-#define sb_end(b) ((b) + sb_len(b))
-#define sb_fit(b, n) ((n) <= sb_cap(b) ? 0 : (*((void**)&(b)) = sb__grow((b), (n), sizeof(*(b)))))
-#define sb_push(b, ...) (sb_fit((b), 1 + sb_len(b)), (b)[sb__hdr(b)->len++] = (__VA_ARGS__))
-#define sb_free(b) ((b) ? (FREE(sb__hdr(b)), (b) = NULL) : 0)
-static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
+#define gsb__hdr(b) ((sbHdr*)((char*)b - offsetof(sbHdr, buf)))
+#define gsb_len(b) ((b) ? gsb__hdr(b)->len : 0)
+#define gsb_cap(b) ((b) ? gsb__hdr(b)->cap : 0)
+#define gsb_end(b) ((b) + gsb_len(b))
+#define gsb_fit(b, n) ((n) <= gsb_cap(b) ? 0 : (*((void**)&(b)) = gsb__grow((b), (n), sizeof(*(b)))))
+#define gsb_push(b, ...) (gsb_fit((b), 1 + gsb_len(b)), (b)[gsb__hdr(b)->len++] = (__VA_ARGS__))
+#define gsb_free(b) ((b) ? (FREE(gsb__hdr(b)), (b) = NULL) : 0)
+static void *gsb__grow(const void *buf, u32 new_len, u32 element_size)
 {
-   u32 new_cap = maximum(16, maximum(1 + 2*sb_cap(buf), new_len));
+   u32 new_cap = maximum(16, maximum(1 + 2*gsb_cap(buf), new_len));
    assert(new_len <= new_cap);
    u32 new_size = offsetof(sbHdr, buf) + new_cap * element_size;
    sbHdr *new_hdr;
    if(buf)
    {
-       new_hdr = (sbHdr*)REALLOC(sb__hdr(buf), new_size);
+       new_hdr = (sbHdr*)REALLOC(gsb__hdr(buf), new_size);
    }
    else
    {
@@ -170,15 +170,15 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 /* example usage of stretchy buffer
 {
 	int *arr = NULL;
-	sb_push(arr, 1);
-	sb_push(arr, 2);
-	sb_push(arr, 3);
+	gsb_push(arr, 1);
+	gsb_push(arr, 2);
+	gsb_push(arr, 3);
 	for (int i = 0; i < 3; ++i)
 	{
 		int x = arr[i];
 		assert(x == i+1);
 	}
-	sb_free(arr);
+	gsb_free(arr);
 }
 */
 
@@ -188,29 +188,29 @@ static void *sb__grow(const void *buf, u32 new_len, u32 element_size)
 
 #if defined(_WIN32)
     #include <windows.h>
-    #define M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
-    #define M_COMMIT(reserved_ptr, bytes) VirtualAlloc(reserved_ptr, bytes, MEM_COMMIT, PAGE_READWRITE)
-    #define M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)
-    #define M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RELEASE)
-    #define M_ZERO(p, s) (ZeroMemory(p, s))
+    #define GUI_M_RESERVE(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE, PAGE_NOACCESS)
+    #define GUI_M_COMMIT(reserved_ptr, bytes) VirtualAlloc(reserved_ptr, bytes, MEM_COMMIT, PAGE_READWRITE)
+    #define GUI_M_ALLOC(bytes) VirtualAlloc(NULL, bytes, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)
+    #define GUI_M_RELEASE(base, bytes) VirtualFree(base, bytes, MEM_RELEASE)
+    #define GUI_M_ZERO(p, s) (ZeroMemory(p, s))
 #else
     #include <sys/mman.h>
     #include <string.h>
-    #define M_RESERVE(bytes) mmap(NULL, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0)
-    #define M_COMMIT(reserved_ptr, bytes) mmap(reserved_ptr, bytes, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
-    #define M_ALLOC(bytes) mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
-    #define M_RELEASE(base, bytes) munmap(base, bytes)
-    #define M_ZERO(p, s) memset(p, 0, s)
+    #define GUI_M_RESERVE(bytes) mmap(NULL, bytes, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0)
+    #define GUI_M_COMMIT(reserved_ptr, bytes) mmap(reserved_ptr, bytes, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+    #define GUI_M_ALLOC(bytes) mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)
+    #define GUI_M_RELEASE(base, bytes) munmap(base, bytes)
+    #define GUI_M_ZERO(p, s) memset(p, 0, s)
 #endif
 
-#define M_ZERO_STRUCT(p)  M_ZERO((p), sizeof(*(p)))
-#define M_ZERO_ARRAY(a)  M_ZERO((a), sizeof(a))
+#define GUI_M_ZERO_STRUCT(p)  GUI_M_ZERO((p), sizeof(*(p)))
+#define GUI_M_ZERO_ARRAY(a)  GUI_M_ZERO((a), sizeof(a))
 
 
-typedef struct Arena Arena;
-struct Arena {
-	Arena *curr;
-	Arena *prev;
+typedef struct guiArena guiArena;
+struct guiArena {
+	guiArena *curr;
+	guiArena *prev;
 	u64 alignment;
 	u64 base_pos;
 	u64 chunk_cap; // how many bytes current chunk can save
@@ -220,24 +220,25 @@ struct Arena {
 	b32 growable;
 	u32 trash;
 };
-typedef struct ArenaTemp ArenaTemp;
-struct ArenaTemp {
-	Arena *arena;
+
+typedef struct guiArenaTemp guiArenaTemp;
+struct guiArenaTemp {
+	guiArena *arena;
 	u64 pos;
 };
-#define M_ARENA_INITIAL_COMMIT kilobytes(4)
-#define M_ARENA_MAX_ALIGN 64
-#define M_ARENA_DEFAULT_RESERVE_SIZE gigabytes(1)
-#define M_ARENA_COMMIT_BLOCK_SIZE megabytes(64)
-#define M_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(Arena), M_ARENA_MAX_ALIGN)
 
-// ref: https://git.mr4th.com/mr4th-public/mr4th/src/branch/main/src/base/base_big_functions.c
-static Arena* arena_alloc_reserve(u64 reserve_size) {
-	Arena *arena = NULL;
-	if (reserve_size >= M_ARENA_INITIAL_COMMIT) {
-		void *mem = M_RESERVE(reserve_size);
-		if (M_COMMIT(mem, M_ARENA_INITIAL_COMMIT)) {
-			arena = (Arena*)mem;
+#define M_ARENA_INITIAL_COMMIT_SIZE KB(4)
+#define M_ARENA_MAX_ALIGN 64
+#define M_ARENA_DEFAULT_RESERVE_SIZE GB(1)
+#define M_ARENA_COMMIT_BLOCK_SIZE MB(64)
+#define M_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(guiArena), M_ARENA_MAX_ALIGN)
+
+static guiArena* gui_arena_alloc_reserve(u64 reserve_size) {
+	guiArena *arena = NULL;
+	if (reserve_size >= M_ARENA_INITIAL_COMMIT_SIZE) {
+		void *mem = GUI_M_RESERVE(reserve_size);
+		if (GUI_M_COMMIT(mem, M_ARENA_INITIAL_COMMIT_SIZE)) {
+			arena = (guiArena*)mem;
 			arena->curr = arena;
 			arena->prev = 0;
 			arena->alignment = sizeof(void*);
@@ -245,27 +246,30 @@ static Arena* arena_alloc_reserve(u64 reserve_size) {
 			arena->growable = 1;
 			arena->chunk_cap = reserve_size;
 			arena->chunk_pos = M_ARENA_INTERNAL_MIN_SIZE;
-			arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT;
+			arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT_SIZE;
 		}
 	}
 	assert(arena != NULL);
 	return arena;
 }
-static Arena* arena_alloc() {
-	return arena_alloc_reserve(M_ARENA_DEFAULT_RESERVE_SIZE);
-}
-static void arena_release(Arena *arena) {
-	//M_RELEASE(arena, arena->chunk_cap);
-	//Arena *curr = arena->curr;
-	for(Arena *curr = arena->curr; curr != NULL; curr = curr->prev) {
-		M_RELEASE(curr, curr->chunk_cap);
-	}
-	M_ZERO_STRUCT(arena);
+
+static guiArena* gui_arena_alloc() {
+	return gui_arena_alloc_reserve(M_ARENA_DEFAULT_RESERVE_SIZE);
 }
 
-static void* arena_push_nz(Arena *arena, u64 size) {
+static void gui_arena_release(guiArena *arena) {
+	guiArena *curr = arena->curr;
+	for(;curr != NULL;) {
+        void *prev = curr->prev;
+		GUI_M_RELEASE(curr, curr->chunk_cap);
+        curr = prev;
+	}
+	//GUI_M_ZERO_STRUCT(arena);
+}
+
+static void* gui_arena_push_nz(guiArena *arena, u64 size) {
 	void *res = NULL;
-	Arena *curr = arena->curr;
+	guiArena *curr = arena->curr;
 
 	// alloc a new chunk if not enough space
 	if (arena->growable) {
@@ -274,18 +278,18 @@ static void* arena_push_nz(Arena *arena, u64 size) {
 			u64 new_reserved_size = M_ARENA_DEFAULT_RESERVE_SIZE;
 			u64 least_size = M_ARENA_INTERNAL_MIN_SIZE + size;
 			if (new_reserved_size < least_size) {
-				// because 4KB is recommended page size for most currect Architectures
-				new_reserved_size = align_pow2(least_size, kilobytes(4));
+				// because 4KB is recommended page size for most current Architectures
+				new_reserved_size = align_pow2(least_size, KB(4));
 			}
-			void *mem = M_RESERVE(new_reserved_size);
-			if (M_COMMIT(mem, M_ARENA_INITIAL_COMMIT)) {
-				Arena *new_chunk_arena = (Arena*)mem;
+			void *mem = GUI_M_RESERVE(new_reserved_size);
+			if (GUI_M_COMMIT(mem, M_ARENA_INITIAL_COMMIT_SIZE)) {
+				guiArena *new_chunk_arena = (guiArena*)mem;
 				new_chunk_arena->curr = new_chunk_arena;
 				new_chunk_arena->prev = curr;
 				new_chunk_arena->base_pos = curr->base_pos + curr->chunk_cap;
 				new_chunk_arena->chunk_cap = new_reserved_size;
 				new_chunk_arena->chunk_pos = M_ARENA_INTERNAL_MIN_SIZE;
-				new_chunk_arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT;
+				new_chunk_arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT_SIZE;
 				curr = new_chunk_arena;
 				arena->curr = new_chunk_arena;
 			}
@@ -296,150 +300,127 @@ static void* arena_push_nz(Arena *arena, u64 size) {
 	u64 result_pos = align_pow2(curr->chunk_pos, arena->alignment);
 	u64 next_chunk_pos = result_pos + size;
 	if (next_chunk_pos <= curr->chunk_cap) {
+        // if we need memory for next_chunk_pos that isn't already commited, commit it
 		if (next_chunk_pos > curr->chunk_commit_pos) {
 			u64 next_commit_pos_aligned = align_pow2(next_chunk_pos, M_ARENA_COMMIT_BLOCK_SIZE);
 			u64 next_commit_pos = minimum(next_commit_pos_aligned,curr->chunk_cap);
 			u64 commit_size = next_commit_pos - curr->chunk_commit_pos;
-			if (M_COMMIT((u8*)curr + curr->chunk_commit_pos, commit_size)) {
+			if (GUI_M_COMMIT((u8*)curr + curr->chunk_commit_pos, commit_size)) {
 				curr->chunk_commit_pos = next_commit_pos;
 			}
 		}
 	}
 
-	// if allocation successful, return the pointer
+	// if allocation succesful, return the pointer
 	if (next_chunk_pos <= curr->chunk_commit_pos) {
+        //unpoison the memory before returning it
 		res = (u8*)curr + result_pos;
 		curr->chunk_pos = next_chunk_pos;
 	}
 
 	return res;
 }
-static void* arena_push(Arena *arena, u64 size) {
-	Arena *curr = arena->curr;
-	void *res = arena_push_nz(curr, size);
-	M_ZERO(res, size);
+
+static void* gui_arena_push(guiArena *arena, u64 size) {
+	guiArena *curr = arena->curr;
+	void *res = gui_arena_push_nz(curr, size);
+	GUI_M_ZERO(res, size);
 	return res;
 }
 
-static void arena_align(Arena *arena, u64 p)
+static void gui_arena_align(guiArena *arena, u64 p)
 {
 	assert(is_pow2(p) && p < M_ARENA_MAX_ALIGN);
-	Arena *curr = arena->curr;
+	guiArena *curr = arena->curr;
 	u64 current_chunk_pos = curr->chunk_pos;
 	u64 current_chunk_pos_aligned = align_pow2(curr->chunk_pos, p);
 	u64 needed_space = current_chunk_pos_aligned - current_chunk_pos;
 	// This 'if' might not be needed
 	if (needed_space > 0) {
-		arena_push(curr, needed_space);
+		gui_arena_push(curr, needed_space);
 	}
 }
-static u64 arena_current_pos(Arena *arena){
-	Arena *curr = arena->curr;
+
+static u64 gui_arena_current_pos(guiArena *arena){
+	guiArena *curr = arena->curr;
 	u64 pos = curr->base_pos + curr->chunk_pos;
 	return(pos);
 }
 
-static void* arena_pop_to_pos(Arena *arena, u64 pos) {
-	Arena *curr = arena->curr;
-	u64 total_pos = arena_current_pos(curr);
+static void gui_arena_pop_to_pos(guiArena *arena, u64 pos) {
+	guiArena *curr = arena->curr;
+	u64 total_pos = gui_arena_current_pos(curr);
 	// release chunks that BEGIN after this pos
 	if (pos < total_pos) {
-		// We need at least M_ARENA_INTERNAL_MIN_SIZE of allocation in our arena (for the Arena* at least)
+		// We need at least M_ARENA_INTERNAL_MIN_SIZE of allocation in our arena (for the guiArena* at least)
 		u64 clamped_total_pos = maximum(pos, M_ARENA_INTERNAL_MIN_SIZE);
-		for(;clamped_total_pos < pos;) {
-			Arena *prev = curr->prev;
-			M_RELEASE(curr, curr->chunk_cap);
+		for(;clamped_total_pos < curr->base_pos;) {
+			guiArena *prev = curr->prev;
+			GUI_M_RELEASE(curr, curr->chunk_cap);
 			curr = prev;
 		}
+        // arena's curr will become the last arena to have its memory released
 		arena->curr = curr;
+
+        // update arena's chunk_pos to only contain up to pop pos
 		u64 chunk_pos = clamped_total_pos - curr->base_pos;
 		u64 clamped_chunk_pos = maximum(chunk_pos, M_ARENA_INTERNAL_MIN_SIZE);
 		curr->chunk_pos = clamped_chunk_pos;
 	}
-	return NULL;
 }
-static void* arena_pop_amount(Arena *arena, u64 amount) {
-	Arena *curr = arena->curr;
-	u64 total_pos = arena_current_pos(curr);
+
+static void gui_arena_pop_amount(guiArena *arena, u64 amount) {
+	guiArena *curr = arena->curr;
+	u64 total_pos = gui_arena_current_pos(curr);
 	if (amount <= total_pos) {
 		u64 new_pos = total_pos - amount;
-		arena_pop_to_pos(arena, new_pos);
+		gui_arena_pop_to_pos(arena, new_pos);
 	}
-	// FIXME -- WHY do we return NULL here?????????
-	return NULL;
 }
 
-static void arena_clear(Arena *arena) {
-  arena_pop_to_pos(arena, 0);
+static void gui_arena_clear(guiArena *arena) {
+  gui_arena_pop_to_pos(arena, 0);
 }
 
-static ArenaTemp arena_begin_temp(Arena *arena) {
-	u64 pos = arena_current_pos(arena);
-	ArenaTemp t = {arena, pos};
+static guiArenaTemp gui_arena_begin_temp(guiArena *arena) {
+	u64 pos = gui_arena_current_pos(arena);
+	guiArenaTemp t = {arena, pos};
 	return t;
 }
-static void arena_end_temp(ArenaTemp *t) {
-	arena_pop_to_pos(t->arena, t->pos);
-}
-#define push_array_nz(arena, type, count) (type *)arena_push_nz((arena), sizeof(type)*(count))
-#define push_array(arena, type, count) (type *)arena_push((arena), sizeof(type)*(count))
 
-static thread_loc Arena *m__scratch_pool[2] = {0};
-static ArenaTemp arena_get_scratch(Arena *conflict) {
+static void gui_arena_end_temp(guiArenaTemp *t) {
+	gui_arena_pop_to_pos(t->arena, t->pos);
+}
+
+#define gui_push_array_nz(arena, type, count) (type *)gui_arena_push_nz((arena), sizeof(type)*(count))
+#define gui_push_array(arena, type, count) (type *)gui_arena_push((arena), sizeof(type)*(count))
+
+static thread_loc guiArena *m__scratch_pool[2] = {0};
+
+static guiArenaTemp gui_arena_get_scratch(guiArena *conflict) {
 
 	// init the scratch pool at the first time
 	if (m__scratch_pool[0] == 0) {
-		Arena **scratch_slot = m__scratch_pool;
+		guiArena **scratch_slot = m__scratch_pool;
 		for (u32 i = 0; i < 2; i+=1, scratch_slot+=1) {
-			*scratch_slot = arena_alloc();
+			*scratch_slot = gui_arena_alloc();
 		}
 	}
 
 	// return the non conflicting arena from pool
-	ArenaTemp res = {0};
-	Arena **scratch_slot = m__scratch_pool;
+	guiArenaTemp res = {0};
+	guiArena **scratch_slot = m__scratch_pool;
 	for (u32 i = 0; i < 2; i+=1, scratch_slot+=1) {
 		if (*scratch_slot == conflict){
 			continue;
 		}
-		res = arena_begin_temp(*scratch_slot);
+		res = gui_arena_begin_temp(*scratch_slot);
 	}
 
 	return res;
 }
-
-static void arena_test() { printf("------Arena test!-----\n"); printf("---------------------\n"); ArenaTemp temp = arena_get_scratch(NULL); Arena *arena = arena_alloc(); u8 arr[5560]; u8 *mem = arena_push_nz(arena, kilobytes(1)); memcpy(mem, arr, 2560); mem = arena_push(arena, gigabytes(0.1)); printf("arena_current_pos=[%lud]", arena_current_pos(arena)); ArenaTemp t = arena_begin_temp(arena); void *large_mem = arena_push(arena, gigabytes(1)); printf("\nafter [10GB] arena_current_pos=[%lud]", arena_current_pos(arena)); printf("\nafter [10GB] temp_arena_current_pos=[%lud]", arena_current_pos(t.arena)); arena_end_temp(&t); printf("\nafter [POP] arena_current_pos=[%lud]\n", arena_current_pos(arena)); for (int i = 0; i < 9; ++i) { mem[i] = '0'+(9 - i); } printf("%s\n", &mem[0]); arena_end_temp(&temp); printf("---------------------\n"); }
-/*
-// WHY we need to pass conflict arena in arena_get_scratch(..);
-void* bar(Arena *arena){
-    // this should be arena_get_scratch(arena) to get the other scratch arena, and not foo's
-    ArenaTemp temp = arena_get_scratch(0);
-    // we allocate memory on 'arena' allocator which is the same as foo's
-    u8 *mem = arena_push(arena, kilobytes(1));
-    memcpy(mem, "Hello bar\n", strlen("Hello bar\n"));
-    // some BS allocation we need to do with temp
-    void *bs_allocation = arena_push(temp.arena, megabytes(2));
-    // This will free temp, but ALSO, because temp == arena, arena will be freed and our data (Hello bar) will be invalid
-    arena_end_temp(&temp);
-    return mem;
-}
-void foo(){
-    ArenaTemp temp = arena_get_scratch(0);
-    void *mem_old = bar(temp.arena);
-
-    u8 *mem = arena_push(temp.arena, kilobytes(1));
-    memcpy(mem, "Hello foo\n", strlen("Hello foo\n"));
-
-    // Because our bar() function popped temp allocator, 'Hello foo' will OVERWRITE 'Hello bar'
-    // And it will be the output of this printf, thats why we need to pass conflict arenas in bar
-    printf("%s", mem_old);
-
-    arena_end_temp(&temp);
-}
-*/
-
 //##########################
-// DATA STRUCTURES (mainly for use in conj. with Arena)
+// DATA STRUCTURES (mainly for use in conj. with guiArena)
 //##########################
 
 #define sll_stack_push_N(f,n,next) ((n)->next=(f), (f)=(n))
@@ -468,7 +449,7 @@ void foo(){
 typedef struct TestNode TestNode;
 struct TestNode {TestNode*next;TestNode*prev;int data;};
 static void print_ll(TestNode *firstn) {printf("{");for(TestNode*n=firstn;n!=NULL;n=n->next){printf("%i,",n->data);}printf("}\n");}
-static void ll_test() { ArenaTemp temp = arena_get_scratch(NULL); printf("--Linked-List test!--\n"); printf("---------------------\n"); TestNode *ll_first = NULL; printf("SLL_STACK_PUSH: "); for (int i = 0; i < 10; ++i) { TestNode *n = push_array(temp.arena, TestNode, 1); n->data = i; sll_stack_push(ll_first, n); } print_ll(ll_first); printf("SLL_STACK_POP3E_I7:  "); sll_stack_pop(ll_first); sll_stack_pop(ll_first); sll_stack_pop(ll_first); TestNode *g0 = push_array(temp.arena, TestNode, 1); g0->data = 7; sll_stack_push(ll_first,g0); print_ll(ll_first); ll_first = NULL; TestNode *ll_last = NULL; printf("SLL_QUEUE_PUSH: "); for (int i = 0; i < 10; ++i) { TestNode *n = push_array(temp.arena, TestNode, 1); n->data = i; sll_queue_push(ll_first,ll_last, n); } print_ll(ll_first); printf("SLL_QUEUE_POP3E_I7:  "); sll_queue_pop(ll_first,ll_last); sll_queue_pop(ll_first,ll_last); sll_queue_pop(ll_first,ll_last); TestNode *g1 = push_array(temp.arena, TestNode, 1); g1->data = 7; sll_queue_push(ll_first,ll_last, g1); print_ll(ll_first); ll_first = NULL; ll_last = NULL; printf("DLL_PUSH_BACK:  "); for (int i = 0; i < 10; ++i) { TestNode *n = push_array(temp.arena, TestNode, 1); n->data = i; dll_push_back(ll_first,ll_last, n); } print_ll(ll_first); printf("DLL_REMOVE_ODD: "); for (TestNode *n = ll_first;n != NULL;n=n->next){ if (n->data % 2 == 0) { dll_remove(ll_first,ll_last,n); } } print_ll(ll_first); ll_first = NULL; ll_last = NULL; printf("DLL_PUSH_FRONT: "); for (int i = 0; i < 10; ++i) { TestNode *n = push_array(temp.arena, TestNode, 1); n->data = i; dll_push_front(ll_first,ll_last, n); } print_ll(ll_first); printf("DLL_REMOVE_ODD: "); for (TestNode *n = ll_first;n != NULL;n=n->next){ if (n->data % 2 == 0) { dll_remove(ll_first,ll_last,n); } } print_ll(ll_first); printf("---------------------\n"); arena_end_temp(&temp); }
+static void ll_test() { guiArenaTemp temp = gui_arena_get_scratch(NULL); printf("--Linked-List test!--\n"); printf("---------------------\n"); TestNode *ll_first = NULL; printf("SLL_STACK_PUSH: "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; sll_stack_push(ll_first, n); } print_ll(ll_first); printf("SLL_STACK_POP3E_I7:  "); sll_stack_pop(ll_first); sll_stack_pop(ll_first); sll_stack_pop(ll_first); TestNode *g0 = gui_push_array(temp.arena, TestNode, 1); g0->data = 7; sll_stack_push(ll_first,g0); print_ll(ll_first); ll_first = NULL; TestNode *ll_last = NULL; printf("SLL_QUEUE_PUSH: "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; sll_queue_push(ll_first,ll_last, n); } print_ll(ll_first); printf("SLL_QUEUE_POP3E_I7:  "); sll_queue_pop(ll_first,ll_last); sll_queue_pop(ll_first,ll_last); sll_queue_pop(ll_first,ll_last); TestNode *g1 = gui_push_array(temp.arena, TestNode, 1); g1->data = 7; sll_queue_push(ll_first,ll_last, g1); print_ll(ll_first); ll_first = NULL; ll_last = NULL; printf("DLL_PUSH_BACK:  "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; dll_push_back(ll_first,ll_last, n); } print_ll(ll_first); printf("DLL_REMOVE_ODD: "); for (TestNode *n = ll_first;n != NULL;n=n->next){ if (n->data % 2 == 0) { dll_remove(ll_first,ll_last,n); } } print_ll(ll_first); ll_first = NULL; ll_last = NULL; printf("DLL_PUSH_FRONT: "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; dll_push_front(ll_first,ll_last, n); } print_ll(ll_first); printf("DLL_REMOVE_ODD: "); for (TestNode *n = ll_first;n != NULL;n=n->next){ if (n->data % 2 == 0) { dll_remove(ll_first,ll_last,n); } } print_ll(ll_first); printf("---------------------\n"); gui_arena_end_temp(&temp); }
 
 
 
@@ -556,7 +537,7 @@ struct guiInputEventNode {
 };
 
 typedef struct {
-	Arena *event_arena;
+	guiArena *event_arena;
 	// global state used inside the GUI
 	guiMouseButtonState mb[GUI_MOUSE_BUTTON_COUNT];
 	s32 mouse_x, mouse_y;
@@ -571,10 +552,10 @@ typedef struct {
 //##########################
 
 typedef struct {
-    vec2 pos0;
-    vec2 pos1;
-    vec2 uv0;
-    vec2 uv1;
+    guiVec2 pos0;
+    guiVec2 pos1;
+    guiVec2 uv0;
+    guiVec2 uv1;
     vec4 color;
     float corner_radius;
     float edge_softness;
@@ -587,8 +568,8 @@ typedef struct {
 guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
 u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
-guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
-guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, vec2 p0, vec2 dim, vec4 col);
+guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
+guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, vec4 col);
 
 //##########################
 // UI CORE STUFF
@@ -608,7 +589,7 @@ typedef struct guiSliderData {
 
 guiScrollPoint gui_scroll_point_make(u64 idx, f32 off);
 void gui_scroll_point_target_idx(guiScrollPoint *p, s64 idx);
-void gui_scroll_point_clamp_idx(guiScrollPoint *p, vec2 range);
+void gui_scroll_point_clamp_idx(guiScrollPoint *p, guiVec2 range);
 guiSliderData gui_slider_data_make(guiScrollPoint sp, f32 px);
 
 typedef enum {
@@ -681,14 +662,14 @@ struct guiBox {
 	//guiSize semantic_size[AXIS2_COUNT];
 
 	// computed every frame
-	vec2 fixed_pos;
-	vec2 fixed_size;
+	guiVec2 fixed_pos;
+	guiVec2 fixed_size;
 	guiSize pref_size[AXIS2_COUNT];
 	Axis2 child_layout_axis;
 
 	// f32 computed_rel_position[AXIS2_COUNT]; // position relative to parent
 	// f32 computed_size[AXIS2_COUNT]; // computed size in pixels
-	rect r; // final on-screen rectangular coordinates
+	guiRect r; // final on-screen rectangular coordinates
 	vec4 c; // color (not good design wise)
 	vec4 text_color; // text color (not good design wise)
 	f32 text_scale;
@@ -796,8 +777,8 @@ Axis2 gui_push_child_layout_axis(Axis2 v);
 Axis2 gui_pop_child_layout_axis(void);
 
 // pushes fixed widths heights (TODO -- i should probably add all the lower level stack functions in future)
-void gui_push_rect(rect r);
-void gui_set_next_rect(rect r);
+void gui_push_rect(guiRect r);
+void gui_set_next_rect(guiRect r);
 void gui_pop_rect(void);
 
 guiSize gui_push_pref_size(Axis2 axis, guiSize v);
@@ -821,8 +802,8 @@ enum {
 typedef struct guiSignal guiSignal;
 struct guiSignal {
 	guiBox *box;
-	vec2 mouse;
-	vec2 drag_delta;
+	guiVec2 mouse;
+	guiVec2 drag_delta;
 	guiSignalFlags flags;
 };
 
@@ -834,7 +815,7 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b);
 
 guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
-guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data);
+guiSignal gui_slider(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data);
 guiSignal gui_label(char *str);
 guiSignal gui_clickable_region(char *str);
 guiSignal gui_icon(char *str, u32 icon_codepoint);
@@ -842,7 +823,7 @@ guiSignal gui_spacer(guiSize size);
 
 typedef struct guiSimpleWindowData guiSimpleWindowData;
 struct guiSimpleWindowData {
-	vec2 pos,dim;
+	guiVec2 pos,dim;
 	char name[64];
 	b32 active;
 };
@@ -862,8 +843,8 @@ struct guiBoxHashSlot
 };
 
 typedef struct {
-	Arena *arena;
-	Arena *build_arenas[2];
+	guiArena *arena;
+	guiArena *build_arenas[2];
 
 	u32 box_table_size;
 	guiBoxHashSlot *box_table;
@@ -877,14 +858,14 @@ typedef struct {
 	guiInputState gis;
 	u64 current_frame_index;
 
-	vec2 win_dim;
+	guiVec2 win_dim;
 	f32 dt;
 
 	guiKey active_box_keys[GUI_MOUSE_BUTTON_COUNT];
 	guiKey hot_box_key;
 	f32 global_text_scale;
 
-	vec2 drag_start_mp;
+	guiVec2 drag_start_mp;
 
 	// all the stacks! (there are a lot!)
 	guiParentNode parent_nil_stack_top;
@@ -916,9 +897,9 @@ guiStatus gui_state_update(f32 dt);
 guiState *gui_state_init();
 
 
-vec2 gui_drag_get_start_mp();
-void gui_drag_set_mp(vec2 mp);
-vec2 gui_drag_get_delta();
+guiVec2 gui_drag_get_start_mp();
+void gui_drag_set_mp(guiVec2 mp);
+guiVec2 gui_drag_get_delta();
 void gui_drag_set_current_mp();
 guiStatus gui_input_push_event(guiInputEventNode e);
 b32 gui_input_mb_down(GUI_MOUSE_BUTTON button);
@@ -929,15 +910,15 @@ void gui_input_process_event_queue(void);
 
 void gui_set_ui_state(guiState *state);
 guiState * gui_get_ui_state();
-Arena *gui_get_build_arena();
+guiArena *gui_get_build_arena();
 
-vec2 gui_font_get_string_dim(char* str, f32 scale);
-vec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
-guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, f32 scale, vec4 color);
-guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, f32 scale, vec4 color);
-guiStatus gui_draw_string_in_pos(char *str, vec2 pos, f32 scale, vec4 color);
-guiStatus gui_draw_string_in_rect(char *str, rect r, f32 scale, vec4 color);
-guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box);
+guiVec2 gui_font_get_string_dim(char* str, f32 scale);
+guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
+guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, vec4 color);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, vec4 color);
+guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, vec4 color);
+guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, vec4 color);
+guiStatus gui_draw_rect(guiRect r, vec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
 void print_gui_hierarchy(void);
 

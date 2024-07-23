@@ -1,20 +1,20 @@
 #include "gui.h"
 
 guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf){
-	sb_free(cmd_buf->commands);
+	gsb_free(cmd_buf->commands);
 	return GUI_GUD;
 }
 
 u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf){
-	return sb_len(cmd_buf->commands);
+	return gsb_len(cmd_buf->commands);
 }
 
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd){
-	sb_push(cmd_buf->commands, cmd);
+	gsb_push(cmd_buf->commands, cmd);
 	return GUI_GUD;
 }
 
-guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, vec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness){
+guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness){
 	guiRenderCommand cmd = {0};
 	cmd.pos0 = p0;
 	cmd.pos1.x = p0.x + dim.x;
@@ -27,11 +27,11 @@ guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, vec2 p0, 
 }
 
 //{{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{bc.x0,bc.y0},{bc.x1,bc.y1},{0,1,1,1},0,0,0},
-guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, vec2 p0, vec2 dim, vec4 col){
+guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, vec4 col){
 	guiRenderCommand cmd = {0};
 	guiPackedChar bc = gui_font_atlas_get_codepoint(atlas, c);
-	vec2 uv0 = {bc.x0,bc.y0};
-	vec2 uv1 = {bc.x1,bc.y1};
+	guiVec2 uv0 = {bc.x0,bc.y0};
+	guiVec2 uv1 = {bc.x1,bc.y1};
 	cmd.pos0 = p0;
 	cmd.pos1.x = p0.x + dim.x;
 	cmd.pos1.y = p0.y + dim.y;
@@ -42,12 +42,12 @@ guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiF
 }
 
 
-guiStatus gui_draw_rect(rect r, vec4 color, guiBox *box) {
+guiStatus gui_draw_rect(guiRect r, vec4 color, guiBox *box) {
 	guiState *state = gui_get_ui_state();
-	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color,(box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
+	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (guiVec2){r.x0, r.y0}, (guiVec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color,(box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
 	if (box->flags & GUI_BOX_FLAG_DRAW_BORDER) {
 		vec4 color_dim = v4(color.x/2.f,color.y/2.f,color.z/2.f,1.f);
-		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (vec2){r.x0, r.y0}, (vec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color_dim,1, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
+		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (guiVec2){r.x0, r.y0}, (guiVec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color_dim,1, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_TEXT) {
 		gui_draw_string_in_rect(box->str, r, box->text_scale, box->text_color);

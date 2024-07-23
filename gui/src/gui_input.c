@@ -47,7 +47,7 @@ void gui_input_process_event_queue(void){
 	}
 }
 
-Arena *gui_get_event_arena() {
+guiArena *gui_get_event_arena() {
 	return gui_get_ui_state()->gis.event_arena;
 }
 
@@ -60,7 +60,7 @@ void gui_input_clear_event_queue(void){
 guiStatus gui_input_push_event(guiInputEventNode e) {
 	guiState *state = gui_get_ui_state();
 	// We allocate the event in the current temp arena
-	guiInputEventNode *node = push_array(gui_get_event_arena(), guiInputEventNode, 1);
+	guiInputEventNode *node = gui_push_array(gui_get_event_arena(), guiInputEventNode, 1);
 	*node = e; // TODO -- let's just make a M_SET(src, dest, size) and M_SET_STRUCT(src, dst)
 	// We push it to our event queue
 	sll_queue_push(state->gis.first, state->gis.last, node);
@@ -68,21 +68,21 @@ guiStatus gui_input_push_event(guiInputEventNode e) {
 }
 
 
-vec2 gui_drag_get_start_mp() {
+guiVec2 gui_drag_get_start_mp() {
 	return gui_get_ui_state()->drag_start_mp;
 }
 
 void gui_drag_set_current_mp() {
-	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+	guiVec2 mp = gv2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
 	gui_drag_set_mp(mp);
 }
 
-void gui_drag_set_mp(vec2 mp) {
+void gui_drag_set_mp(guiVec2 mp) {
 	gui_get_ui_state()->drag_start_mp = mp;
 }
 
-vec2 gui_drag_get_delta() {
-	vec2 drag_pos = gui_get_ui_state()->drag_start_mp;
-	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
-	return v2(mp.x - drag_pos.x, mp.y - drag_pos.y);
+guiVec2 gui_drag_get_delta() {
+	guiVec2 drag_pos = gui_get_ui_state()->drag_start_mp;
+	guiVec2 mp = gv2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+	return gv2(mp.x - drag_pos.x, mp.y - drag_pos.y);
 }

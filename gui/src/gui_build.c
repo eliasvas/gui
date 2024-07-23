@@ -1,5 +1,5 @@
 #include "gui.h"
-extern vec2 dxb_get_win_dim();
+extern guiVec2 dxb_get_win_dim();
 
 void gui_build_begin(void) {
 	guiState *state = gui_get_ui_state();
@@ -62,5 +62,5 @@ void gui_build_end(void) {
 
 	// advance frame index + clear previous frame's arena
 	state->current_frame_index += 1; // This is used to prune unused boxes
-	arena_clear(gui_get_build_arena());
+	gui_arena_clear(gui_get_build_arena());
 }

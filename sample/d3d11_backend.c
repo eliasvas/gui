@@ -115,7 +115,7 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
     what is being done at the end of dxb_init, just put your own!
 */
 void dxb_init(HINSTANCE instance, dxBackend *backend) {
-    M_ZERO_STRUCT(backend);
+    GUI_M_ZERO_STRUCT(backend);
     // register window class to have custom WindowProc callback
     WNDCLASSEXW wc =
     {
@@ -676,8 +676,8 @@ void dxb_render_all(dxBackend *backend, guiRenderCommand *rcommands, u32 command
     }
 }
 
-vec2 platform_get_windim() {
-    return (vec2){dxb.currentWidth, dxb.currentHeight};
+guiVec2 platform_get_windim() {
+    return (guiVec2){dxb.currentWidth, dxb.currentHeight};
 }
 
 void platform_init(u8 *font_atlas_data){

@@ -8,7 +8,7 @@ void gui_scroll_point_target_idx(guiScrollPoint *p, s64 idx) {
 	p->off = p->off + (p->idx+p->off-idx);
 	p->idx = idx;
 }
-void gui_scroll_point_clamp_idx(guiScrollPoint *p, vec2 range) {
+void gui_scroll_point_clamp_idx(guiScrollPoint *p, guiVec2 range) {
     f32 val_count = (range.max - range.min);
 	if (p->idx > val_count){
 		u64 clamped = range.max;

@@ -121,7 +121,7 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
         f32 violation = total_size - max_allowed_size;
 
         if (violation > 0.0f) {
-            f32 *child_fixup_array = push_array(gui_get_build_arena(), f32, root->child_count);
+            f32 *child_fixup_array = gui_push_array(gui_get_build_arena(), f32, root->child_count);
             u32 child_idx = 0;
             for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next, ++child_idx) {
                 if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {

@@ -22,16 +22,16 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	stbtt_PackBegin(&pack_context, atlas->tex.data, atlas->tex.width, atlas->tex.height, 0, 1, NULL);
 
 	const char *ascii_font_path = "../fonts/roboto.ttf";
-	ttf_buffer = fu_read_all(ascii_font_path, &byte_count);
+	ttf_buffer = gui_fu_read_all(ascii_font_path, &byte_count);
 	assert(byte_count && "Couldn't read the ASCII ttf");
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_TEXT_SIZE, 32, 96, (stbtt_packedchar*)atlas->cdata);
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-	fu_dealloc_all(ttf_buffer);
+	gui_fu_dealloc_all(ttf_buffer);
 
 
 
 	const char *unicode_font_path = "../fonts/fa.ttf";
-	ttf_buffer = fu_read_all(unicode_font_path, &byte_count);
+	ttf_buffer = gui_fu_read_all(unicode_font_path, &byte_count);
 	assert(byte_count && "Couldn't read the unicode ttf");
 	u32 start_uchar = FA_ICON_DOWN_OPEN;
 	u32 char_count = FA_ICON_HEART_EMPTY - start_uchar;
@@ -39,7 +39,7 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	atlas->base_unicode_codepoint = FA_ICON_DOWN_OPEN;
 	// FIXME -- why are we doing getscaledfontvmetrics two times? its shadowed i think
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-	fu_dealloc_all(ttf_buffer);
+	gui_fu_dealloc_all(ttf_buffer);
 
 	stbtt_PackEnd(&pack_context);
 
@@ -62,9 +62,9 @@ guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint){
 
 
 // calculates width/height of a string in pixels
-vec2 gui_font_get_string_dim(char *str, f32 scale) {
+guiVec2 gui_font_get_string_dim(char *str, f32 scale) {
 	guiState *state = gui_get_ui_state();
-	if (!str) return v2(0,0);
+	if (!str) return gv2(0,0);
 
 	f32 text_height = state->atlas.ascent - state->atlas.descent;
 	f32 text_width = 0;
@@ -74,21 +74,21 @@ vec2 gui_font_get_string_dim(char *str, f32 scale) {
 		text_width += b.xadvance;
 	}
 
-	return v2(text_width * scale, text_height * scale);
+	return gv2(text_width * scale, text_height * scale);
 }
 
-vec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
+guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
 	guiState *state = gui_get_ui_state();
 	guiPackedChar b = gui_font_atlas_get_codepoint(&state->atlas, codepoint);
 	f32 text_height = state->atlas.ascent - state->atlas.descent;
-	vec2 dim = v2(b.x1-b.x0, b.y1-b.y0);
-	return v2(dim.x * scale, text_height * scale);
+	guiVec2 dim = gv2(b.x1-b.x0, b.y1-b.y0);
+	return gv2(dim.x * scale, text_height * scale);
 }
 
 // Shouldn't these functions be in gui_render?? hmmmmm, also why are they called gui_draw??
-guiStatus gui_draw_string_in_pos(char *str, vec2 pos, f32 scale, vec4 color) {
+guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, vec4 color) {
 	guiState *state = gui_get_ui_state();
-	vec2 text_dim = gui_font_get_string_dim(str,scale);
+	guiVec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = pos.x;
 	f32 text_y = pos.y;
 
@@ -98,33 +98,33 @@ guiStatus gui_draw_string_in_pos(char *str, vec2 pos, f32 scale, vec4 color) {
         f32 y0 = text_y + (b.yoff + state->atlas.ascent) * scale;
         f32 x1 = x0 + (b.x1 - b.x0) * scale;
         f32 y1 = y0 + (b.y1 - b.y0) * scale;
-		gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, str[i], (vec2){x0,y0}, (vec2){x1-x0,y1-y0},color);
+		gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, str[i], (guiVec2){x0,y0}, (guiVec2){x1-x0,y1-y0},color);
 		text_x += b.xadvance * scale;
 	}
 
 	return GUI_GUD;
 }
 
-guiStatus gui_draw_string_in_rect(char *str, rect r, f32 scale, vec4 color) {
-	vec2 text_dim = gui_font_get_string_dim(str,scale);
+guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, vec4 color) {
+	guiVec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
 
-	return gui_draw_string_in_pos(str, v2(text_x, text_y), scale, color);
+	return gui_draw_string_in_pos(str, gv2(text_x, text_y), scale, color);
 }
 
-guiStatus gui_draw_icon_in_rect(u32 codepoint, rect r, f32 scale, vec4 color) {
-	vec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, vec4 color) {
+	guiVec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
 
-	return gui_draw_icon_in_pos(codepoint, v2(text_x, text_y), scale, color);
+	return gui_draw_icon_in_pos(codepoint, gv2(text_x, text_y), scale, color);
 }
 
 
-guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, f32 scale, vec4 color) {
+guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, vec4 color) {
 	guiState *state = gui_get_ui_state();
-	vec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
+	guiVec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
 	f32 text_x = pos.x;
 	f32 text_y = pos.y;
 
@@ -133,7 +133,7 @@ guiStatus gui_draw_icon_in_pos(u32 codepoint, vec2 pos, f32 scale, vec4 color) {
 	f32 y0 = text_y + (b.yoff + state->atlas.ascent) * scale;
 	f32 x1 = x0 + (b.x1 - b.x0) * scale;
 	f32 y1 = y0 + (b.y1 - b.y0) * scale;
-	gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, codepoint, (vec2){x0,y0}, (vec2){x1-x0,y1-y0},color);
+	gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, codepoint, (guiVec2){x0,y0}, (guiVec2){x1-x0,y1-y0},color);
 
 	return GUI_GUD;
 }

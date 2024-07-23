@@ -29,15 +29,15 @@ guiStatus gui_state_update(f32 dt){
 }
 
 guiState *gui_state_init(){
-	Arena *arena = arena_alloc();
-	guiState *state = push_array(arena, guiState, 1);
+	guiArena *arena = gui_arena_alloc();
+	guiState *state = gui_push_array(arena, guiState, 1);
 	state->arena = arena;
-	state->build_arenas[0] = arena_alloc();
-	state->build_arenas[1] = arena_alloc();
+	state->build_arenas[0] = gui_arena_alloc();
+	state->build_arenas[1] = gui_arena_alloc();
 	// TODO -- maybe gis should have its own init?
-	state->gis.event_arena = arena_alloc();
+	state->gis.event_arena = gui_arena_alloc();
 	state->box_table_size = 4096;
-	state->box_table = push_array(arena, guiBoxHashSlot, state->box_table_size);
+	state->box_table = gui_push_array(arena, guiBoxHashSlot, state->box_table_size);
 
 	gui_font_load_default_font(&state->atlas);
 
@@ -48,6 +48,6 @@ guiState *gui_state_init(){
 }
 
 
-Arena *gui_get_build_arena() {
+guiArena *gui_get_build_arena() {
 	return gui_get_ui_state()->build_arenas[gui_get_ui_state()->current_frame_index%2];
 }

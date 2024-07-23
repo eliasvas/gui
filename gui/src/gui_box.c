@@ -49,9 +49,9 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 			sll_stack_pop(gui_get_ui_state()->first_free_box);
 		}
 		else {
-			box = push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
+			box = gui_push_array_nz(box_is_spacer ? gui_get_build_arena() : gui_get_ui_state()->arena, guiBox, 1);
 		}
-		M_ZERO_STRUCT(box);
+		GUI_M_ZERO_STRUCT(box);
 	}
 
 	// zero out per-frame data for box (will be recalculated)
@@ -60,10 +60,10 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->child_count = 0;
 		box->flags = 0;
 		box->last_frame_touched_index = gui_get_ui_state()->current_frame_index;
-		M_ZERO_ARRAY(box->pref_size);
-		// M_ZERO_STRUCT(&box->child_layout_axis);
-		// M_ZERO_STRUCT(&box->fixed_pos);
-		// M_ZERO_STRUCT(&box->fixed_size);
+		GUI_M_ZERO_ARRAY(box->pref_size);
+		// GUI_M_ZERO_STRUCT(&box->child_layout_axis);
+		// GUI_M_ZERO_STRUCT(&box->fixed_pos);
+		// GUI_M_ZERO_STRUCT(&box->fixed_size);
 	}
 
 	// hook into persistent table (if first time && not spacer)
@@ -193,13 +193,13 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b){
 guiSignal gui_get_signal_for_box(guiBox *box) {
 	guiSignal signal = {0};
 	signal.box = box;
-	rect r = box->r;
-	vec2 mp = v2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
+	guiRect r = box->r;
+	guiVec2 mp = gv2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
 
 	if (!(box->flags & GUI_BOX_FLAG_CLICKABLE))return signal;
 
 	// if mouse inside box, the box is HOT
-	if (point_inside_rect(mp, r)) {
+	if (gui_point_inside_rect(mp, r)) {
 		gui_get_ui_state()->hot_box_key = box->key;
 		if (!(box->flags & GUI_BOX_FLAG_DRAW_ICON)) {
 			box->flags |= GUI_BOX_FLAG_DRAW_BORDER;
@@ -207,7 +207,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (point_inside_rect(mp, r) && gui_input_mb_pressed(mk)) {
+		if (gui_point_inside_rect(mp, r) && gui_input_mb_pressed(mk)) {
 			gui_get_ui_state()->active_box_keys[mk] = box->key;
 			// TODO -- This is pretty crappy logic, fix someday
 			signal.flags |= (GUI_SIGNAL_FLAG_LMB_PRESSED << mk);
@@ -222,7 +222,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+		if (gui_point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk]= gui_key_zero();
 			signal.flags |= (GUI_SIGNAL_FLAG_LMB_RELEASED << mk);
@@ -230,7 +230,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse outside box AND mouse button released and box was ACTIVE, reset hot/active
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (!point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+		if (!gui_point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk] = gui_key_zero();
 		}
@@ -281,7 +281,7 @@ guiSignal gui_label(char *str) {
 }
 
 // TODO -- maybe an axis can be provided and do slider in that axis
-guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data) {
+guiSignal gui_slider(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data) {
 	guiSignal signal;
 	vec4 parent_color = gui_top_bg_color();
 	char slider_text[256];
@@ -313,7 +313,7 @@ guiSignal gui_slider(char *str, Axis2 axis, vec2 val_range, guiSliderData *data)
 		if (signal.flags & GUI_SIGNAL_FLAG_DRAGGING)
 		{
 			guiScrollPoint originalp = data->point;
-			vec2 delta = gui_drag_get_delta();
+			guiVec2 delta = gui_drag_get_delta();
 			u64 new_idx = minimum(maximum(0,originalp.idx + delta.raw[axis]),val_count);
 			gui_scroll_point_target_idx(&data->point, new_idx);
 			data->value = data->point.idx+val_range.min;
@@ -355,7 +355,7 @@ void gui_swindow_do_header(guiSimpleWindowData *window) {
 	guiSignal clickable_region_sig = gui_clickable_region(wname);
 	b32 is_clickable_region_active = gui_key_match(clickable_region_sig.box->key, gui_get_active_box_key(GUI_LMB));
 	if (is_clickable_region_active) {
-		vec2 md = gui_drag_get_delta();
+		guiVec2 md = gui_drag_get_delta();
 		window->pos.x += md.x;
 		window->pos.y += md.y;
 	}

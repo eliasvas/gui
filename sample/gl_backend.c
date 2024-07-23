@@ -1,4 +1,5 @@
 #include "gui.h"
+
 #define SDL_MAIN_NOIMPL
 
 #include <SDL.h>
@@ -30,44 +31,44 @@ SDL_GLContext glcontext;
 const char* gui_vs =
 "#version 300 es\n"
 "precision mediump float;\n"
-"layout(location = 0) in vec2 inPos0;\n"
-"layout(location = 1) in vec2 inPos1;\n"
-"layout(location = 2) in vec2 inUV0;\n"
-"layout(location = 3) in vec2 inUV1;\n"
+"layout(location = 0) in guiVec2 inPos0;\n"
+"layout(location = 1) in guiVec2 inPos1;\n"
+"layout(location = 2) in guiVec2 inUV0;\n"
+"layout(location = 3) in guiVec2 inUV1;\n"
 "layout(location = 4) in vec4 inColor;\n"
 "layout(location = 5) in float inCornerRadius;\n"
 "layout(location = 6) in float inEdgeSoftness;\n"
 "layout(location = 7) in float inBorderThickness;\n"
 "\n"
-"uniform vec2 winDim;\n"
+"uniform guiVec2 winDim;\n"
 "\n"
-"out vec2 fragUV;\n"
-"out vec2 fragDstPos;\n"
-"out vec2 fragDstCenter;\n"
-"out vec2 fragHalfSize;\n"
+"out guiVec2 fragUV;\n"
+"out guiVec2 fragDstPos;\n"
+"out guiVec2 fragDstCenter;\n"
+"out guiVec2 fragHalfSize;\n"
 "out vec4 fragColor;\n"
 "out float fragCornerRadius;\n"
 "out float fragEdgeSoftness;\n"
 "out float fragBorderThickness;\n"
 "\n"
-"const vec2 vertices[4] = vec2[4](\n"
-"    vec2(-1, -1),\n"
-"    vec2(-1, +1),\n"
-"    vec2(+1, -1),\n"
-"    vec2(+1, +1)\n"
+"const guiVec2 vertices[4] = guiVec2[4](\n"
+"    guiVec2(-1, -1),\n"
+"    guiVec2(-1, +1),\n"
+"    guiVec2(+1, -1),\n"
+"    guiVec2(+1, +1)\n"
 ");\n"
 "\n"
 "void main() {\n"
-"    vec2 dstHalfSize = (inPos1 - inPos0) / 2.0;\n"
-"    vec2 dstCenter = (inPos1 + inPos0) / 2.0;\n"
-"    vec2 dstPos = vertices[gl_VertexID] * dstHalfSize + dstCenter;\n"
+"    guiVec2 dstHalfSize = (inPos1 - inPos0) / 2.0;\n"
+"    guiVec2 dstCenter = (inPos1 + inPos0) / 2.0;\n"
+"    guiVec2 dstPos = vertices[gl_VertexID] * dstHalfSize + dstCenter;\n"
 "\n"
 "    gl_Position = vec4(2.0 * dstPos / winDim - 1.0, 0.0, 1.0);\n"
 "    gl_Position.y *= -1.0;\n"
 "\n"
-"    vec2 uvHalfSize = (inUV1 - inUV0) / 2.0;\n"
-"    vec2 uvCenter = (inUV1 + inUV0) / 2.0;\n"
-"    vec2 uvPos = vertices[gl_VertexID] * uvHalfSize + uvCenter;\n"
+"    guiVec2 uvHalfSize = (inUV1 - inUV0) / 2.0;\n"
+"    guiVec2 uvCenter = (inUV1 + inUV0) / 2.0;\n"
+"    guiVec2 uvPos = vertices[gl_VertexID] * uvHalfSize + uvCenter;\n"
 "\n"
 "    fragUV = uvPos;\n"
 "    fragColor = inColor;\n"
@@ -82,10 +83,10 @@ const char* gui_vs =
 const char* gui_fs =
 "#version 300 es\n"
 "precision mediump float;\n"
-"in vec2 fragUV;\n"
-"in vec2 fragDstPos;\n"
-"in vec2 fragDstCenter;\n"
-"in vec2 fragHalfSize;\n"
+"in guiVec2 fragUV;\n"
+"in guiVec2 fragDstPos;\n"
+"in guiVec2 fragDstCenter;\n"
+"in guiVec2 fragHalfSize;\n"
 "in vec4 fragColor;\n"
 "in float fragCornerRadius;\n"
 "in float fragEdgeSoftness;\n"
@@ -95,26 +96,26 @@ const char* gui_fs =
 "\n"
 "uniform sampler2D texture0;\n"
 "\n"
-"float roundedRectSDF(vec2 samplePos, vec2 rectCenter, vec2 rectHalfSize, float r) {\n"
-"    vec2 d2 = abs(rectCenter - samplePos) - rectHalfSize + vec2(r, r);\n"
+"float roundedRectSDF(guiVec2 samplePos, guiVec2 rectCenter, guiVec2 rectHalfSize, float r) {\n"
+"    guiVec2 d2 = abs(rectCenter - samplePos) - rectHalfSize + guiVec2(r, r);\n"
 "    return min(max(d2.x, d2.y), 0.0) + length(max(d2, 0.0)) - r;\n"
 "}\n"
 "\n"
 "void main() {\n"
-"    ivec2 texSize = textureSize(texture0, 0);\n"
-"    float col = texture(texture0, fragUV / vec2(texSize)).r;\n"
+"    iguiVec2 texSize = textureSize(texture0, 0);\n"
+"    float col = texture(texture0, fragUV / guiVec2(texSize)).r;\n"
 "    vec4 tex = vec4(col, col, col, col);\n"
 "\n"
 "    float softness = fragEdgeSoftness + 0.001;\n"
 "    float cornerRadius = fragCornerRadius;\n"
-"    vec2 softnessPadding = vec2(max(0.0, softness * 2.0 - 1.0), max(0.0, softness * 2.0 - 1.0));\n"
+"    guiVec2 softnessPadding = guiVec2(max(0.0, softness * 2.0 - 1.0), max(0.0, softness * 2.0 - 1.0));\n"
 "\n"
 "    float dist = roundedRectSDF(fragDstPos, fragDstCenter, fragHalfSize - softnessPadding, cornerRadius);\n"
 "    float sdfFactor = 1.0 - smoothstep(0.0, 2.0 * softness, dist);\n"
 "\n"
 "    float borderFactor = 1.0;\n"
 "    if (fragBorderThickness != 0.0) {\n"
-"        vec2 interiorHalfSize = fragHalfSize - vec2(fragBorderThickness);\n"
+"        guiVec2 interiorHalfSize = fragHalfSize - guiVec2(fragBorderThickness);\n"
 "        float interiorRadiusReduceF = min(interiorHalfSize.x / fragHalfSize.x, interiorHalfSize.y / fragHalfSize.y);\n"
 "        float interiorCornerRadius = fragCornerRadius * interiorRadiusReduceF * interiorRadiusReduceF;\n"
 "\n"
@@ -233,8 +234,8 @@ GLuint create_atlas_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsize
     #else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
     #endif
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -377,10 +378,10 @@ void platform_init(u8 *font_atlas_data) {
     //glBlendEquation(GL_ONE);
 }
 
-vec2 platform_get_windim() {
+guiVec2 platform_get_windim() {
     int ww,wh;
     SDL_GetWindowSize(window, &ww, &wh);
-    return v2(ww,wh);
+    return gv2(ww,wh);
 }
 
 void platform_update() {
@@ -435,7 +436,7 @@ void platform_update() {
         }
     }
 
-    vec2 windim = platform_get_windim();
+    guiVec2 windim = platform_get_windim();
     glViewport(0,0,windim.x,windim.y);
 }
 

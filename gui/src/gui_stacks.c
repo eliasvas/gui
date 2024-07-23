@@ -10,7 +10,7 @@
 #define gui_stack_push_impl(state, name_upper, name_lower, type, new_value) \
 gui##name_upper##Node *node = state->name_lower##_stack.free;\
 if(node != 0) {sll_stack_pop(state->name_lower##_stack.free);}\
-else {node = push_array(gui_get_build_arena(), gui##name_upper##Node, 1);}\
+else {node = gui_push_array(gui_get_build_arena(), gui##name_upper##Node, 1);}\
 type old_value = state->name_lower##_stack.top->v;\
 node->v = new_value;\
 sll_stack_push(state->name_lower##_stack.top, node);\
@@ -34,7 +34,7 @@ return popped->v;\
 #define gui_stack_set_next_impl(state, name_upper, name_lower, type, new_value) \
 gui##name_upper##Node *node = state->name_lower##_stack.free;\
 if(node != 0) {sll_stack_pop(state->name_lower##_stack.free);}\
-else {node = push_array(gui_get_build_arena(), gui##name_upper##Node, 1);}\
+else {node = gui_push_array(gui_get_build_arena(), gui##name_upper##Node, 1);}\
 type old_value = state->name_lower##_stack.top->v;\
 node->v = new_value;\
 sll_stack_push(state->name_lower##_stack.top, node);\
@@ -215,8 +215,8 @@ guiSize gui_set_next_pref_size(Axis2 axis, guiSize v) {
 }
 
 
-void gui_push_rect(rect r) {
-  vec2 size = {fabs(r.x1 - r.x0), fabs(r.y1 - r.y0)};
+void gui_push_rect(guiRect r) {
+  guiVec2 size = {fabs(r.x1 - r.x0), fabs(r.y1 - r.y0)};
   gui_push_fixed_x(r.x0);
   gui_push_fixed_y(r.y0);
   gui_push_fixed_width(size.x);
@@ -230,8 +230,8 @@ void gui_pop_rect(void) {
   gui_pop_fixed_height();
 }
 
-void gui_set_next_rect(rect r) {
-  vec2 size = {fabs(r.x1 - r.x0), fabs(r.y1 - r.y0)};
+void gui_set_next_rect(guiRect r) {
+  guiVec2 size = {fabs(r.x1 - r.x0), fabs(r.y1 - r.y0)};
   gui_set_next_fixed_x(r.x0);
   gui_set_next_fixed_y(r.y0);
   gui_set_next_fixed_width(size.x);

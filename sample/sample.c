@@ -1,11 +1,8 @@
-
-// Let's just make a Classic game OK?!
-
 #include "gui.h"
 
 void platform_init(u8 *font_atlas_data);
 void platform_update();
-vec2 platform_get_windim();
+guiVec2 platform_get_windim();
 void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
@@ -22,8 +19,8 @@ void sample_init(){
     sd2 = ALLOC(sizeof(guiSliderData));
     *sd2 = gui_slider_data_make(gui_scroll_point_make(0,0), 0);
     wdata = ALLOC(sizeof(guiSimpleWindowData));
-    wdata->dim = v2(400,300);
-    wdata->pos = v2(100,100);
+    wdata->dim = gv2(400,300);
+    wdata->pos = gv2(100,100);
     wdata->active = 1;
     sprintf(wdata->name, "TestWindow");
 }
@@ -64,7 +61,7 @@ void sample_update(){
         gui_set_next_bg_color(v4(0.6,0.2,0.4,1.0));
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
         gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
-        gui_slider("slider1", AXIS2_X, v2(0,400), sd1);
+        gui_slider("slider1", AXIS2_X, gv2(0,400), sd1);
 
         for (u32 i = 0; i < 4; ++i) {
             char panel_name[128];
@@ -105,8 +102,6 @@ void mainLoop() {
 
 int main(){
     sample_init();
-    arena_test();
-    ll_test();
     platform_init(gui_get_ui_state()->atlas.tex.data);
 
     // EMSCRIPTEN BULLSHIT
