@@ -36,7 +36,7 @@ void sample_update(){
         wdata->active = 1;
     }
 
-    vec4 colors[15] = {
+    guiVec4 colors[15] = {
         v4(0.95f, 0.61f, 0.73f, 1.0f), // Light Pink
         v4(0.55f, 0.81f, 0.95f, 1.0f), // Sky Blue
         v4(0.68f, 0.85f, 0.90f, 1.0f), // Light Sky Blue

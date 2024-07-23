@@ -283,7 +283,7 @@ guiSignal gui_label(char *str) {
 // TODO -- maybe an axis can be provided and do slider in that axis
 guiSignal gui_slider(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data) {
 	guiSignal signal;
-	vec4 parent_color = gui_top_bg_color();
+	guiVec4 parent_color = gui_top_bg_color();
 	char slider_text[256];
 	sprintf(slider_text, "slider_%s", str);
 	gui_set_next_child_layout_axis(axis);

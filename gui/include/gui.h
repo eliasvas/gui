@@ -40,8 +40,8 @@ typedef union {
     struct{f32 x,y,z,w;};
     struct{f32 r,g,b,a;};
     f32 raw[4];
-}vec4;
-#define v4(x,y,z,w) (vec4){x,y,z,w}
+}guiVec4;
+#define v4(x,y,z,w) (guiVec4){x,y,z,w}
 
 typedef union {
     struct{f32 x0,y0,x1,y1;};
@@ -556,7 +556,7 @@ typedef struct {
     guiVec2 pos1;
     guiVec2 uv0;
     guiVec2 uv1;
-    vec4 color;
+    guiVec4 color;
     float corner_radius;
     float edge_softness;
     float border_thickness;
@@ -568,8 +568,8 @@ typedef struct {
 guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
 u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
-guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, vec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
-guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, vec4 col);
+guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, guiVec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
+guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col);
 
 //##########################
 // UI CORE STUFF
@@ -670,8 +670,8 @@ struct guiBox {
 	// f32 computed_rel_position[AXIS2_COUNT]; // position relative to parent
 	// f32 computed_size[AXIS2_COUNT]; // computed size in pixels
 	guiRect r; // final on-screen rectangular coordinates
-	vec4 c; // color (not good design wise)
-	vec4 text_color; // text color (not good design wise)
+	guiVec4 c; // color (not good design wise)
+	guiVec4 text_color; // text color (not good design wise)
 	f32 text_scale;
 
 	u32 icon_codepoint; // in case this box represents an icon, this is its codepoint
@@ -704,8 +704,8 @@ typedef struct guiFixedXNode guiFixedXNode; struct guiFixedXNode {guiFixedXNode 
 typedef struct guiFixedYNode guiFixedYNode; struct guiFixedYNode {guiFixedYNode *next; f32 v;};
 typedef struct guiFixedWidthNode guiFixedWidthNode; struct guiFixedWidthNode {guiFixedWidthNode *next; f32 v;};
 typedef struct guiFixedHeightNode guiFixedHeightNode; struct guiFixedHeightNode {guiFixedHeightNode *next; f32 v;};
-typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; vec4 v;};
-typedef struct guiTextColorNode guiTextColorNode; struct guiTextColorNode {guiTextColorNode *next; vec4 v;};
+typedef struct guiBgColorNode guiBgColorNode; struct guiBgColorNode {guiBgColorNode *next; guiVec4 v;};
+typedef struct guiTextColorNode guiTextColorNode; struct guiTextColorNode {guiTextColorNode *next; guiVec4 v;};
 typedef struct guiChildLayoutAxisNode guiChildLayoutAxisNode; struct guiChildLayoutAxisNode {guiChildLayoutAxisNode*next; Axis2 v;};
 typedef struct guiTextScaleNode guiTextScaleNode; struct guiTextScaleNode {guiTextScaleNode *next; f32 v;};
 
@@ -755,15 +755,15 @@ guiSize gui_set_next_pref_height(guiSize v);
 guiSize gui_pop_pref_height(void);
 guiSize gui_top_pref_height(void);
 
-vec4 gui_top_bg_color(void);
-vec4 gui_set_next_bg_color(vec4 v);
-vec4 gui_push_bg_color(vec4 v);
-vec4 gui_pop_bg_color(void);
+guiVec4 gui_top_bg_color(void);
+guiVec4 gui_set_next_bg_color(guiVec4 v);
+guiVec4 gui_push_bg_color(guiVec4 v);
+guiVec4 gui_pop_bg_color(void);
 
-vec4 gui_top_text_color(void);
-vec4 gui_set_next_text_color(vec4 v);
-vec4 gui_push_text_color(vec4 v);
-vec4 gui_pop_text_color(void);
+guiVec4 gui_top_text_color(void);
+guiVec4 gui_set_next_text_color(guiVec4 v);
+guiVec4 gui_push_text_color(guiVec4 v);
+guiVec4 gui_pop_text_color(void);
 
 f32 gui_top_text_scale(void);
 f32 gui_set_next_text_scale(f32 v);
@@ -883,9 +883,9 @@ typedef struct {
 	guiPrefHeightNode pref_height_nil_stack_top;
 	struct { guiPrefHeightNode *top; guiSize bottom_val; guiPrefHeightNode *free; b32 auto_pop; } pref_height_stack;
 	guiBgColorNode bg_color_nil_stack_top;
-	struct { guiBgColorNode *top; vec4 bottom_val; guiBgColorNode *free; b32 auto_pop; } bg_color_stack;
+	struct { guiBgColorNode *top; guiVec4 bottom_val; guiBgColorNode *free; b32 auto_pop; } bg_color_stack;
 	guiTextColorNode text_color_nil_stack_top;
-	struct { guiTextColorNode *top; vec4 bottom_val; guiTextColorNode *free; b32 auto_pop; } text_color_stack;
+	struct { guiTextColorNode *top; guiVec4 bottom_val; guiTextColorNode *free; b32 auto_pop; } text_color_stack;
 	guiChildLayoutAxisNode child_layout_axis_nil_stack_top;
 	struct { guiChildLayoutAxisNode *top; Axis2 bottom_val; guiChildLayoutAxisNode *free; b32 auto_pop; } child_layout_axis_stack;
 	guiTextScaleNode text_scale_nil_stack_top;
@@ -914,11 +914,11 @@ guiArena *gui_get_build_arena();
 
 guiVec2 gui_font_get_string_dim(char* str, f32 scale);
 guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
-guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, vec4 color);
-guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, vec4 color);
-guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, vec4 color);
-guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, vec4 color);
-guiStatus gui_draw_rect(guiRect r, vec4 color, guiBox *box);
+guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 color);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, guiVec4 color);
+guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 color);
+guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, guiVec4 color);
+guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
 void print_gui_hierarchy(void);
 

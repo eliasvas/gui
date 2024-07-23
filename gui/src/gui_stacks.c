@@ -165,15 +165,15 @@ guiSize gui_set_next_pref_height(guiSize v) { gui_stack_set_next_impl(gui_get_ui
 guiSize gui_push_pref_height(guiSize v) { gui_stack_push_impl(gui_get_ui_state(), PrefHeight, pref_height, guiSize, v); }
 guiSize gui_pop_pref_height(void) { gui_stack_pop_impl(gui_get_ui_state(), PrefHeight, pref_height); }
 
-vec4 gui_top_bg_color(void) { gui_stack_top_impl(gui_get_ui_state(), BgColor, bg_color); }
-vec4 gui_set_next_bg_color(vec4 v) { gui_stack_set_next_impl(gui_get_ui_state(), BgColor, bg_color, vec4, v); }
-vec4 gui_push_bg_color(vec4 v) { gui_stack_push_impl(gui_get_ui_state(), BgColor, bg_color, vec4, v); }
-vec4 gui_pop_bg_color(void) { gui_stack_pop_impl(gui_get_ui_state(), BgColor, bg_color); }
+guiVec4 gui_top_bg_color(void) { gui_stack_top_impl(gui_get_ui_state(), BgColor, bg_color); }
+guiVec4 gui_set_next_bg_color(guiVec4 v) { gui_stack_set_next_impl(gui_get_ui_state(), BgColor, bg_color, guiVec4, v); }
+guiVec4 gui_push_bg_color(guiVec4 v) { gui_stack_push_impl(gui_get_ui_state(), BgColor, bg_color, guiVec4, v); }
+guiVec4 gui_pop_bg_color(void) { gui_stack_pop_impl(gui_get_ui_state(), BgColor, bg_color); }
 
-vec4 gui_top_text_color(void) { gui_stack_top_impl(gui_get_ui_state(), TextColor, text_color); }
-vec4 gui_set_next_text_color(vec4 v) { gui_stack_set_next_impl(gui_get_ui_state(), TextColor, text_color, vec4, v); }
-vec4 gui_push_text_color(vec4 v) { gui_stack_push_impl(gui_get_ui_state(), TextColor, text_color, vec4, v); }
-vec4 gui_pop_text_color(void) { gui_stack_pop_impl(gui_get_ui_state(), TextColor, text_color); }
+guiVec4 gui_top_text_color(void) { gui_stack_top_impl(gui_get_ui_state(), TextColor, text_color); }
+guiVec4 gui_set_next_text_color(guiVec4 v) { gui_stack_set_next_impl(gui_get_ui_state(), TextColor, text_color, guiVec4, v); }
+guiVec4 gui_push_text_color(guiVec4 v) { gui_stack_push_impl(gui_get_ui_state(), TextColor, text_color, guiVec4, v); }
+guiVec4 gui_pop_text_color(void) { gui_stack_pop_impl(gui_get_ui_state(), TextColor, text_color); }
 
 Axis2 gui_top_child_layout_axis(void) { gui_stack_top_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis); }
 Axis2 gui_set_next_child_layout_axis(Axis2 v) { gui_stack_set_next_impl(gui_get_ui_state(), ChildLayoutAxis, child_layout_axis, Axis2, v); }

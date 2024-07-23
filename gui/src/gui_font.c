@@ -86,7 +86,7 @@ guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
 }
 
 // Shouldn't these functions be in gui_render?? hmmmmm, also why are they called gui_draw??
-guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, vec4 color) {
+guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 color) {
 	guiState *state = gui_get_ui_state();
 	guiVec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = pos.x;
@@ -105,7 +105,7 @@ guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, vec4 color) 
 	return GUI_GUD;
 }
 
-guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, vec4 color) {
+guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, guiVec4 color) {
 	guiVec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
@@ -113,7 +113,7 @@ guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, vec4 color) {
 	return gui_draw_string_in_pos(str, gv2(text_x, text_y), scale, color);
 }
 
-guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, vec4 color) {
+guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, guiVec4 color) {
 	guiVec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
@@ -122,7 +122,7 @@ guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, vec4 color)
 }
 
 
-guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, vec4 color) {
+guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 color) {
 	guiState *state = gui_get_ui_state();
 	guiVec2 text_dim = gui_font_get_icon_dim(codepoint,scale);
 	f32 text_x = pos.x;
