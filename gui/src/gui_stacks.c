@@ -90,13 +90,13 @@ void gui_init_stacks(guiState *state) {
 	state->pref_height_stack.free = 0;
 	state->pref_height_stack.auto_pop = 0;
 	// -- bg_color stack initialization
-	state->bg_color_nil_stack_top.v = v4(0,0,0,0);
+	state->bg_color_nil_stack_top.v = gv4(0,0,0,0);
 	state->bg_color_stack.top = &state->bg_color_nil_stack_top;
 	state->bg_color_stack.bottom_val = state->bg_color_nil_stack_top.v;
 	state->bg_color_stack.free = 0;
 	state->bg_color_stack.auto_pop = 0;
 	// -- text_color stack initialization
-	state->text_color_nil_stack_top.v = v4(1,1,1,1);
+	state->text_color_nil_stack_top.v = gv4(1,1,1,1);
 	state->text_color_stack.top = &state->text_color_nil_stack_top;
 	state->text_color_stack.bottom_val = state->text_color_nil_stack_top.v;
 	state->text_color_stack.free = 0;

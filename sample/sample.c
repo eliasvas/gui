@@ -37,28 +37,28 @@ void sample_update(){
     }
 
     guiVec4 colors[15] = {
-        v4(0.95f, 0.61f, 0.73f, 1.0f), // Light Pink
-        v4(0.55f, 0.81f, 0.95f, 1.0f), // Sky Blue
-        v4(0.68f, 0.85f, 0.90f, 1.0f), // Light Sky Blue
-        v4(0.67f, 0.88f, 0.69f, 1.0f), // Light Green
-        v4(1.00f, 0.78f, 0.49f, 1.0f), // Peach
-        v4(0.98f, 0.93f, 0.36f, 1.0f), // Light Yellow
-        v4(1.00f, 0.63f, 0.48f, 1.0f), // Coral
-        v4(0.55f, 0.81f, 0.25f, 1.0f), // Light Slate Blue
-        v4(0.85f, 0.44f, 0.84f, 1.0f), // Orchid
-        v4(0.94f, 0.90f, 0.55f, 1.0f), // Light Goldenrod Yellow
-        v4(0.80f, 0.52f, 0.25f, 1.0f), // Peru
-        v4(0.70f, 0.13f, 0.13f, 1.0f), // Firebrick
-        v4(0.56f, 0.93f, 0.56f, 1.0f), // Medium Sea Green
-        v4(0.93f, 0.51f, 0.93f, 1.0f),  // Pale Violet Red
-        v4(0.95f, 0.61f, 0.73f, 1.0f), // Light Goldenrod Yellow
+        gv4(0.95f, 0.61f, 0.73f, 1.0f), // Light Pink
+        gv4(0.55f, 0.81f, 0.95f, 1.0f), // Sky Blue
+        gv4(0.68f, 0.85f, 0.90f, 1.0f), // Light Sky Blue
+        gv4(0.67f, 0.88f, 0.69f, 1.0f), // Light Green
+        gv4(1.00f, 0.78f, 0.49f, 1.0f), // Peach
+        gv4(0.98f, 0.93f, 0.36f, 1.0f), // Light Yellow
+        gv4(1.00f, 0.63f, 0.48f, 1.0f), // Coral
+        gv4(0.55f, 0.81f, 0.25f, 1.0f), // Light Slate Blue
+        gv4(0.85f, 0.44f, 0.84f, 1.0f), // Orchid
+        gv4(0.94f, 0.90f, 0.55f, 1.0f), // Light Goldenrod Yellow
+        gv4(0.80f, 0.52f, 0.25f, 1.0f), // Peru
+        gv4(0.70f, 0.13f, 0.13f, 1.0f), // Firebrick
+        gv4(0.56f, 0.93f, 0.56f, 1.0f), // Medium Sea Green
+        gv4(0.93f, 0.51f, 0.93f, 1.0f),  // Pale Violet Red
+        gv4(0.95f, 0.61f, 0.73f, 1.0f), // Light Goldenrod Yellow
     };
 
     if (wdata->active){
         gui_swindow_begin(wdata);
 
 
-        gui_set_next_bg_color(v4(0.6,0.2,0.4,1.0));
+        gui_set_next_bg_color(gv4(0.6,0.2,0.4,1.0));
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
         gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
         gui_slider("slider1", AXIS2_X, gv2(0,400), sd1);

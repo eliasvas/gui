@@ -41,7 +41,7 @@ typedef union {
     struct{f32 r,g,b,a;};
     f32 raw[4];
 }guiVec4;
-#define v4(x,y,z,w) (guiVec4){x,y,z,w}
+#define gv4(x,y,z,w) (guiVec4){x,y,z,w}
 
 typedef union {
     struct{f32 x0,y0,x1,y1;};
@@ -227,17 +227,17 @@ struct guiArenaTemp {
 	u64 pos;
 };
 
-#define M_ARENA_INITIAL_COMMIT_SIZE KB(4)
-#define M_ARENA_MAX_ALIGN 64
-#define M_ARENA_DEFAULT_RESERVE_SIZE GB(1)
-#define M_ARENA_COMMIT_BLOCK_SIZE MB(64)
-#define M_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(guiArena), M_ARENA_MAX_ALIGN)
+#define MGUI_ARENA_INITIAL_COMMIT_SIZE KB(4)
+#define MGUI_ARENA_MAX_ALIGN 64
+#define MGUI_ARENA_DEFAULT_RESERVE_SIZE GB(1)
+#define MGUI_ARENA_COMMIT_BLOCK_SIZE MB(64)
+#define MGUI_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(guiArena), MGUI_ARENA_MAX_ALIGN)
 
 static guiArena* gui_arena_alloc_reserve(u64 reserve_size) {
 	guiArena *arena = NULL;
-	if (reserve_size >= M_ARENA_INITIAL_COMMIT_SIZE) {
+	if (reserve_size >= MGUI_ARENA_INITIAL_COMMIT_SIZE) {
 		void *mem = GUI_M_RESERVE(reserve_size);
-		if (GUI_M_COMMIT(mem, M_ARENA_INITIAL_COMMIT_SIZE)) {
+		if (GUI_M_COMMIT(mem, MGUI_ARENA_INITIAL_COMMIT_SIZE)) {
 			arena = (guiArena*)mem;
 			arena->curr = arena;
 			arena->prev = 0;
@@ -245,8 +245,8 @@ static guiArena* gui_arena_alloc_reserve(u64 reserve_size) {
 			arena->base_pos = 0;
 			arena->growable = 1;
 			arena->chunk_cap = reserve_size;
-			arena->chunk_pos = M_ARENA_INTERNAL_MIN_SIZE;
-			arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT_SIZE;
+			arena->chunk_pos = MGUI_ARENA_INTERNAL_MIN_SIZE;
+			arena->chunk_commit_pos = MGUI_ARENA_INITIAL_COMMIT_SIZE;
 		}
 	}
 	assert(arena != NULL);
@@ -254,7 +254,7 @@ static guiArena* gui_arena_alloc_reserve(u64 reserve_size) {
 }
 
 static guiArena* gui_arena_alloc() {
-	return gui_arena_alloc_reserve(M_ARENA_DEFAULT_RESERVE_SIZE);
+	return gui_arena_alloc_reserve(MGUI_ARENA_DEFAULT_RESERVE_SIZE);
 }
 
 static void gui_arena_release(guiArena *arena) {
@@ -275,21 +275,21 @@ static void* gui_arena_push_nz(guiArena *arena, u64 size) {
 	if (arena->growable) {
 		u64 next_chunk_pos = align_pow2(curr->chunk_pos, arena->alignment);
 		if (next_chunk_pos + size > curr->chunk_cap) {
-			u64 new_reserved_size = M_ARENA_DEFAULT_RESERVE_SIZE;
-			u64 least_size = M_ARENA_INTERNAL_MIN_SIZE + size;
+			u64 new_reserved_size = MGUI_ARENA_DEFAULT_RESERVE_SIZE;
+			u64 least_size = MGUI_ARENA_INTERNAL_MIN_SIZE + size;
 			if (new_reserved_size < least_size) {
 				// because 4KB is recommended page size for most current Architectures
 				new_reserved_size = align_pow2(least_size, KB(4));
 			}
 			void *mem = GUI_M_RESERVE(new_reserved_size);
-			if (GUI_M_COMMIT(mem, M_ARENA_INITIAL_COMMIT_SIZE)) {
+			if (GUI_M_COMMIT(mem, MGUI_ARENA_INITIAL_COMMIT_SIZE)) {
 				guiArena *new_chunk_arena = (guiArena*)mem;
 				new_chunk_arena->curr = new_chunk_arena;
 				new_chunk_arena->prev = curr;
 				new_chunk_arena->base_pos = curr->base_pos + curr->chunk_cap;
 				new_chunk_arena->chunk_cap = new_reserved_size;
-				new_chunk_arena->chunk_pos = M_ARENA_INTERNAL_MIN_SIZE;
-				new_chunk_arena->chunk_commit_pos = M_ARENA_INITIAL_COMMIT_SIZE;
+				new_chunk_arena->chunk_pos = MGUI_ARENA_INTERNAL_MIN_SIZE;
+				new_chunk_arena->chunk_commit_pos = MGUI_ARENA_INITIAL_COMMIT_SIZE;
 				curr = new_chunk_arena;
 				arena->curr = new_chunk_arena;
 			}
@@ -302,7 +302,7 @@ static void* gui_arena_push_nz(guiArena *arena, u64 size) {
 	if (next_chunk_pos <= curr->chunk_cap) {
         // if we need memory for next_chunk_pos that isn't already commited, commit it
 		if (next_chunk_pos > curr->chunk_commit_pos) {
-			u64 next_commit_pos_aligned = align_pow2(next_chunk_pos, M_ARENA_COMMIT_BLOCK_SIZE);
+			u64 next_commit_pos_aligned = align_pow2(next_chunk_pos, MGUI_ARENA_COMMIT_BLOCK_SIZE);
 			u64 next_commit_pos = minimum(next_commit_pos_aligned,curr->chunk_cap);
 			u64 commit_size = next_commit_pos - curr->chunk_commit_pos;
 			if (GUI_M_COMMIT((u8*)curr + curr->chunk_commit_pos, commit_size)) {
@@ -330,7 +330,7 @@ static void* gui_arena_push(guiArena *arena, u64 size) {
 
 static void gui_arena_align(guiArena *arena, u64 p)
 {
-	assert(is_pow2(p) && p < M_ARENA_MAX_ALIGN);
+	assert(is_pow2(p) && p < MGUI_ARENA_MAX_ALIGN);
 	guiArena *curr = arena->curr;
 	u64 current_chunk_pos = curr->chunk_pos;
 	u64 current_chunk_pos_aligned = align_pow2(curr->chunk_pos, p);
@@ -352,8 +352,8 @@ static void gui_arena_pop_to_pos(guiArena *arena, u64 pos) {
 	u64 total_pos = gui_arena_current_pos(curr);
 	// release chunks that BEGIN after this pos
 	if (pos < total_pos) {
-		// We need at least M_ARENA_INTERNAL_MIN_SIZE of allocation in our arena (for the guiArena* at least)
-		u64 clamped_total_pos = maximum(pos, M_ARENA_INTERNAL_MIN_SIZE);
+		// We need at least MGUI_ARENA_INTERNAL_MIN_SIZE of allocation in our arena (for the guiArena* at least)
+		u64 clamped_total_pos = maximum(pos, MGUI_ARENA_INTERNAL_MIN_SIZE);
 		for(;clamped_total_pos < curr->base_pos;) {
 			guiArena *prev = curr->prev;
 			GUI_M_RELEASE(curr, curr->chunk_cap);
@@ -364,7 +364,7 @@ static void gui_arena_pop_to_pos(guiArena *arena, u64 pos) {
 
         // update arena's chunk_pos to only contain up to pop pos
 		u64 chunk_pos = clamped_total_pos - curr->base_pos;
-		u64 clamped_chunk_pos = maximum(chunk_pos, M_ARENA_INTERNAL_MIN_SIZE);
+		u64 clamped_chunk_pos = maximum(chunk_pos, MGUI_ARENA_INTERNAL_MIN_SIZE);
 		curr->chunk_pos = clamped_chunk_pos;
 	}
 }
@@ -395,30 +395,6 @@ static void gui_arena_end_temp(guiArenaTemp *t) {
 #define gui_push_array_nz(arena, type, count) (type *)gui_arena_push_nz((arena), sizeof(type)*(count))
 #define gui_push_array(arena, type, count) (type *)gui_arena_push((arena), sizeof(type)*(count))
 
-static thread_loc guiArena *m__scratch_pool[2] = {0};
-
-static guiArenaTemp gui_arena_get_scratch(guiArena *conflict) {
-
-	// init the scratch pool at the first time
-	if (m__scratch_pool[0] == 0) {
-		guiArena **scratch_slot = m__scratch_pool;
-		for (u32 i = 0; i < 2; i+=1, scratch_slot+=1) {
-			*scratch_slot = gui_arena_alloc();
-		}
-	}
-
-	// return the non conflicting arena from pool
-	guiArenaTemp res = {0};
-	guiArena **scratch_slot = m__scratch_pool;
-	for (u32 i = 0; i < 2; i+=1, scratch_slot+=1) {
-		if (*scratch_slot == conflict){
-			continue;
-		}
-		res = gui_arena_begin_temp(*scratch_slot);
-	}
-
-	return res;
-}
 //##########################
 // DATA STRUCTURES (mainly for use in conj. with guiArena)
 //##########################
@@ -445,12 +421,6 @@ static guiArenaTemp gui_arena_get_scratch(guiArena *conflict) {
 #define dll_remove_NPZ(z,f,l,n,next,prev) (((n) == (f) ? (f) = (n)->next : (0)), ((n) == (l) ? (l) = (l)->prev : (0)), (check_zero(z,(n)->prev) ? (0) : ((n)->prev->next = (n)->next)), (check_zero(z,(n)->next) ? (0) : ((n)->next->prev = (n)->prev)))
 #define dll_remove_NP(f,l,n,next,prev) dll_remove_NPZ(0,f,l,n,next,prev)
 #define dll_remove(f,l,n) dll_remove_NP(f,l,n,next,prev)
-
-typedef struct TestNode TestNode;
-struct TestNode {TestNode*next;TestNode*prev;int data;};
-static void print_ll(TestNode *firstn) {printf("{");for(TestNode*n=firstn;n!=NULL;n=n->next){printf("%i,",n->data);}printf("}\n");}
-static void ll_test() { guiArenaTemp temp = gui_arena_get_scratch(NULL); printf("--Linked-List test!--\n"); printf("---------------------\n"); TestNode *ll_first = NULL; printf("SLL_STACK_PUSH: "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; sll_stack_push(ll_first, n); } print_ll(ll_first); printf("SLL_STACK_POP3E_I7:  "); sll_stack_pop(ll_first); sll_stack_pop(ll_first); sll_stack_pop(ll_first); TestNode *g0 = gui_push_array(temp.arena, TestNode, 1); g0->data = 7; sll_stack_push(ll_first,g0); print_ll(ll_first); ll_first = NULL; TestNode *ll_last = NULL; printf("SLL_QUEUE_PUSH: "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; sll_queue_push(ll_first,ll_last, n); } print_ll(ll_first); printf("SLL_QUEUE_POP3E_I7:  "); sll_queue_pop(ll_first,ll_last); sll_queue_pop(ll_first,ll_last); sll_queue_pop(ll_first,ll_last); TestNode *g1 = gui_push_array(temp.arena, TestNode, 1); g1->data = 7; sll_queue_push(ll_first,ll_last, g1); print_ll(ll_first); ll_first = NULL; ll_last = NULL; printf("DLL_PUSH_BACK:  "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; dll_push_back(ll_first,ll_last, n); } print_ll(ll_first); printf("DLL_REMOVE_ODD: "); for (TestNode *n = ll_first;n != NULL;n=n->next){ if (n->data % 2 == 0) { dll_remove(ll_first,ll_last,n); } } print_ll(ll_first); ll_first = NULL; ll_last = NULL; printf("DLL_PUSH_FRONT: "); for (int i = 0; i < 10; ++i) { TestNode *n = gui_push_array(temp.arena, TestNode, 1); n->data = i; dll_push_front(ll_first,ll_last, n); } print_ll(ll_first); printf("DLL_REMOVE_ODD: "); for (TestNode *n = ll_first;n != NULL;n=n->next){ if (n->data % 2 == 0) { dll_remove(ll_first,ll_last,n); } } print_ll(ll_first); printf("---------------------\n"); gui_arena_end_temp(&temp); }
-
 
 
 //##########################
