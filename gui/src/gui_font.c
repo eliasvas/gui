@@ -1,6 +1,7 @@
 #include "gui.h"
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "../ext/stb/stb_truetype.h"
+#include "font_data.c"
 //TODO -- we need to do the base85 compressed ProggyClean in source thing
 
 // TODO -- This field should be configurable
@@ -21,17 +22,21 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	stbtt_pack_context pack_context;
 	stbtt_PackBegin(&pack_context, atlas->tex.data, atlas->tex.width, atlas->tex.height, 0, 1, NULL);
 
-	const char *ascii_font_path = "../fonts/roboto.ttf";
-	ttf_buffer = gui_fu_read_all(ascii_font_path, &byte_count);
+	//const char *ascii_font_path = "../fonts/roboto.ttf";
+	//ttf_buffer = gui_fu_read_all(ascii_font_path, &byte_count);
+	ttf_buffer = roboto;
+	byte_count = array_count(roboto);
 	assert(byte_count && "Couldn't read the ASCII ttf");
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_TEXT_SIZE, 32, 96, (stbtt_packedchar*)atlas->cdata);
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-	gui_fu_dealloc_all(ttf_buffer);
+	//gui_fu_dealloc_all(ttf_buffer);
 
 
 
-	const char *unicode_font_path = "../fonts/fa.ttf";
-	ttf_buffer = gui_fu_read_all(unicode_font_path, &byte_count);
+	//const char *unicode_font_path = "../fonts/fa.ttf";
+	//ttf_buffer = gui_fu_read_all(unicode_font_path, &byte_count);
+	ttf_buffer = fa;
+	byte_count = array_count(fa);
 	assert(byte_count && "Couldn't read the unicode ttf");
 	u32 start_uchar = FA_ICON_DOWN_OPEN;
 	u32 char_count = FA_ICON_HEART_EMPTY - start_uchar;
@@ -39,7 +44,7 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	atlas->base_unicode_codepoint = FA_ICON_DOWN_OPEN;
 	// FIXME -- why are we doing getscaledfontvmetrics two times? its shadowed i think
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-	gui_fu_dealloc_all(ttf_buffer);
+	//gui_fu_dealloc_all(ttf_buffer);
 
 	stbtt_PackEnd(&pack_context);
 
