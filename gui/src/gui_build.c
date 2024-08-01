@@ -8,8 +8,6 @@ void gui_build_begin(void) {
 	// INVESTIGATE
 	gui_init_stacks(state);
 
-	// FIXME: dragging currently kinda broken
-	gui_drag_set_current_mp();
 
 	// NOTE: build top level's root guiBox
 	gui_set_next_child_layout_axis(AXIS2_Y);
@@ -53,9 +51,11 @@ void gui_build_end(void) {
 	gui_layout_root(state->root, AXIS2_Y);
 
 	// print hierarchy if need-be
-	if (gui_input_mb_pressed(GUI_RMB)) {
-		print_gui_hierarchy();
-	}
+	// if (gui_input_mb_pressed(GUI_RMB)) {
+	// 	print_gui_hierarchy();
+	// }
+
+	gui_drag_set_current_mp();
 
 	// render eveything
     gui_render_hierarchy(gui_get_ui_state()->root);
