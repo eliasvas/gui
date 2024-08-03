@@ -323,6 +323,70 @@ guiSignal gui_slider(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *da
 	gui_pop_parent();
 	return signal;
 }
+
+// TODO -- FIX this, when two widgets have equal values, we will have dupelicate IDs!!
+// TODO right now we dont do anything for different axis
+// we make a parent with GUI_SIZEKIND_SUM_OF_CHILDREN, and put SIZEKIND_TEXT_CONTEXT label inside!
+guiSignal gui_spinner(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data) {
+	s32 val = (s32)data->value;
+	char val_str[64] = {0};
+	sprintf(val_str, "%d", val);
+
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_CHILDREN_SUM,1.0,1.0});
+	//guiBox *parent = gui_box_build_from_str( GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_ROUNDED_EDGES ,str);
+	guiBox *parent = gui_box_build_from_str( GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_ROUNDED_EDGES ,str);
+	gui_push_parent(parent);
+
+
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.0,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.0,1.0});
+	char wname[64] = {0};
+	sprintf(wname, "left_%s", str);
+	guiSignal icon_left = gui_icon(wname, FA_ICON_LEFT_OPEN);
+	if (icon_left.flags & GUI_SIGNAL_FLAG_LMB_RELEASED) {
+		if(data->point.idx > 0) {
+			guiScrollPoint originalp = data->point;
+			f32 val_count = (val_range.max - val_range.min);
+			guiVec2 delta = gv2(-1,0);
+			u64 new_idx = minimum(maximum(0,originalp.idx + delta.raw[axis]),val_count);
+			gui_scroll_point_target_idx(&data->point, new_idx);
+			data->value = data->point.idx+val_range.min;
+	
+		}
+	}
+
+
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.0,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.0,1.0});
+	guiBox *middle = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
+									GUI_BOX_FLAG_DRAW_BORDER|
+									GUI_BOX_FLAG_DRAW_TEXT|
+									GUI_BOX_FLAG_DRAW_BACKGROUND|
+									GUI_BOX_FLAG_DRAW_HOT_ANIMATION|
+									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
+									val_str);
+	guiSignal signal = gui_get_signal_for_box(middle);
+
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.0,1.0});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,5.0,1.0});
+	sprintf(wname, "right_%s", str);
+	guiSignal icon_right = gui_icon(wname, FA_ICON_RIGHT_OPEN);
+	if (icon_right.flags & GUI_SIGNAL_FLAG_LMB_RELEASED) {
+		if(data->point.idx < abs(val_range.y-val_range.x)) {
+			guiScrollPoint originalp = data->point;
+			f32 val_count = (val_range.max - val_range.min);
+			guiVec2 delta = gv2(1,0);
+			u64 new_idx = minimum(maximum(0,originalp.idx + delta.raw[axis]),val_count);
+			gui_scroll_point_target_idx(&data->point, new_idx);
+			data->value = data->point.idx+val_range.min;
+	
+		}
+	}
+	gui_pop_parent();
+	return signal;
+}
+
 guiSignal gui_button(char *str) {
 	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
 									GUI_BOX_FLAG_DRAW_BORDER|

@@ -785,6 +785,7 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b);
 
 guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
+guiSignal gui_spinner(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data);
 guiSignal gui_slider(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data);
 guiSignal gui_label(char *str);
 guiSignal gui_clickable_region(char *str);
