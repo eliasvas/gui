@@ -443,21 +443,26 @@ typedef enum {
 //##########################
 // FONT
 //##########################
-typedef struct
-{
+
+
+typedef struct guiPackedChar guiPackedChar;
+
+struct guiPackedChar {
 	unsigned short x0,y0,x1,y1; // coordinates of bbox in bitmap
 	f32 xoff,yoff,xadvance;
 	f32 xoff2,yoff2;
-} guiPackedChar;
+};
 
 //always TEX_FORMAT_R8
-typedef struct {
+typedef struct guiFontAtlasTexture guiFontAtlasTexture;
+struct guiFontAtlasTexture {
 	u32 width;
 	u32 height;
 	u8 *data;
-} guiFontAtlasTexture;
+};
 
-typedef struct {
+typedef struct guiFontAtlas guiFontAtlas;
+struct guiFontAtlas {
 	guiPackedChar cdata[96]; // ASCII 32..126 is 95 glyphs
 	// TODO -- maybe not all our Unicode glyphs are packed one after another.. what next? we need a HashMap!
 	guiPackedChar udata[200]; // 200 Unicode glyphs
@@ -465,38 +470,40 @@ typedef struct {
 	guiFontAtlasTexture tex;
 	f32 ascent, descent, line_gap;
 	u32 base_unicode_codepoint;
-} guiFontAtlas;
+};
 
-guiStatus gui_font_load_from_file(guiFontAtlas *atlas, const char *filepath);
-guiStatus gui_font_load_default_font(guiFontAtlas *atlas);
-
+guiStatus gui_font_load_default_font(guiArena *arena, guiFontAtlas *atlas);
 guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint);
 
 //##########################
 // INPUT
 //##########################
 
-typedef enum {
+typedef enum GUI_MOUSE_BUTTON GUI_MOUSE_BUTTON;
+
+enum GUI_MOUSE_BUTTON {
 	GUI_LMB,
 	GUI_MMB,
 	GUI_RMB,
 	//....
 	GUI_MOUSE_BUTTON_COUNT,
-}GUI_MOUSE_BUTTON;
+};
 
-typedef enum {
+typedef enum guiMouseButtonState guiMouseButtonState;
+enum guiMouseButtonState {
 	KEY_STATE_UP = 0x0, // 00
 	KEY_STATE_PRESSED = 0x1, // 01
 	KEY_STATE_RELEASED = 0x2, // 10
 	KEY_STATE_DOWN = 0x3, // 11
 	KEY_STATE_MASK = 0x3, // 11
-}guiMouseButtonState;
+};
 
-typedef enum {
+typedef enum guiInputEventNodeType guiInputEventNodeType;
+enum guiInputEventNodeType {
 	GUI_INPUT_EVENT_TYPE_KEY_EVENT,
 	GUI_INPUT_EVENT_TYPE_MOUSE_MOVE,
 	GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT,
-}guiInputEventNodeType;
+};
 
 typedef struct guiInputEventNode guiInputEventNode;
 struct guiInputEventNode {
@@ -506,7 +513,8 @@ struct guiInputEventNode {
 	guiInputEventNode *next;
 };
 
-typedef struct {
+typedef struct guiInputState guiInputState;
+struct guiInputState {
 	guiArena *event_arena;
 	// global state used inside the GUI
 	guiMouseButtonState mb[GUI_MOUSE_BUTTON_COUNT];
@@ -515,13 +523,14 @@ typedef struct {
 	// per-frame event system (queue-like)
 	guiInputEventNode *first;
 	guiInputEventNode *last;
-} guiInputState;
+};
 
 //##########################
 // RENDERER
 //##########################
 
-typedef struct {
+typedef struct guiRenderCommand guiRenderCommand;
+struct guiRenderCommand {
     guiVec2 pos0;
     guiVec2 pos1;
     guiVec2 uv0;
@@ -530,11 +539,12 @@ typedef struct {
     float corner_radius;
     float edge_softness;
     float border_thickness;
-}guiRenderCommand;
+};
 
-typedef struct {
+typedef struct guiRenderCommandBuffer guiRenderCommandBuffer;
+struct guiRenderCommandBuffer {
 	guiRenderCommand *commands;
-}guiRenderCommandBuffer;
+};
 guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
 u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
 guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
@@ -545,16 +555,18 @@ guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiF
 // UI CORE STUFF
 //##########################
 
-typedef struct guiScrollPoint
-{
+typedef struct guiScrollPoint guiScrollPoint;
+
+struct guiScrollPoint {
   u64 idx; // current index (between min/max)
   f32 off; // fractional offset
-}guiScrollPoint;
+};
 
-typedef struct guiSliderData {
+typedef struct guiSliderData guiSliderData;
+struct guiSliderData {
 	guiScrollPoint point;
 	f32 value; // the actual value being calulated through the scroll point (updated each frame)
-}guiSliderData;
+};
 
 
 guiScrollPoint gui_scroll_point_make(u64 idx, f32 off);
@@ -562,15 +574,16 @@ void gui_scroll_point_target_idx(guiScrollPoint *p, s64 idx);
 void gui_scroll_point_clamp_idx(guiScrollPoint *p, guiVec2 range);
 guiSliderData gui_slider_data_make(guiScrollPoint sp, f32 px);
 
-typedef enum {
+typedef enum guiSizeKind guiSizeKind;
+enum guiSizeKind {
 	GUI_SIZEKIND_NULL,
 	GUI_SIZEKIND_PIXELS, // direct size in pixels
 	GUI_SIZEKIND_TEXT_CONTENT, // axis' size determined by string dimensions
 	GUI_SIZEKIND_PERCENT_OF_PARENT, // we want a percent of parent box's size in some axis
 	GUI_SIZEKIND_CHILDREN_SUM, // size of given axis is sum of children sizes layed out in order
-} guiSizeKind;
+};
 
-typedef struct guiSize guiSize;
+typedef struct guiSize guiSize; 
 struct guiSize {
 	guiSizeKind kind;
 	f32 value;

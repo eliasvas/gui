@@ -39,7 +39,7 @@ guiState *gui_state_init(){
 	state->box_table_size = 4096;
 	state->box_table = gui_push_array(arena, guiBoxHashSlot, state->box_table_size);
 
-	gui_font_load_default_font(&state->atlas);
+	gui_font_load_default_font(gui_get_build_arena, &state->atlas);
 
 	gui_init_stacks(state);
 

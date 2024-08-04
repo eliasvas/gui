@@ -9,7 +9,7 @@
 #define GUI_BASE_ICON_SIZE 32
 
 // This function will load both Roboto and FontAwesome to one atlas, along with sizing info
-guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
+guiStatus gui_font_load_default_font(guiArena *arena, guiFontAtlas *atlas){
 	guiStatus status = GUI_GUD;
 	atlas->tex.width = 1024;
 	atlas->tex.height = 1024;
@@ -18,23 +18,16 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	u8 *ttf_buffer = NULL;
 	u32 byte_count=0;
 
-	//gui_font_load_from_file(atlas, ascii_font_path);
 	stbtt_pack_context pack_context;
 	stbtt_PackBegin(&pack_context, atlas->tex.data, atlas->tex.width, atlas->tex.height, 0, 1, NULL);
 
-	//const char *ascii_font_path = "../fonts/roboto.ttf";
-	//ttf_buffer = gui_fu_read_all(ascii_font_path, &byte_count);
 	ttf_buffer = roboto;
 	byte_count = array_count(roboto);
 	assert(byte_count && "Couldn't read the ASCII ttf");
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_TEXT_SIZE, 32, 96, (stbtt_packedchar*)atlas->cdata);
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-	//gui_fu_dealloc_all(ttf_buffer);
 
 
-
-	//const char *unicode_font_path = "../fonts/fa.ttf";
-	//ttf_buffer = gui_fu_read_all(unicode_font_path, &byte_count);
 	ttf_buffer = fa;
 	byte_count = array_count(fa);
 	assert(byte_count && "Couldn't read the unicode ttf");
@@ -44,10 +37,8 @@ guiStatus gui_font_load_default_font(guiFontAtlas *atlas){
 	atlas->base_unicode_codepoint = FA_ICON_DOWN_OPEN;
 	// FIXME -- why are we doing getscaledfontvmetrics two times? its shadowed i think
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
-	//gui_fu_dealloc_all(ttf_buffer);
 
 	stbtt_PackEnd(&pack_context);
-
 	return status;
 }
 
