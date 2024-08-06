@@ -19,7 +19,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 
 option(USE_OPENGL "Build with OpenGL support" OFF)
-option(USE_D3D11 "Build with Direct3D 11 support" ON)
+option(USE_D3D11 "Build with Direct3D 11 support" OFF)
 option(USE_SDL_GPU "Build with SDL_gpu support" OFF)
 
 set(CMAKE_C_STANDARD 99)
@@ -41,6 +41,11 @@ add_library(guiLib STATIC  gui/include/gui.h
                         gui/src/gui_misc.c
                         gui/ext/stb/stb_truetype.h)
 target_include_directories(guiLib PUBLIC gui/include)
+if (DEFINED EMSCRIPTEN)
+	set_target_properties(guiLib PROPERTIES COMPILE_FLAGS "-sWASM=1 -sSIDE_MODULE=1 -sSTANDALONE_WASM -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=2GB")
+endif()
+
+
 
 if (USE_D3D11)
     add_executable(sample_d3d11 sample/sample.c sample/d3d11_backend.c)

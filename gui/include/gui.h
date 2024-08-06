@@ -77,16 +77,6 @@ static b32 gui_point_inside_rect(guiVec2 p, guiRect r) {
 #define REALLOC realloc
 #define FREE free
 
-#ifdef __GNUC__
-	#define thread_loc __thread
-#elif __STDC_VERSION__ >= 201112L
-	#define thread_loc _Thread_local
-#elif defined(_MSC_VER)
-	#define thread_loc __declspec(thread)
-#else
-	# error Cannot define thread_loc
-#endif
-
 #if defined(_WIN32)
 	#include <windows.h>
 #elif __EMSCRIPTEN__
@@ -229,8 +219,8 @@ struct guiArenaTemp {
 
 #define MGUI_ARENA_INITIAL_COMMIT_SIZE KB(4)
 #define MGUI_ARENA_MAX_ALIGN 64
-#define MGUI_ARENA_DEFAULT_RESERVE_SIZE GB(1)
-#define MGUI_ARENA_COMMIT_BLOCK_SIZE MB(64)
+#define MGUI_ARENA_DEFAULT_RESERVE_SIZE MB(1)
+#define MGUI_ARENA_COMMIT_BLOCK_SIZE MB(1)
 #define MGUI_ARENA_INTERNAL_MIN_SIZE align_pow2(sizeof(guiArena), MGUI_ARENA_MAX_ALIGN)
 
 static guiArena* gui_arena_alloc_reserve(u64 reserve_size) {
