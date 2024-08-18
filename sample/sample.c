@@ -56,8 +56,7 @@ void sample_update(){
 
     if (wdata->active){
         gui_swindow_begin(wdata);
-
-
+#if 0
         gui_set_next_bg_color(gv4(0.6,0.2,0.4,1.0));
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
         gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
@@ -81,6 +80,14 @@ void sample_update(){
             }
             gui_pop_parent();
         }
+#else
+        char button_name[128];
+        sprintf(button_name, "testbtn");
+        gui_set_next_bg_color(colors[1]);
+        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,400.0,1.0});
+        gui_button(button_name);
+#endif
 
         gui_swindow_end(wdata);
     }

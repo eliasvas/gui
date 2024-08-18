@@ -34,6 +34,11 @@ void gui_input_process_event_queue(void){
 				gis->mb[button] = (gis->mb[button] << 1) | (is_down & 1);
 				mb_updated_this_frame[(u32)button] = 1;
 				break;
+			case GUI_INPUT_EVENT_TYPE_SCROLLWHEEL_EVENT:
+				s32 scroll_y = *((s32*)((void*)(&e->param0)));
+				gis->prev_scroll_y = gis->scroll_y;
+				gis->scroll_y = scroll_y;
+				break;
 			default:
 				break;
 		}
@@ -54,6 +59,10 @@ guiArena *gui_get_event_arena() {
 void gui_input_clear_event_queue(void){
 	gui_get_ui_state()->gis.first = 0;
 	gui_get_ui_state()->gis.last= 0;
+}
+
+s32 gui_input_get_scroll_delta() {
+	return gui_get_ui_state()->gis.scroll_y - gui_get_ui_state()->gis.prev_scroll_y;
 }
 
 

@@ -493,6 +493,7 @@ enum guiInputEventNodeType {
 	GUI_INPUT_EVENT_TYPE_KEY_EVENT,
 	GUI_INPUT_EVENT_TYPE_MOUSE_MOVE,
 	GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT,
+	GUI_INPUT_EVENT_TYPE_SCROLLWHEEL_EVENT,
 };
 
 typedef struct guiInputEventNode guiInputEventNode;
@@ -509,6 +510,7 @@ struct guiInputState {
 	// global state used inside the GUI
 	guiMouseButtonState mb[GUI_MOUSE_BUTTON_COUNT];
 	s32 mouse_x, mouse_y;
+	s32 scroll_y, prev_scroll_y;
 
 	// per-frame event system (queue-like)
 	guiInputEventNode *first;
@@ -880,6 +882,7 @@ b32 gui_input_mb_down(GUI_MOUSE_BUTTON button);
 b32 gui_input_mb_up(GUI_MOUSE_BUTTON button);
 b32 gui_input_mb_pressed(GUI_MOUSE_BUTTON button);
 b32 gui_input_mb_released(GUI_MOUSE_BUTTON button);
+s32 gui_input_get_scroll_delta();
 void gui_input_process_event_queue(void);
 
 void gui_set_ui_state(guiState *state);

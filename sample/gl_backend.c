@@ -234,10 +234,10 @@ GLuint create_atlas_tex_and_sampler(const GLubyte* pixels, GLsizei width, GLsize
     #else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, pixels);
     #endif
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // Generate mipmaps
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -377,10 +377,10 @@ void platform_init(u8 *font_atlas_data) {
     //------------------------
 
     SDL_Log("Atlas texture OK!");
-    glDisable(GL_BLEND);
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    //glBlendEquation(GL_ONE);
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 guiVec2 platform_get_windim() {
@@ -434,6 +434,12 @@ void platform_update() {
                         e.param0 = GUI_MMB;
                         break;
                 }
+                gui_input_push_event(e);
+                break;
+            case SDL_MOUSEWHEEL:
+                e.type = GUI_INPUT_EVENT_TYPE_SCROLLWHEEL_EVENT;
+                s32 scroll_y = event.wheel.y;
+                e.param0 = scroll_y;
                 gui_input_push_event(e);
                 break;
             default:

@@ -72,6 +72,12 @@ static LRESULT CALLBACK WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lpa
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
+        case WM_MOUSEWHEEL:
+            s32 scroll_y = GET_Y_LPARAM(lparam);
+            e.type = GUI_INPUT_EVENT_TYPE_SCROLLWHEEL_EVENT;
+            e.param0 = *((s32*)((void*)(&scroll_y)));
+            gui_input_push_event(e);
+            break;
         case WM_MOUSEMOVE:
             s32 x_pos_abs = LOWORD(lparam);
             s32 y_pos_abs = HIWORD(lparam);

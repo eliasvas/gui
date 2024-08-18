@@ -440,7 +440,7 @@ void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
 	sprintf(main_panel_name, "main_panel_%s", window->name);
 	gui_set_next_child_layout_axis(AXIS2_Y);
 	gui_set_next_bg_color(gv4(0.4,0.4,0.4,1.0));
-	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0f,0.0});
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
 	guiSignal panel = gui_panel(main_panel_name);
 	gui_push_parent(panel.box);

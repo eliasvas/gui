@@ -3,11 +3,6 @@ cmake_minimum_required(VERSION 3.19...3.29)
 # To build with different backends you can
 # cmake -DUSE_OPENGL=ON -DUSE_D3D11=OFF -DUSE_SDL_GPU=OFF
 
-# To build for emscripten currently: (Maybe we need to do this like, automatically?)
-# 1.) git clone https://github.com/emscripten-core/emsdk.git
-# 2.) cd emsdk && emsdk install 3.1.61 && emsdk activate 3.1.61 && emcmprompt.bat
-# 3.) cd gui/build/web && emcmake cmake ../.. && cmake --build . -j10 && emrun sample_gl.html
-
 # set the output directory for built objects.
 # This makes sure that the dynamic library goes into the build directory automatically.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
@@ -16,9 +11,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # prevent installing to system directories.
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
-
-
-option(USE_OPENGL "Build with OpenGL support" OFF)
+option(USE_OPENGL "Build with OpenGL support" ON)
 option(USE_D3D11 "Build with Direct3D 11 support" OFF)
 option(USE_SDL_GPU "Build with SDL_gpu support" OFF)
 
