@@ -609,6 +609,7 @@ enum {
 	GUI_BOX_FLAG_OVERFLOW_Y            = (1<<13),
 	// TODO -- add logic for flag disabled.. (probably disable layouting/signals/rendering)
 	GUI_BOX_FLAG_DISABLED              = (1<<11),
+	GUI_BOX_FLAG_HOVERING              = (1<<15),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64

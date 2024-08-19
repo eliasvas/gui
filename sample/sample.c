@@ -85,7 +85,12 @@ void sample_update(){
         sprintf(button_name, "testbtn");
         gui_set_next_bg_color(colors[1]);
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,400.0,1.0});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.5,1.0});
+        gui_button(button_name);
+        sprintf(button_name, "testbtn2");
+        gui_set_next_bg_color(colors[2]);
+        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.5,1.0});
         gui_button(button_name);
 #endif
 

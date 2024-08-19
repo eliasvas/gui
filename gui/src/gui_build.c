@@ -16,17 +16,31 @@ void gui_build_begin(void) {
 	gui_push_parent(root);
     gui_get_ui_state()->root = root;
 
-	// reset hot widget
-	gui_get_ui_state()->hot_box_key = gui_key_zero();
+	// reset hot if box pruned
+	{
+		guiKey hot_key = gui_get_hot_box_key();
+		guiBox *box = gui_box_lookup_from_key(0, hot_key);
+		b32 box_not_found = gui_box_is_nil(box);
+		if (box_not_found) {
+			gui_get_ui_state()->hot_box_key = gui_key_zero();
+		}
+	}
 
-	// reset active if currently active box no longer cached
+	// reset active if box pruned
+	b32 active_exists = 0;
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
 		guiKey active_key = gui_get_active_box_key(mk);
 		guiBox *box = gui_box_lookup_from_key(0, active_key);
 		b32 box_not_found = gui_box_is_nil(box);
 		if (box_not_found) {
 			gui_get_ui_state()->active_box_keys[mk] = gui_key_zero();
+		}else {
+			active_exists = 1;
 		}
+	}
+	// reset hot if there is no active
+	if (!active_exists) {
+		gui_get_ui_state()->hot_box_key = gui_key_zero();
 	}
 
 }
@@ -56,6 +70,20 @@ void gui_build_end(void) {
 	// }
 
 	gui_drag_set_current_mp();
+
+	// do animations
+	for (u32 hash_slot = 0; hash_slot < state->box_table_size; hash_slot+=1) {
+		for (guiBox *box = state->box_table[hash_slot].hash_first; !gui_box_is_nil(box); box = box->hash_next){
+			// TODO -- do some logarithmic curve here, this is not very responsive!
+			f32 trans_rate = 10 * state->dt;
+
+			b32 is_box_hot = gui_key_match(box->key,gui_get_hot_box_key());
+			b32 is_box_active = gui_key_match(box->key,gui_get_active_box_key(GUI_LMB));
+
+			box->hot_t += trans_rate * (is_box_hot - box->hot_t);
+			box->active_t += trans_rate * (is_box_active - box->active_t);
+		}
+	}
 
 	// render eveything
     gui_render_hierarchy(gui_get_ui_state()->root);

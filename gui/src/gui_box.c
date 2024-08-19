@@ -83,9 +83,6 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 	{
 		box->key = key;
 		box->flags |= flags;
-		// TODO (FIX) -- this is to reset the draw border each frame (its set when widget active)
-		box->flags &= ~(GUI_BOX_FLAG_DRAW_BORDER);
-		// -----
 		box->child_layout_axis = gui_top_child_layout_axis();
 		// We are doing all layouting here, we should probably just traverse the hierarchy like Ryan says
 		if (state->fixed_x_stack.top != &state->fixed_x_nil_stack_top) {
@@ -112,25 +109,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->c = gui_top_bg_color();
 		box->text_color = gui_top_text_color();
 		box->text_scale = gui_top_text_scale();
-		if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
-			box->c.r += box->active_t/3.0f;
-			if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
-				box->text_color.r -= box->active_t/3.0f;
-				box->text_color.g -= box->active_t/3.0f;
-				box->text_color.b -= box->active_t/3.0f;
-			}
-		}
-	}
-
-	// calculate hot_t and active_t for our box
-	{
-		//f32 trans_rate = 1.f - pow(2, (-50.f * state->dt));
-		f32 trans_rate = 20 * state->dt;
-
-		b32 is_box_hot = gui_key_match(box->key,gui_get_hot_box_key());
-		b32 is_box_active = gui_key_match(box->key,gui_get_active_box_key(GUI_LMB));
-		box->hot_t += trans_rate * (is_box_hot - box->hot_t);
-		box->active_t += trans_rate * (is_box_active - box->active_t);
+		
 	}
 
 
@@ -199,11 +178,9 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	if (!(box->flags & GUI_BOX_FLAG_CLICKABLE))return signal;
 
 	// if mouse inside box, the box is HOT
-	if (gui_point_inside_rect(mp, r)) {
+	if (gui_point_inside_rect(mp, r) && (box->flags & GUI_BOX_FLAG_CLICKABLE)) {
 		gui_get_ui_state()->hot_box_key = box->key;
-		if (!(box->flags & GUI_BOX_FLAG_DRAW_ICON)) {
-			box->flags |= GUI_BOX_FLAG_DRAW_BORDER;
-		}
+		box->flags |= GUI_BOX_FLAG_HOVERING;
 	}
 	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
@@ -389,7 +366,6 @@ guiSignal gui_spinner(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *d
 
 guiSignal gui_button(char *str) {
 	guiBox *w = gui_box_build_from_str( GUI_BOX_FLAG_CLICKABLE|
-									GUI_BOX_FLAG_DRAW_BORDER|
 									GUI_BOX_FLAG_DRAW_TEXT|
 									GUI_BOX_FLAG_DRAW_BACKGROUND|
 									GUI_BOX_FLAG_ROUNDED_EDGES|
@@ -397,6 +373,9 @@ guiSignal gui_button(char *str) {
 									GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION,
 									str);
 	guiSignal signal = gui_get_signal_for_box(w);
+	if (signal.box->flags & GUI_BOX_FLAG_HOVERING) {
+		w->flags |= GUI_BOX_FLAG_DRAW_BORDER;
+	}
 	return signal;
 }
 
@@ -440,8 +419,8 @@ void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
 	sprintf(main_panel_name, "main_panel_%s", window->name);
 	gui_set_next_child_layout_axis(AXIS2_Y);
 	gui_set_next_bg_color(gv4(0.4,0.4,0.4,1.0));
-	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
-	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
+	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.5});
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.5});
 	guiSignal panel = gui_panel(main_panel_name);
 	gui_push_parent(panel.box);
 }

@@ -44,6 +44,8 @@ guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiF
 
 guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	guiState *state = gui_get_ui_state();
+	
+
 	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (guiVec2){r.x0, r.y0}, (guiVec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color,(box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
 	if (box->flags & GUI_BOX_FLAG_DRAW_BORDER) {
 		guiVec4 color_dim = gv4(color.x/2.f,color.y/2.f,color.z/2.f,1.f);
@@ -55,17 +57,30 @@ guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
 		gui_draw_icon_in_rect(box->icon_codepoint, r, box->text_scale, box->text_color);
 	}
+
 	return GUI_GUD;
 }
 
-void gui_render_hierarchy(guiBox *root) {
+void gui_render_hierarchy(guiBox *box) {
+
+	// Visualize hot_t, active_t values to plug to renderer
+	if (box->flags & GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION) {
+		box->c.r += box->active_t/6.0f;
+		if (box->flags & GUI_BOX_FLAG_DRAW_ICON) { box->text_color.r -= box->active_t/6.0f; box->text_color.g -= box->active_t/6.0f; box->text_color.b -= box->active_t/6.0f; }
+	}
+	if (box->flags & GUI_BOX_FLAG_DRAW_HOT_ANIMATION) {
+		box->c.r += box->hot_t/6.0f;
+		if (box->flags & GUI_BOX_FLAG_DRAW_ICON) { box->text_color.r -= box->hot_t/6.0f; box->text_color.g -= box->hot_t/6.0f; box->text_color.b -= box->hot_t/6.0f; }
+	}
+
+
 	// render current box
-	if (root->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
-		gui_draw_rect(root->r, root->c, root);
+	if (box->flags & GUI_BOX_FLAG_DRAW_BACKGROUND) {
+		gui_draw_rect(box->r, box->c, box);
 	}
 
 	// iterate through hierarchy
-	for(guiBox *box = root->first; !gui_box_is_nil(box); box = box->next) {
-		gui_render_hierarchy(box);
+	for(guiBox *child = box->first; !gui_box_is_nil(child); child = child->next) {
+		gui_render_hierarchy(child);
 	}
 }
