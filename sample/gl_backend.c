@@ -372,10 +372,6 @@ void platform_init(u8 *font_atlas_data) {
     font_atlas_data[0] = 0xFF;
     atlas_tex = create_atlas_tex_and_sampler((GLubyte*)font_atlas_data, 1024, 1024,&atlas_sampler);
 
-    // TODO -- This is UGLY us FUCK, there should be a 'FONT' function to deallocate (or maybe frame allocation)
-    FREE(font_atlas_data);
-    //------------------------
-
     SDL_Log("Atlas texture OK!");
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

@@ -108,7 +108,8 @@ void mainLoop() {
     for (;;){
         sample_update();
         platform_update();
-        platform_render(&gui_get_ui_state()->rcmd_buf.commands[0], gui_render_cmd_buf_count(&gui_get_ui_state()->rcmd_buf));
+
+        platform_render(gui_render_cmd_buf_get_array(&gui_get_ui_state()->rcmd_buf), gui_render_cmd_buf_get_count(&gui_get_ui_state()->rcmd_buf));
     }
 }
 

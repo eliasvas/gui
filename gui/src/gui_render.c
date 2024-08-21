@@ -1,20 +1,36 @@
 #include "gui.h"
 
-guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf){
-	gsb_free(cmd_buf->commands);
-	return GUI_GUD;
+guiRenderCommand *gui_render_cmd_buf_get_array(guiRenderCommandBuffer *cmd_buf) {
+	guiRenderCommand *commands = gui_push_array(gui_get_build_arena(), guiRenderCommand, gui_render_cmd_buf_get_count(cmd_buf));
+	u32 command_idx = 0;
+	for (guiRenderCommandNode *rcn = cmd_buf->first; rcn != 0; rcn=rcn->next) {
+		commands[command_idx] = rcn->rc;
+		command_idx+=1;
+	}
+	return commands;
 }
 
-u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf){
-	return gsb_len(cmd_buf->commands);
+void gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf){
+	cmd_buf->first = 0;
+	cmd_buf->last = 0;
 }
 
-guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd){
-	gsb_push(cmd_buf->commands, cmd);
-	return GUI_GUD;
+u32 gui_render_cmd_buf_get_count(guiRenderCommandBuffer *cmd_buf){
+	u32 count = 0;
+	for (guiRenderCommandNode *rcn = cmd_buf->first; rcn != 0; rcn=rcn->next) {
+		count+=1;
+	}
+	return count;
 }
 
-guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, guiVec4 col, f32 softness, f32 corner_rad, f32 border_thickness){
+guiRenderCommand *gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd){
+	guiRenderCommandNode *cmd_node = gui_push_array(gui_get_build_arena(), guiRenderCommandNode, 1);
+	cmd_node->rc = cmd;
+	sll_queue_push(cmd_buf->first, cmd_buf->last, cmd_node);
+	return &(cmd_node->rc);
+}
+
+guiRenderCommand *gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, guiVec4 col, f32 softness, f32 corner_rad, f32 border_thickness){
 	guiRenderCommand cmd = {0};
 	cmd.pos0 = p0;
 	cmd.pos1.x = p0.x + dim.x;
@@ -26,8 +42,7 @@ guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p
 	return gui_render_cmd_buf_add(cmd_buf, cmd);
 }
 
-//{{char_offset_x + bc.xoff,char_offset_y + (starting_y_offset - bc.yoff)},{char_offset_x+ bc.xoff+(bc.x1-bc.x0),char_offset_y+(bc.y1-bc.y0)+ (starting_y_offset - bc.yoff)},{bc.x0,bc.y0},{bc.x1,bc.y1},{0,1,1,1},0,0,0},
-guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col){
+guiRenderCommand *gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col){
 	guiRenderCommand cmd = {0};
 	guiPackedChar bc = gui_font_atlas_get_codepoint(atlas, c);
 	guiVec2 uv0 = {bc.x0,bc.y0};
@@ -42,7 +57,7 @@ guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiF
 }
 
 
-guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
+void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	guiState *state = gui_get_ui_state();
 
 	// if a parent has FLAG_CLIP we clip all children to parent's rect
@@ -73,8 +88,6 @@ guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
 		gui_draw_icon_in_rect(box->icon_codepoint, r, box->text_scale, box->text_color);
 	}
-
-	return GUI_GUD;
 }
 
 void gui_render_hierarchy(guiBox *box) {

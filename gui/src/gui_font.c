@@ -14,6 +14,7 @@ guiStatus gui_font_load_default_font(guiArena *arena, guiFontAtlas *atlas){
 	atlas->tex.width = 1024;
 	atlas->tex.height = 1024;
 	atlas->tex.data = ALLOC(atlas->tex.width*atlas->tex.height*sizeof(u8));
+	//atlas->tex.data = gui_push_array(arena, u8, atlas->tex.width*atlas->tex.height);
 
 	u8 *ttf_buffer = NULL;
 	u32 byte_count=0;
@@ -21,14 +22,14 @@ guiStatus gui_font_load_default_font(guiArena *arena, guiFontAtlas *atlas){
 	stbtt_pack_context pack_context;
 	stbtt_PackBegin(&pack_context, atlas->tex.data, atlas->tex.width, atlas->tex.height, 0, 1, NULL);
 
-	ttf_buffer = roboto;
+	ttf_buffer = (u8*)roboto;
 	byte_count = array_count(roboto);
 	assert(byte_count && "Couldn't read the ASCII ttf");
 	stbtt_PackFontRange(&pack_context, ttf_buffer, 0, GUI_BASE_TEXT_SIZE, 32, 96, (stbtt_packedchar*)atlas->cdata);
 	stbtt_GetScaledFontVMetrics(ttf_buffer, 0, GUI_BASE_TEXT_SIZE, &atlas->ascent, &atlas->descent, &atlas->line_gap);
 
 
-	ttf_buffer = fa;
+	ttf_buffer = (u8*)fa;
 	byte_count = array_count(fa);
 	assert(byte_count && "Couldn't read the unicode ttf");
 	u32 start_uchar = FA_ICON_DOWN_OPEN;

@@ -132,56 +132,6 @@ static void gui_fu_dealloc_all(u8 *buffer) {
 }
 
 //##########################
-// STRETCHY BUFFER IMPLEMENTATION
-//##########################
-
-typedef struct
-{
-    u32 len;
-    u32 cap;
-    char buf[0];
-}sbHdr;
-#define gsb__hdr(b) ((sbHdr*)((char*)b - offsetof(sbHdr, buf)))
-#define gsb_len(b) ((b) ? gsb__hdr(b)->len : 0)
-#define gsb_cap(b) ((b) ? gsb__hdr(b)->cap : 0)
-#define gsb_end(b) ((b) + gsb_len(b))
-#define gsb_fit(b, n) ((n) <= gsb_cap(b) ? 0 : (*((void**)&(b)) = gsb__grow((b), (n), sizeof(*(b)))))
-#define gsb_push(b, ...) (gsb_fit((b), 1 + gsb_len(b)), (b)[gsb__hdr(b)->len++] = (__VA_ARGS__))
-#define gsb_free(b) ((b) ? (FREE(gsb__hdr(b)), (b) = NULL) : 0)
-static void *gsb__grow(const void *buf, u32 new_len, u32 element_size)
-{
-   u32 new_cap = maximum(16, maximum(1 + 2*gsb_cap(buf), new_len));
-   assert(new_len <= new_cap);
-   u32 new_size = offsetof(sbHdr, buf) + new_cap * element_size;
-   sbHdr *new_hdr;
-   if(buf)
-   {
-       new_hdr = (sbHdr*)REALLOC(gsb__hdr(buf), new_size);
-   }
-   else
-   {
-       new_hdr = (sbHdr*)ALLOC(new_size);
-       new_hdr->len = 0;
-   }
-   new_hdr->cap = new_cap;
-   return new_hdr->buf;// + offsetof(sbHdr, buf);
-}
-/* example usage of stretchy buffer
-{
-	int *arr = NULL;
-	gsb_push(arr, 1);
-	gsb_push(arr, 2);
-	gsb_push(arr, 3);
-	for (int i = 0; i < 3; ++i)
-	{
-		int x = arr[i];
-		assert(x == i+1);
-	}
-	gsb_free(arr);
-}
-*/
-
-//##########################
 //	ARENA ALLOCATOR (64-Bit)
 //##########################
 
@@ -542,15 +492,22 @@ struct guiRenderCommand {
     float border_thickness;
 };
 
+typedef struct guiRenderCommandNode guiRenderCommandNode;
+struct guiRenderCommandNode {
+	guiRenderCommand rc;
+	guiRenderCommandNode *next;
+};
 typedef struct guiRenderCommandBuffer guiRenderCommandBuffer;
 struct guiRenderCommandBuffer {
-	guiRenderCommand *commands;
+	guiRenderCommandNode *first;
+	guiRenderCommandNode *last;
 };
-guiStatus gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
-u32 gui_render_cmd_buf_count(guiRenderCommandBuffer *cmd_buf);
-guiStatus gui_render_cmd_buf_add(guiRenderCommandBuffer *cmd_buf, guiRenderCommand cmd);
-guiStatus gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, guiVec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
-guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col);
+
+void gui_render_cmd_buf_clear(guiRenderCommandBuffer *cmd_buf);
+u32 gui_render_cmd_buf_get_count(guiRenderCommandBuffer *cmd_buf);
+guiRenderCommand *gui_render_cmd_buf_get_array(guiRenderCommandBuffer *cmd_buf);
+guiRenderCommand *gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, guiVec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
+guiRenderCommand *gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col);
 
 //##########################
 // UI CORE STUFF
@@ -898,7 +855,7 @@ guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 co
 guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, guiVec4 color);
 guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 color);
 guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, guiVec4 color);
-guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box);
+void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
 void print_gui_hierarchy(void);
 
