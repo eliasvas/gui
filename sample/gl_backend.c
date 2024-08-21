@@ -354,12 +354,7 @@ void platform_init(u8 *font_atlas_data) {
     {
         int width, height;//, bbwidth, bbheight;
         SDL_GetWindowSize(window, &width, &height);
-        //SDL_GetWindowSizeInPixels(window, &bbwidth, &bbheight);
         SDL_Log("Window size: %ix%i", width, height);
-        //SDL_Log("Backbuffer size: %ix%i", bbwidth, bbheight);
-        // if (width != bbwidth){
-        //     SDL_Log("this is a highdpi environment.");
-        // }
     }
     SDL_Log("Application started successfully!");
     vbo = create_instance_vbo(NULL, 0);

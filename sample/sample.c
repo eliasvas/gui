@@ -82,15 +82,15 @@ void sample_update(){
         }
 #else
         char button_name[128];
-        sprintf(button_name, "testbtn");
+        sprintf(button_name, "up");
         gui_set_next_bg_color(colors[1]);
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.37,1});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,140,1});
         gui_button(button_name);
-        sprintf(button_name, "testbtn2");
+        sprintf(button_name, "down");
         gui_set_next_bg_color(colors[2]);
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1});
+        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,250,1});
         gui_button(button_name);
 #endif
 
@@ -98,6 +98,8 @@ void sample_update(){
     }
 
     gui_build_end();
+
+    wdata->dim.y = 310 + 30 * sin(gui_get_ui_state()->current_frame_index / 30.0);
 }
 
 void sample_push_input_event(guiInputEventNode e) {

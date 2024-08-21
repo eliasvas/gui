@@ -57,6 +57,29 @@ guiRenderCommand *gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_b
 }
 
 
+guiRenderCommand *gui_render_cmd_buf_add_codepoint_testclip(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col, guiRect clip_rect){
+	guiRenderCommand cmd = {0};
+	guiPackedChar bc = gui_font_atlas_get_codepoint(atlas, c);
+	guiVec2 uv0 = {bc.x0,bc.y0};
+	guiVec2 uv1 = {bc.x1,bc.y1};
+	
+	guiRect uvRect = (guiRect){bc.x0,bc.y0,bc.x1,bc.y1};
+	guiRect posRect = (guiRect){p0.x, p0.y, p0.x+dim.x, p0.y+dim.y};
+	guiRect oposRect = posRect;
+	posRect = gui_intersect_rects(posRect, clip_rect);
+	uvRect.x0 = uvRect.x0 + ((posRect.x0 - oposRect.x0) / (oposRect.x1 - oposRect.x0)) * (uvRect.x1 - uvRect.x0);
+	uvRect.y0 = uvRect.y0 + ((posRect.y0 - oposRect.y0) / (oposRect.y1 - oposRect.y0)) * (uvRect.y1 - uvRect.y0);
+	uvRect.x1 = uvRect.x1 - ((oposRect.x1 - posRect.x1) / (oposRect.x1 - oposRect.x0)) * (uvRect.x1 - uvRect.x0);
+	uvRect.y1 = uvRect.y1 - ((oposRect.y1 - posRect.y1) / (oposRect.y1 - oposRect.y0)) * (uvRect.y1 - uvRect.y0);
+	cmd.pos0 = posRect.p0;
+	cmd.pos1 = posRect.p1;
+	cmd.uv0 = uvRect.p0;
+	cmd.uv1 = uvRect.p1;
+	cmd.color = col;
+	return gui_render_cmd_buf_add(cmd_buf, cmd);
+}
+
+
 void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	guiState *state = gui_get_ui_state();
 
@@ -83,7 +106,8 @@ void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	//r = clipped_rect;
 
 	if (box->flags & GUI_BOX_FLAG_DRAW_TEXT) {
-		gui_draw_string_in_rect(box->str, r, box->text_scale, box->text_color);
+		// we need unclipped rect for correct positioning (e.g middle-centered text), and clipped rect for clipping the characters
+		gui_draw_string_in_rect(box->str, unclipped_rect, clipped_rect, box->text_scale, box->text_color);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
 		gui_draw_icon_in_rect(box->icon_codepoint, r, box->text_scale, box->text_color);

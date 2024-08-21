@@ -83,6 +83,12 @@ static guiRect gui_intersect_rects(guiRect a, guiRect b) {
 	r.p0.y = maximum(a.p0.y, b.p0.y);
 	r.p1.x = minimum(a.p1.x, b.p1.x);
 	r.p1.y = minimum(a.p1.y, b.p1.y);
+
+	// if no intersection at all, we return empty rect
+    if (r.p0.x >= r.p1.x || r.p0.y >= r.p1.y) {
+        r.p0.x = r.p0.y = r.p1.x = r.p1.y = 0;
+    }
+
 	return r;
 }
 
@@ -508,6 +514,7 @@ u32 gui_render_cmd_buf_get_count(guiRenderCommandBuffer *cmd_buf);
 guiRenderCommand *gui_render_cmd_buf_get_array(guiRenderCommandBuffer *cmd_buf);
 guiRenderCommand *gui_render_cmd_buf_add_quad(guiRenderCommandBuffer *cmd_buf, guiVec2 p0, guiVec2 dim, guiVec4 col, f32 softness, f32 corner_rad, f32 border_thickness);
 guiRenderCommand *gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col);
+guiRenderCommand *gui_render_cmd_buf_add_codepoint_testclip(guiRenderCommandBuffer *cmd_buf, guiFontAtlas *atlas, u32 c, guiVec2 p0, guiVec2 dim, guiVec4 col, guiRect clip);
 
 //##########################
 // UI CORE STUFF
@@ -853,8 +860,7 @@ guiVec2 gui_font_get_string_dim(char* str, f32 scale);
 guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
 guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 color);
 guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, guiVec4 color);
-guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 color);
-guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, guiVec4 color);
+guiStatus gui_draw_string_in_rect(char *str, guiRect r, guiRect clip_rect, f32 scale, guiVec4 color);
 void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);
 void print_gui_hierarchy(void);

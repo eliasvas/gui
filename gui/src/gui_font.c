@@ -83,7 +83,8 @@ guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {
 }
 
 // Shouldn't these functions be in gui_render?? hmmmmm, also why are they called gui_draw??
-guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 color) {
+
+guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 color, guiRect clip_rect) {
 	guiState *state = gui_get_ui_state();
 	guiVec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = pos.x;
@@ -95,19 +96,21 @@ guiStatus gui_draw_string_in_pos(char *str, guiVec2 pos, f32 scale, guiVec4 colo
         f32 y0 = text_y + (b.yoff + state->atlas.ascent) * scale;
         f32 x1 = x0 + (b.x1 - b.x0) * scale;
         f32 y1 = y0 + (b.y1 - b.y0) * scale;
-		gui_render_cmd_buf_add_codepoint(&state->rcmd_buf,&state->atlas, str[i], (guiVec2){x0,y0}, (guiVec2){x1-x0,y1-y0},color);
+		guiRect r = (guiRect){x0,y0,x1,y1};
+		//r = gui_intersect_rects(r, clip_rect);
+		gui_render_cmd_buf_add_codepoint_testclip(&state->rcmd_buf,&state->atlas, str[i], (guiVec2){r.x0,r.y0}, (guiVec2){r.x1-r.x0,r.y1-r.y0},color, clip_rect);
 		text_x += b.xadvance * scale;
 	}
 
 	return GUI_GUD;
 }
 
-guiStatus gui_draw_string_in_rect(char *str, guiRect r, f32 scale, guiVec4 color) {
+guiStatus gui_draw_string_in_rect(char *str, guiRect r, guiRect clip_rect, f32 scale, guiVec4 color) {
 	guiVec2 text_dim = gui_font_get_string_dim(str,scale);
 	f32 text_x = r.x0 + ((r.x1-r.x0) - text_dim.x) / 2.0f;
 	f32 text_y = r.y0 + ((r.y1-r.y0) - text_dim.y) / 2.0f;
 
-	return gui_draw_string_in_pos(str, gv2(text_x, text_y), scale, color);
+	return gui_draw_string_in_pos(str, gv2(text_x, text_y), scale, color, clip_rect);
 }
 
 guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, guiVec4 color) {

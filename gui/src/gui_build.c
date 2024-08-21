@@ -3,9 +3,7 @@ extern guiVec2 dxb_get_win_dim();
 
 void gui_build_begin(void) {
 	guiState *state = gui_get_ui_state();
-	// FIXME: we init (overwrite) our per-frame stacks at the beginning of each frame,
-	// this shouldn't happen, somehow at end of frame (gui_build_end) the stacks are not completely clear
-	// INVESTIGATE
+	// We init all stacks here because they are STRICTLY per-frame data structures
 	gui_init_stacks(state);
 
 
@@ -88,7 +86,7 @@ void gui_build_end(void) {
 	// render eveything
     gui_render_hierarchy(gui_get_ui_state()->root);
 
-	// advance frame index + clear previous frame's arena
-	state->current_frame_index += 1; // This is used to prune unused boxes
+	// clear previous frame's arena + advance frame_index
 	gui_arena_clear(gui_get_build_arena());
+	state->current_frame_index += 1;
 }
