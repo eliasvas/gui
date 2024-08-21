@@ -48,9 +48,9 @@ return old_value;
 // TODO -- MAYBE this should be just some macro (maybe), declarations too?
 void gui_init_stacks(guiState *state) {
 	// -- parent stack initialization
-	state->parent_nil_stack_top.v = &g_nil_box;
+	state->parent_nil_stack_top.v = gui_box_nil_id();
 	state->parent_stack.top = &state->parent_nil_stack_top;
-	state->parent_stack.bottom_val = &g_nil_box;
+	state->parent_stack.bottom_val = gui_box_nil_id();
 	state->parent_stack.free = 0;
 	state->parent_stack.auto_pop = 0;
 	// -- fixed_x stack initialization

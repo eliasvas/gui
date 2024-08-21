@@ -33,10 +33,10 @@ void gui_layout_calc_constant_sizes(guiBox *root, Axis2 axis) {
 
 void gui_layout_calc_upward_dependent_sizes(guiBox *root, Axis2 axis) {
     // try to find a parent with fixed size and get the percentage off of him
-    guiBox *fixed_parent = &g_nil_box;
+    guiBox *fixed_parent = gui_box_nil_id();
     switch(root->pref_size[axis].kind) {
         case GUI_SIZEKIND_PERCENT_OF_PARENT:
-            fixed_parent = &g_nil_box;
+            fixed_parent = gui_box_nil_id();
             for(guiBox *box= root->parent; !gui_box_is_nil(box); box = box->parent)
             {
                 if ( (box->flags & (GUI_BOX_FLAG_FIXED_WIDTH<<axis)) ||
@@ -93,7 +93,7 @@ void gui_layout_calc_downward_dependent_sizes(guiBox *root, Axis2 axis) {
 void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
 
     // fixup when we are NOT current layout axis
-    if (axis != root->child_layout_axis) {
+    if (axis != root->child_layout_axis && !(root->flags & (GUI_BOX_FLAG_OVERFLOW_X<<axis))) {
         f32 max_allowed_size = root->fixed_size.raw[axis];
         for (guiBox *child = root->first; !gui_box_is_nil(child); child = child->next) {
             if (!(child->flags & (GUI_BOX_FLAG_FIXED_X<<axis))) {
@@ -108,7 +108,7 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
     }
 
     // when we are along the layout axis, we have to check strictness and adjust accordingly
-    if (axis == root->child_layout_axis) {
+    if (axis == root->child_layout_axis && !(root->flags & (GUI_BOX_FLAG_OVERFLOW_X<<axis))) {
         f32 max_allowed_size = root->fixed_size.raw[axis];
         f32 total_size = 0;
         f32 total_weighed_size = 0;
@@ -148,10 +148,20 @@ void gui_layout_calc_solve_constraints(guiBox *root, Axis2 axis) {
 
     }
 
+    // if root has OVERFLOW_X/Y, then its children's 'constraints' don't need to be solved
+    // its mimicking solve_upward_dependent, just now, the OVERFLOW_X node HAS its fixed_size calculated
+    if (root->flags & (GUI_BOX_FLAG_OVERFLOW_X<<axis)) {
+        for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next) {
+            if (child->pref_size[axis].kind == GUI_SIZEKIND_PERCENT_OF_PARENT) {
+                child->fixed_size.raw[axis] = root->fixed_size.raw[axis] * child->pref_size[axis].value;
+            }
+        }
+    }
+
     // do the same for all nodes and their children in hierarchy
     for(guiBox *child = root->first; !gui_box_is_nil(child); child = child->next) {
         gui_layout_calc_solve_constraints(child, axis);
-	}
+    }
 }
 void gui_layout_calc_final_rects(guiBox *root, Axis2 axis) {
     f32 layout_pos = 0;

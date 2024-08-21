@@ -77,6 +77,15 @@ static b32 gui_point_inside_rect(guiVec2 p, guiRect r) {
 #define REALLOC realloc
 #define FREE free
 
+static guiRect gui_intersect_rects(guiRect a, guiRect b) {
+	guiRect r = {0};
+	r.p0.x = maximum(a.p0.x, b.p0.x);
+	r.p0.y = maximum(a.p0.y, b.p0.y);
+	r.p1.x = minimum(a.p1.x, b.p1.x);
+	r.p1.y = minimum(a.p1.y, b.p1.y);
+	return r;
+}
+
 #if defined(_WIN32)
 	#include <windows.h>
 #elif __EMSCRIPTEN__
@@ -604,12 +613,12 @@ enum {
 	GUI_BOX_FLAG_FIXED_WIDTH           = (1<<8),
 	GUI_BOX_FLAG_FIXED_HEIGHT          = (1<<9),
 	GUI_BOX_FLAG_ROUNDED_EDGES         = (1<<10),
-	// TODO -- add support for OVERFLOW_Axis, to allow overflow (i.e skip size-constraing solving on axis)
 	GUI_BOX_FLAG_OVERFLOW_X            = (1<<12),
 	GUI_BOX_FLAG_OVERFLOW_Y            = (1<<13),
 	// TODO -- add logic for flag disabled.. (probably disable layouting/signals/rendering)
 	GUI_BOX_FLAG_DISABLED              = (1<<11),
 	GUI_BOX_FLAG_HOVERING              = (1<<15),
+	GUI_BOX_FLAG_CLIP                  = (1<<16),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -657,15 +666,7 @@ struct guiBox {
 	f32 active_t;
 	u32 child_count;
 };
-static guiBox g_nil_box = {
-	&g_nil_box,
-	&g_nil_box,
-	&g_nil_box,
-	&g_nil_box,
-	&g_nil_box,
-	&g_nil_box,
-	&g_nil_box
-};
+
 
 //##########################
 // UI stack stuff (for Style stacks and friends)
@@ -690,6 +691,7 @@ guiKey gui_key_zero(void);
 guiKey gui_key_from_str(char *s);
 b32 gui_key_match(guiKey a, guiKey b);
 
+guiBox *gui_box_nil_id();
 b32 gui_box_is_nil(guiBox *box);
 guiBox *gui_box_make(guiBoxFlags flags, char *str);
 guiBox *gui_box_lookup_from_key(guiBoxFlags flags, guiKey key);

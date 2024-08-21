@@ -44,13 +44,29 @@ guiStatus gui_render_cmd_buf_add_codepoint(guiRenderCommandBuffer *cmd_buf, guiF
 
 guiStatus gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 	guiState *state = gui_get_ui_state();
-	
+
+	// if a parent has FLAG_CLIP we clip all children to parent's rect
+	guiRect clipped_rect = box->r;
+	for(guiBox *p = box->parent; !gui_box_is_nil(p); p = p->parent) {
+		if (p->flags & GUI_BOX_FLAG_CLIP) {
+			clipped_rect = gui_intersect_rects(box->r,p->r);
+			break;
+		}
+	}
+	guiRect unclipped_rect = r;
+
+	r = clipped_rect;
 
 	gui_render_cmd_buf_add_quad(&state->rcmd_buf, (guiVec2){r.x0, r.y0}, (guiVec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color,(box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 2:0, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0, 0);
 	if (box->flags & GUI_BOX_FLAG_DRAW_BORDER) {
 		guiVec4 color_dim = gv4(color.x/2.f,color.y/2.f,color.z/2.f,1.f);
 		gui_render_cmd_buf_add_quad(&state->rcmd_buf, (guiVec2){r.x0, r.y0}, (guiVec2){fabs(r.x1-r.x0), fabs(r.y1-r.y0)}, color_dim,1, (box->flags & GUI_BOX_FLAG_ROUNDED_EDGES) ? 4:0,2);
 	}
+
+	// TODO -- do correct clipping on text / icons
+	r = unclipped_rect;
+	//r = clipped_rect;
+
 	if (box->flags & GUI_BOX_FLAG_DRAW_TEXT) {
 		gui_draw_string_in_rect(box->str, r, box->text_scale, box->text_color);
 	}

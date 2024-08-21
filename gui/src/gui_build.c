@@ -54,7 +54,7 @@ void gui_build_end(void) {
 	for (u32 hash_slot = 0; hash_slot < state->box_table_size; hash_slot+=1) {
 		for (guiBox *box = state->box_table[hash_slot].hash_first; !gui_box_is_nil(box); box = box->hash_next){
 			if (box->last_frame_touched_index < state->current_frame_index) {
-				dll_remove_NPZ(&g_nil_box, state->box_table[hash_slot].hash_first, state->box_table[hash_slot].hash_last,box,hash_next,hash_prev);
+				dll_remove_NPZ(gui_box_nil_id(), state->box_table[hash_slot].hash_first, state->box_table[hash_slot].hash_last,box,hash_next,hash_prev);
 				sll_stack_push(state->first_free_box, box);
 			}
 		}

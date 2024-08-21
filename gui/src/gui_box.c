@@ -1,8 +1,20 @@
 #include "gui.h"
+static guiBox g_nil_box = {
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box,
+	&g_nil_box
+};
 
 
+guiBox *gui_box_nil_id() {
+	return &g_nil_box;
+}
 b32 gui_box_is_nil(guiBox *box) {
-	return (box == 0 || box == &g_nil_box);
+	return (box == 0 || box == gui_box_nil_id());
 }
 
 // lookup a box in our box cache (box_table)
@@ -172,19 +184,30 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b){
 guiSignal gui_get_signal_for_box(guiBox *box) {
 	guiSignal signal = {0};
 	signal.box = box;
-	guiRect r = box->r;
 	guiVec2 mp = gv2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
 
+	// FIXME -- What the FUck? ////////
 	if (!(box->flags & GUI_BOX_FLAG_CLICKABLE))return signal;
+	///////////////////////////////////
+
+	// if a parent has FLAG_CLIP, we intersect its childrens rects to clip them
+	guiRect r = box->r;
+	for(guiBox *p = box->parent; !gui_box_is_nil(p); p = p->parent) {
+		if (p->flags & GUI_BOX_FLAG_CLIP) {
+			r = gui_intersect_rects(box->r,p->r);
+			break;
+		}
+	}
+	b32 mouse_inside_box = gui_point_inside_rect(mp, r);
 
 	// if mouse inside box, the box is HOT
-	if (gui_point_inside_rect(mp, r) && (box->flags & GUI_BOX_FLAG_CLICKABLE)) {
+	if (mouse_inside_box && (box->flags & GUI_BOX_FLAG_CLICKABLE)) {
 		gui_get_ui_state()->hot_box_key = box->key;
 		box->flags |= GUI_BOX_FLAG_HOVERING;
 	}
 	// if mouse inside box AND mouse button pressed, box is ACTIVE, PRESS event
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (gui_point_inside_rect(mp, r) && gui_input_mb_pressed(mk)) {
+		if (mouse_inside_box && gui_input_mb_pressed(mk)) {
 			gui_get_ui_state()->active_box_keys[mk] = box->key;
 			// TODO -- This is pretty crappy logic, fix someday
 			signal.flags |= (GUI_SIGNAL_FLAG_LMB_PRESSED << mk);
@@ -199,7 +222,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse inside box AND mouse button released and box was ACTIVE, reset hot/active RELEASE signal
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (gui_point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+		if (mouse_inside_box && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk]= gui_key_zero();
 			signal.flags |= (GUI_SIGNAL_FLAG_LMB_RELEASED << mk);
@@ -207,7 +230,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	}
 	// if mouse outside box AND mouse button released and box was ACTIVE, reset hot/active
 	for (each_enumv(GUI_MOUSE_BUTTON, mk)) {
-		if (!gui_point_inside_rect(mp, r) && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
+		if (!mouse_inside_box && gui_input_mb_released(mk) && gui_key_match(gui_get_active_box_key(mk), box->key)) {
 			gui_get_ui_state()->hot_box_key = gui_key_zero();
 			gui_get_ui_state()->active_box_keys[mk] = gui_key_zero();
 		}
@@ -422,6 +445,8 @@ void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.5});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.5});
 	guiSignal panel = gui_panel(main_panel_name);
+	// TODO make a custom 'gui_panel' for swindow, let's not do hax
+	panel.box->flags |= GUI_BOX_FLAG_CLIP;
 	gui_push_parent(panel.box);
 }
 
