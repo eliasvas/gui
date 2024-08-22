@@ -571,18 +571,20 @@ enum {
 	GUI_BOX_FLAG_DRAW_BACKGROUND       = (1<<3),
 	GUI_BOX_FLAG_DRAW_HOT_ANIMATION    = (1<<4),
 	GUI_BOX_FLAG_DRAW_ACTIVE_ANIMATION = (1<<5),
-	GUI_BOX_FLAG_DRAW_ICON             = (1<<14),
-	GUI_BOX_FLAG_FIXED_X               = (1<<6),
-	GUI_BOX_FLAG_FIXED_Y               = (1<<7),
-	GUI_BOX_FLAG_FIXED_WIDTH           = (1<<8),
-	GUI_BOX_FLAG_FIXED_HEIGHT          = (1<<9),
-	GUI_BOX_FLAG_ROUNDED_EDGES         = (1<<10),
+	GUI_BOX_FLAG_DRAW_ICON             = (1<<6),
+	GUI_BOX_FLAG_FIXED_X               = (1<<7),
+	GUI_BOX_FLAG_FIXED_Y               = (1<<8),
+	GUI_BOX_FLAG_FIXED_WIDTH           = (1<<9),
+	GUI_BOX_FLAG_FIXED_HEIGHT          = (1<<10),
+	GUI_BOX_FLAG_ROUNDED_EDGES         = (1<<11),
 	GUI_BOX_FLAG_OVERFLOW_X            = (1<<12),
 	GUI_BOX_FLAG_OVERFLOW_Y            = (1<<13),
 	// TODO -- add logic for flag disabled.. (probably disable layouting/signals/rendering)
-	GUI_BOX_FLAG_DISABLED              = (1<<11),
+	GUI_BOX_FLAG_DISABLED              = (1<<14),
+	//-----------------------------------------------
 	GUI_BOX_FLAG_HOVERING              = (1<<15),
 	GUI_BOX_FLAG_CLIP                  = (1<<16),
+	GUI_BOX_FLAG_SCROLL                = (1<<17),
 };
 
 #define GUI_BOX_MAX_STRING_SIZE 64
@@ -629,6 +631,8 @@ struct guiBox {
 	f32 hot_t;
 	f32 active_t;
 	u32 child_count;
+	guiVec2 view_off;
+	guiVec2 view_off_target;
 };
 
 

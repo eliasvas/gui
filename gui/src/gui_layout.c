@@ -174,7 +174,8 @@ void gui_layout_calc_final_rects(guiBox *root, Axis2 axis) {
                 layout_pos += child->fixed_size.raw[axis];
             }
         }
-        child->r.p0.raw[axis] = root->r.p0.raw[axis] + child->fixed_pos.raw[axis];
+        // HERE we view scroll (-=view_off)
+        child->r.p0.raw[axis] = root->r.p0.raw[axis] + child->fixed_pos.raw[axis] - root->view_off.raw[axis];
         child->r.p1.raw[axis] = child->r.p0.raw[axis] + child->fixed_size.raw[axis];
 	}
 

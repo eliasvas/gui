@@ -22,6 +22,7 @@ void gui_input_process_event_queue(void){
 	guiInputState *gis = &gui_get_ui_state()->gis;
 	b32 mb_updated_this_frame[GUI_MOUSE_BUTTON_COUNT] = {0};
 	GUI_MOUSE_BUTTON button;
+	gis->prev_scroll_y = gis->scroll_y;
 	for (guiInputEventNode *e = gis->first; e != 0; e=e->next) {
 		switch(e->type){
 			case GUI_INPUT_EVENT_TYPE_MOUSE_MOVE:
@@ -37,7 +38,7 @@ void gui_input_process_event_queue(void){
 			case GUI_INPUT_EVENT_TYPE_SCROLLWHEEL_EVENT:
 				s32 scroll_y = *((s32*)((void*)(&e->param0)));
 				gis->prev_scroll_y = gis->scroll_y;
-				gis->scroll_y = scroll_y;
+				gis->scroll_y += scroll_y;
 				break;
 			default:
 				break;

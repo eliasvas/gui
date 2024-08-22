@@ -186,19 +186,27 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 	signal.box = box;
 	guiVec2 mp = gv2(gui_get_ui_state()->gis.mouse_x, gui_get_ui_state()->gis.mouse_y);
 
-	// FIXME -- What the FUck? ////////
-	if (!(box->flags & GUI_BOX_FLAG_CLICKABLE))return signal;
-	///////////////////////////////////
-
 	// if a parent has FLAG_CLIP, we intersect its childrens rects to clip them
-	guiRect r = box->r;
-	for(guiBox *p = box->parent; !gui_box_is_nil(p); p = p->parent) {
+	guiRect r = box->r; for(guiBox *p = box->parent; !gui_box_is_nil(p); p = p->parent) {
 		if (p->flags & GUI_BOX_FLAG_CLIP) {
 			r = gui_intersect_rects(box->r,p->r);
 			break;
 		}
 	}
 	b32 mouse_inside_box = gui_point_inside_rect(mp, r);
+
+	// preform scrolling via scroll wheel if widget in focus
+	if (mouse_inside_box && (box->flags & GUI_BOX_FLAG_SCROLL)) {
+		s32 scroll_delta = gui_input_get_scroll_delta();
+		// if CTRL/ALT/Something is pressed, reverse axis logic here??
+		Axis2 axis = AXIS2_Y;
+		f32 scroll_speed = 800.0 * gui_get_ui_state()->dt;
+		box->view_off.raw[axis] = box->view_off_target.raw[axis] = (box->view_off.raw[axis] - scroll_delta*scroll_speed);
+	}
+
+	// FIXME -- What the FUck? ////////
+	if (!(box->flags & GUI_BOX_FLAG_CLICKABLE))return signal;
+	///////////////////////////////////
 
 	// if mouse inside box, the box is HOT
 	if (mouse_inside_box && (box->flags & GUI_BOX_FLAG_CLICKABLE)) {
@@ -438,16 +446,15 @@ void gui_swindow_do_header(guiSimpleWindowData *window) {
 }
 
 void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
-	char main_panel_name[128];
-	sprintf(main_panel_name, "main_panel_%s", window->name);
+	char msa_name[128];
+	sprintf(msa_name, "msa_%s", window->name);
 	gui_set_next_child_layout_axis(AXIS2_Y);
 	gui_set_next_bg_color(gv4(0.4,0.4,0.4,1.0));
 	gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.5});
 	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.5});
-	guiSignal panel = gui_panel(main_panel_name);
-	// TODO make a custom 'gui_panel' for swindow, let's not do hax
-	panel.box->flags |= GUI_BOX_FLAG_CLIP;
-	gui_push_parent(panel.box);
+	guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL, msa_name);
+	guiSignal msa_signal = gui_get_signal_for_box(main_scroll_area);
+	gui_push_parent(main_scroll_area);
 }
 
 void gui_swindow_begin(guiSimpleWindowData *window) {
