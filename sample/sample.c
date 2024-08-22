@@ -91,7 +91,7 @@ void sample_update(){
         gui_set_next_bg_color(colors[2]);
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
         gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,250,1});
-        gui_button(button_name);
+        gui_icon(button_name, FA_ICON_FOLDER);
 #endif
 
         gui_swindow_end(wdata);

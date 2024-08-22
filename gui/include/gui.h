@@ -858,8 +858,8 @@ guiArena *gui_get_build_arena();
 
 guiVec2 gui_font_get_string_dim(char* str, f32 scale);
 guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
-guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 color);
-guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, f32 scale, guiVec4 color);
+guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 color, guiRect clip_rect);
+guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, guiRect clip_rect, f32 scale, guiVec4 color);
 guiStatus gui_draw_string_in_rect(char *str, guiRect r, guiRect clip_rect, f32 scale, guiVec4 color);
 void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box);
 void gui_render_hierarchy(guiBox *root);

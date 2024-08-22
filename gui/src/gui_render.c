@@ -110,7 +110,7 @@ void gui_draw_rect(guiRect r, guiVec4 color, guiBox *box) {
 		gui_draw_string_in_rect(box->str, unclipped_rect, clipped_rect, box->text_scale, box->text_color);
 	}
 	if (box->flags & GUI_BOX_FLAG_DRAW_ICON) {
-		gui_draw_icon_in_rect(box->icon_codepoint, r, box->text_scale, box->text_color);
+		gui_draw_icon_in_rect(box->icon_codepoint, unclipped_rect, clipped_rect, box->text_scale, box->text_color);
 	}
 }
 
