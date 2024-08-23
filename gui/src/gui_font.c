@@ -56,21 +56,25 @@ guiPackedChar gui_font_atlas_get_codepoint(guiFontAtlas *atlas, u32 codepoint){
 }
 
 
+f32 gui_font_get_default_text_height(f32 scale) {
+	guiState *state = gui_get_ui_state();
+	return (state->atlas.ascent - state->atlas.descent) * scale;
+}
 
 // calculates width/height of a string in pixels
 guiVec2 gui_font_get_string_dim(char *str, f32 scale) {
 	guiState *state = gui_get_ui_state();
 	if (!str) return gv2(0,0);
 
-	f32 text_height = state->atlas.ascent - state->atlas.descent;
 	f32 text_width = 0;
+	f32 text_height = gui_font_get_default_text_height(scale);
 
 	for (u32 i = 0; i < strlen(str); ++i) {
 		guiPackedChar b = gui_font_atlas_get_char(&state->atlas, str[i]);
 		text_width += b.xadvance;
 	}
 
-	return gv2(text_width * scale, text_height * scale);
+	return gv2(text_width * scale, text_height);
 }
 
 guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale) {

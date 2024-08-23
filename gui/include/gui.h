@@ -27,6 +27,12 @@ typedef double    f64;
 typedef int32_t   b32;
 typedef char      b8;
 
+typedef struct guiRange2 guiRange2;
+struct guiRange2 {
+	s64 min;
+	s64 max;
+};
+
 typedef union {
     struct{f32 x,y;};
     struct{f32 u,v;};
@@ -768,6 +774,32 @@ guiSignal gui_clickable_region(char *str);
 guiSignal gui_icon(char *str, u32 icon_codepoint);
 guiSignal gui_spacer(guiSize size);
 
+
+typedef struct guiScrollListRowBlock guiScrollListRowBlock;
+struct guiScrollListRowBlock {
+	u64 row_count; // how many 'rows' this block covers (vertically)
+	u64 item_count; // how many items in this row (horizontally)
+};
+typedef struct guiScrollListRowBlockArray guiScrollListRowBlockArray;
+struct guiScrollListRowBlockArray {
+	guiScrollListRowBlock *blocks;
+	u64 count;
+	
+};
+typedef struct guiScrollListOptions guiScrollListOptions;
+struct guiScrollListOptions {
+	guiVec2 dim_px; // total dimension of scroll list (in pixels)
+	f32 row_height_px; // row height of EACH row
+	guiScrollListRowBlockArray row_blocks; // all the row blocks
+	guiRange2 item_range; // for example [0,3] will produce 3 (0,1,2) visible item
+};
+
+
+
+guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp);
+void      gui_scroll_list_end();
+
+
 typedef struct guiSimpleWindowData guiSimpleWindowData;
 struct guiSimpleWindowData {
 	guiVec2 pos,dim;
@@ -862,6 +894,7 @@ guiArena *gui_get_build_arena();
 
 guiVec2 gui_font_get_string_dim(char* str, f32 scale);
 guiVec2 gui_font_get_icon_dim(u32 codepoint, f32 scale);
+f32 gui_font_get_default_text_height(f32 scale);
 guiStatus gui_draw_icon_in_pos(u32 codepoint, guiVec2 pos, f32 scale, guiVec4 color, guiRect clip_rect);
 guiStatus gui_draw_icon_in_rect(u32 codepoint, guiRect r, guiRect clip_rect, f32 scale, guiVec4 color);
 guiStatus gui_draw_string_in_rect(char *str, guiRect r, guiRect clip_rect, f32 scale, guiVec4 color);

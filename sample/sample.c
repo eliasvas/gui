@@ -22,7 +22,7 @@ void sample_init(){
     wdata->dim = gv2(400,300);
     wdata->pos = gv2(100,100);
     wdata->active = 1;
-    sprintf(wdata->name, "TestWindow");
+    sprintf(wdata->name, "SimpleWindow");
 }
 
 void sample_update(){
@@ -56,7 +56,7 @@ void sample_update(){
 
     if (wdata->active){
         gui_swindow_begin(wdata);
-#if 0
+#if 1
         gui_set_next_bg_color(gv4(0.6,0.2,0.4,1.0));
         gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
         gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
