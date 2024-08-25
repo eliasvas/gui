@@ -473,7 +473,7 @@ void gui_swindow_begin(guiSimpleWindowData *window) {
 	gui_swindow_do_main_panel(window);
 	//----------------------------------------
 	f32 header_height = gui_font_get_default_text_height(gui_top_text_scale());
-	guiScrollPoint sp = {0};
+	static guiScrollPoint sp = {0};
 	guiScrollListRowBlock sb[6];
 	sb[0] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
 	sb[1] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
@@ -483,7 +483,7 @@ void gui_swindow_begin(guiSimpleWindowData *window) {
 	sb[5] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
 	guiScrollListOptions scroll_opt = {
 		.dim_px = gv2(window->dim.x,window->dim.y - header_height),
-		.item_range = (guiRange2){0,3},
+		.item_range = (guiRange2){0,5},
 		.row_blocks = (guiScrollListRowBlockArray){.blocks = sb, .count = 6},
 		.row_height_px = 100,
 	};
@@ -501,6 +501,56 @@ void gui_swindow_end(guiSimpleWindowData *window) {
 }
 
 
+guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows) {
+	const char *scroll_name = "scroll_scroll";
+	s64 row_range_dim = maximum(row_range.max - row_range.min, 1);
+	char scrollbar_name[128]; //scrollbar area
+	sprintf(scrollbar_name, "scroll_bar_%s", scroll_name);
+	gui_set_next_child_layout_axis(axis);
+	guiBox *scrollbar_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND , scrollbar_name);
+	guiSignal scrollbar_signal = gui_get_signal_for_box(scrollbar_area);
+	gui_push_parent(scrollbar_area);
+	gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,0});
+	// space before scroll slider
+	guiSignal before_sig = {0};
+	if (row_range.min != row_range.max) {
+		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, (sp.idx-row_range.min)/((f32)row_range_dim),0});
+		sprintf(scrollbar_name, "scroll_bar_before_%s", scroll_name);
+		guiBox * before_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , scrollbar_name);
+		before_sig = gui_get_signal_for_box(before_box);
+	}
+	// scroll slider
+	guiSignal slider_sig = {0};
+	{
+		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, (num_of_visible_rows)/((f32)row_range_dim),0});
+		gui_set_next_bg_color(gv4(0.6,0.4,0.4,1));
+		sprintf(scrollbar_name, "scroll_bar_slider_%s", scroll_name);
+		slider_sig = gui_button(scrollbar_name);
+		// don't show the label for this button
+		slider_sig.box->flags &= ~(GUI_BOX_FLAG_DRAW_TEXT);
+	}
+	// space after scroll slider
+	guiSignal after_sig = {0};
+	if (row_range.min != row_range.max) {
+		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, 1.0f-(sp.idx-row_range.min)/((f32)row_range_dim),0});
+		sprintf(scrollbar_name, "scroll_bar_after_%s", scroll_name);
+		guiBox *after_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , scrollbar_name);
+		after_sig = gui_get_signal_for_box(after_box);
+	}
+	// do dragging logic to update the scrollpoint if need be
+	if (slider_sig.flags & GUI_SIGNAL_FLAG_DRAGGING)
+	{
+		guiVec2 delta = gui_drag_get_delta();
+		u64 new_idx = minimum(maximum(0,(s64)sp.idx + signof(delta.raw[axis])),row_range_dim);
+		gui_scroll_point_target_idx(&sp, new_idx);
+		//sp.value = sp.point.idx+row_range.min;
+	}
+
+	gui_pop_pref_width();
+	gui_pop_parent();
+	return sp;
+}
+
 guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	guiSignal container_signal = {0};
 
@@ -517,22 +567,16 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	gui_set_next_fixed_width(opt->dim_px.x - scroller_width_px);
 	gui_set_next_fixed_height(opt->dim_px.y);
 	guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL, msa_name);
+	main_scroll_area->view_off.raw[AXIS2_Y] = main_scroll_area->view_off_target.raw[AXIS2_Y] = sp->idx * opt->row_height_px;
 	guiSignal msa_signal = gui_get_signal_for_box(main_scroll_area);
 
-	// scrollbar, should become a function i think, like gui_scrollbar(..)
-	char scrollbar_name[128]; //scrollbar area
-	sprintf(scrollbar_name, "scroll_bar_%s", "scroll_scroll");
-	gui_set_next_child_layout_axis(AXIS2_Y);
-	gui_set_next_bg_color(gv4(1,0,0,1.0));
 	gui_set_next_fixed_width(scroller_width_px);
 	gui_set_next_fixed_height(opt->dim_px.y);
-	guiBox *scrollbar_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND , scrollbar_name);
-	guiSignal scrollbar_signal = gui_get_signal_for_box(scrollbar_area);
-	gui_push_parent(scrollbar_area);
-	gui_pop_parent();
+	*sp = gui_scroll_bar(AXIS2_Y, *sp, opt->item_range,num_of_visible_rows);
+	printf("sp= %ld\n", sp->idx);
 
-// ---------------------------
 	gui_push_parent(main_scroll_area);
+	// ...
 
 
 	return container_signal;

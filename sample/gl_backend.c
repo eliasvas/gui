@@ -138,7 +138,6 @@ GLuint compile_shader(GLenum type, const char* source) {
     if (isCompiled == GL_FALSE) {
         GLint maxLength = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
-
         char errorLog[256];
         glGetShaderInfoLog(shader, maxLength, &maxLength, errorLog);
 
@@ -393,7 +392,6 @@ void platform_update() {
                 e.param1 = event.motion.y;
                 gui_input_push_event(e);
                 break;
-
             case SDL_MOUSEBUTTONDOWN:
                 e.type = GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT;
                 e.param1 = 1;

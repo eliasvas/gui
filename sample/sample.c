@@ -56,18 +56,18 @@ void sample_update(){
 
     if (wdata->active){
         gui_swindow_begin(wdata);
-#if 1
-        gui_set_next_bg_color(gv4(0.6,0.2,0.4,1.0));
-        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
-        gui_slider("slider1", AXIS2_X, gv2(0,400), sd1);
+#if 0
+        // gui_set_next_bg_color(gv4(0.6,0.2,0.4,1.0));
+        // gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
+        // gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
+        // gui_slider("slider1", AXIS2_X, gv2(0,400), sd1);
 
-        for (u32 i = 0; i < 4; ++i) {
+        for (u32 i = 0; i < 5; ++i) {
             char panel_name[128];
             sprintf(panel_name,"panel_abc%d", i);
             gui_set_next_child_layout_axis(AXIS2_X);
             gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,1.0});
+            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.5,1.0});
             guiSignal s = gui_panel(panel_name);
             gui_push_parent(s.box);
             for (u32 j = i; j < 5; ++j) {
@@ -75,29 +75,27 @@ void sample_update(){
                 sprintf(button_name, "b%d%d", i, j);
                 gui_set_next_bg_color(colors[i*(j-1)]);
                 gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
+                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,100,1});
                 gui_button(button_name);
             }
             gui_pop_parent();
         }
 #else
+        const char *random_words [] = {"hello","there","general","kenobi","I","am","General","grievous","nice","to","meet","you"};
         char button_name[128];
-        sprintf(button_name, "up");
-        gui_set_next_bg_color(colors[1]);
-        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,100,1});
-        gui_button(button_name);
-        sprintf(button_name, "down");
-        gui_set_next_bg_color(colors[2]);
-        gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PIXELS,1000.0,1.0});
-        gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,100,1});
-        gui_button(button_name);
+        gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,1});
+        gui_push_pref_height((guiSize){GUI_SIZEKIND_PIXELS,50,1});
+        for (u32 i = 0; i < array_count(random_words);i+=1) {
+            sprintf(button_name, random_words[i]);
+            gui_set_next_bg_color(colors[i]);
+            gui_button(button_name);
+
+        }
         //gui_icon(button_name, FA_ICON_FOLDER);
 #endif
 
         gui_swindow_end(wdata);
     }
-
     gui_build_end();
 
     //wdata->dim.y = 310 + 30 * sin(gui_get_ui_state()->current_frame_index / 30.0);
