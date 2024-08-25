@@ -6,23 +6,20 @@ guiVec2 platform_get_windim();
 void platform_render(guiRenderCommand *rcommands, u32 command_count);
 void platform_deinit();
 
-guiSliderData *sd1;
-guiSliderData *sd2;
 guiSimpleWindowData *wdata;
 
 void sample_init(){
     guiState *gui_state = gui_state_init();
     gui_set_ui_state(gui_state);
 
-    sd1 = ALLOC(sizeof(guiSliderData));
-    *sd1 = gui_slider_data_make(gui_scroll_point_make(3,0), 0);
-    sd2 = ALLOC(sizeof(guiSliderData));
-    *sd2 = gui_slider_data_make(gui_scroll_point_make(0,0), 0);
+    guiSimpleWindowData d = {
+        .active = 1,
+        .dim = gv2(400,300),
+        .pos = gv2(100,100),
+        .name = "SimpleWindow",
+    };
     wdata = ALLOC(sizeof(guiSimpleWindowData));
-    wdata->dim = gv2(400,300);
-    wdata->pos = gv2(100,100);
-    wdata->active = 1;
-    sprintf(wdata->name, "SimpleWindow");
+    memcpy(wdata, &d, sizeof(d));
 }
 
 void sample_update(){
@@ -55,45 +52,33 @@ void sample_update(){
     };
 
     if (wdata->active){
-        gui_swindow_begin(wdata);
-#if 0
-        // gui_set_next_bg_color(gv4(0.6,0.2,0.4,1.0));
-        // gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-        // gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0/5.0,0.5});
-        // gui_slider("slider1", AXIS2_X, gv2(0,400), sd1);
+        gui_swindow_begin(wdata, AXIS2_X);
 
-        for (u32 i = 0; i < 5; ++i) {
-            char panel_name[128];
-            sprintf(panel_name,"panel_abc%d", i);
-            gui_set_next_child_layout_axis(AXIS2_X);
-            gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,1.0});
-            gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,0.5,1.0});
-            guiSignal s = gui_panel(panel_name);
-            gui_push_parent(s.box);
-            for (u32 j = i; j < 5; ++j) {
-                char button_name[128];
-                sprintf(button_name, "b%d%d", i, j);
-                gui_set_next_bg_color(colors[i*(j-1)]);
-                gui_set_next_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1.0,0.0});
-                gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PIXELS,100,1});
-                gui_button(button_name);
-            }
-            gui_pop_parent();
-        }
-#else
+        f32 header_height = gui_font_get_default_text_height(gui_top_text_scale());
+        static guiScrollPoint sp = {0};
+        guiScrollListRowBlock sb[12];
+        for (u32 i = 0; i < 11; i+=1){ sb[i] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1}; }
+        guiScrollListOptions scroll_opt = {
+            .dim_px = gv2(wdata->dim.x,wdata->dim.y - header_height),
+            .item_range = (guiRange2){0,11},
+            .row_blocks = (guiScrollListRowBlockArray){.blocks = sb, .count = 11},
+            .row_height_px = 50,
+        };
+        gui_scroll_list_begin(&scroll_opt, &sp);
+
+        // ------------------------------------
         const char *random_words [] = {"hello","there","general","kenobi","I","am","General","grievous","nice","to","meet","you"};
         char button_name[128];
         gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,1});
-        gui_push_pref_height((guiSize){GUI_SIZEKIND_PIXELS,50,1});
         for (u32 i = 0; i < array_count(random_words);i+=1) {
             sprintf(button_name, random_words[i]);
             gui_set_next_bg_color(colors[i]);
             gui_button(button_name);
 
         }
-        //gui_icon(button_name, FA_ICON_FOLDER);
-#endif
+        // ------------------------------------
 
+        gui_scroll_list_end();
         gui_swindow_end(wdata);
     }
     gui_build_end();

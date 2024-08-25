@@ -446,10 +446,10 @@ void gui_swindow_do_header(guiSimpleWindowData *window) {
 	gui_pop_bg_color();
 }
 
-void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
+void gui_swindow_do_main_panel(guiSimpleWindowData *window, Axis2 layout_axis) {
 	char main_panel_name[128];
 	sprintf(main_panel_name, "main_panel_%s", window->name);
-	gui_set_next_child_layout_axis(AXIS2_X);
+	gui_set_next_child_layout_axis(layout_axis);
 	f32 header_height = gui_font_get_default_text_height(gui_top_text_scale());
 	gui_set_next_fixed_width(window->dim.x);
 	gui_set_next_fixed_height(window->dim.y - header_height);
@@ -458,7 +458,7 @@ void gui_swindow_do_main_panel(guiSimpleWindowData *window) {
 	gui_push_parent(main_panel_area);
 }
 
-void gui_swindow_begin(guiSimpleWindowData *window) {
+void gui_swindow_begin(guiSimpleWindowData *window, Axis2 layout_axis) {
 	gui_push_bg_color(gv4(0.4,0.4,0.4,1.0));
 	gui_set_next_fixed_x(window->pos.x);
 	gui_set_next_fixed_y(window->pos.y);
@@ -470,28 +470,14 @@ void gui_swindow_begin(guiSimpleWindowData *window) {
 	guiSignal master_panel = gui_panel(main_window_area_name);
 	gui_push_parent(master_panel.box);
 	gui_swindow_do_header(window);
-	gui_swindow_do_main_panel(window);
+	gui_swindow_do_main_panel(window, layout_axis);
 	//----------------------------------------
-	f32 header_height = gui_font_get_default_text_height(gui_top_text_scale());
-	static guiScrollPoint sp = {0};
-	guiScrollListRowBlock sb[6];
-	sb[0] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
-	sb[1] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
-	sb[2] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
-	sb[3] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
-	sb[4] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
-	sb[5] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1};
-	guiScrollListOptions scroll_opt = {
-		.dim_px = gv2(window->dim.x,window->dim.y - header_height),
-		.item_range = (guiRange2){0,5},
-		.row_blocks = (guiScrollListRowBlockArray){.blocks = sb, .count = 6},
-		.row_height_px = 100,
-	};
-	gui_scroll_list_begin(&scroll_opt, &sp);
+	
 }
 
 void gui_swindow_end(guiSimpleWindowData *window) {
-	gui_scroll_list_end();
+	//gui_scroll_list_end();
+	
 	// pop main panel
 	gui_pop_parent();
 	// pop master panel
@@ -555,9 +541,9 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	guiSignal container_signal = {0};
 
 	s64 num_of_visible_rows = (opt->dim_px.y/opt->row_height_px);
-	printf("number of visible rows: %ld\n", num_of_visible_rows);
+	//printf("number of visible rows: %ld\n", num_of_visible_rows);
 	guiRange2 scroll_row_idx_range = (guiRange2){.min = opt->item_range.min, .max = opt->item_range.max};
-	printf("row_idx_range %ld->%ld\n", scroll_row_idx_range.min, scroll_row_idx_range.max);
+	//printf("row_idx_range %ld->%ld\n", scroll_row_idx_range.min, scroll_row_idx_range.max);
 
 	s64 scroller_width_px = gui_top_text_scale() * 15;
 	// main scroller area
@@ -566,16 +552,17 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	gui_set_next_child_layout_axis(AXIS2_Y);
 	gui_set_next_fixed_width(opt->dim_px.x - scroller_width_px);
 	gui_set_next_fixed_height(opt->dim_px.y);
-	guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL, msa_name);
+	guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL | GUI_BOX_FLAG_OVERFLOW_Y, msa_name);
+	//guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL, msa_name);
 	main_scroll_area->view_off.raw[AXIS2_Y] = main_scroll_area->view_off_target.raw[AXIS2_Y] = sp->idx * opt->row_height_px;
 	guiSignal msa_signal = gui_get_signal_for_box(main_scroll_area);
 
 	gui_set_next_fixed_width(scroller_width_px);
 	gui_set_next_fixed_height(opt->dim_px.y);
 	*sp = gui_scroll_bar(AXIS2_Y, *sp, opt->item_range,num_of_visible_rows);
-	printf("sp= %ld\n", sp->idx);
 
 	gui_push_parent(main_scroll_area);
+	gui_push_pref_height((guiSize){GUI_SIZEKIND_PIXELS, opt->row_height_px, 1});
 	// ...
 
 
@@ -583,7 +570,7 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 }
 
 void gui_scroll_list_end() {
+	gui_pop_pref_height();
 	// pop main_scroll_area
 	gui_pop_parent();
-
 }

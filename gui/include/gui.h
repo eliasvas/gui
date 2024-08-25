@@ -797,9 +797,9 @@ struct guiScrollListOptions {
 
 
 
-guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp);
-void      gui_scroll_list_end();
-
+guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows);
+guiSignal      gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp);
+void           gui_scroll_list_end();
 
 typedef struct guiSimpleWindowData guiSimpleWindowData;
 struct guiSimpleWindowData {
@@ -807,7 +807,7 @@ struct guiSimpleWindowData {
 	char name[64];
 	b32 active;
 };
-void gui_swindow_begin(guiSimpleWindowData *window);
+void gui_swindow_begin(guiSimpleWindowData *window, Axis2 layout_axis);
 void gui_swindow_end(guiSimpleWindowData *window);
 
 
