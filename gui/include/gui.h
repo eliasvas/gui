@@ -747,6 +747,7 @@ enum {
 	GUI_SIGNAL_FLAG_MMB_RELEASED = (1<<5),
 	GUI_SIGNAL_FLAG_RMB_RELEASED = (1<<6),
 	GUI_SIGNAL_FLAG_MOUSE_HOVER  = (1<<7),
+	GUI_SIGNAL_FLAG_SCROLLED     = (1<<7),
 	// TODO -- maybe we need one dragging for each mouse key
 	GUI_SIGNAL_FLAG_DRAGGING     = (1<<8),
 	// ...

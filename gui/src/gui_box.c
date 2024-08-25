@@ -197,11 +197,7 @@ guiSignal gui_get_signal_for_box(guiBox *box) {
 
 	// preform scrolling via scroll wheel if widget in focus
 	if (mouse_inside_box && (box->flags & GUI_BOX_FLAG_SCROLL)) {
-		s32 scroll_delta = gui_input_get_scroll_delta();
-		// if CTRL/ALT/Something is pressed, reverse axis logic here??
-		Axis2 axis = AXIS2_Y;
-		f32 scroll_speed = 800.0 * gui_get_ui_state()->dt;
-		box->view_off.raw[axis] = box->view_off_target.raw[axis] = (box->view_off.raw[axis] - scroll_delta*scroll_speed);
+		signal.flags |= GUI_SIGNAL_FLAG_SCROLLED;
 	}
 
 	// FIXME -- What the FUck? ////////
@@ -476,8 +472,6 @@ void gui_swindow_begin(guiSimpleWindowData *window, Axis2 layout_axis) {
 }
 
 void gui_swindow_end(guiSimpleWindowData *window) {
-	//gui_scroll_list_end();
-	
 	// pop main panel
 	gui_pop_parent();
 	// pop master panel
@@ -488,21 +482,23 @@ void gui_swindow_end(guiSimpleWindowData *window) {
 
 
 guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows) {
+	gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,0});
 	const char *scroll_name = "scroll_scroll";
 	s64 row_range_dim = maximum(row_range.max - row_range.min, 1);
-	char scrollbar_name[128]; //scrollbar area
-	sprintf(scrollbar_name, "scroll_bar_%s", scroll_name);
+	char box_name[128];
+	
+	//scrollbar area
+	sprintf(box_name, "scroll_bar_%s", scroll_name);
 	gui_set_next_child_layout_axis(axis);
-	guiBox *scrollbar_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND , scrollbar_name);
+	guiBox *scrollbar_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND, box_name);
 	guiSignal scrollbar_signal = gui_get_signal_for_box(scrollbar_area);
 	gui_push_parent(scrollbar_area);
-	gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,0});
 	// space before scroll slider
 	guiSignal before_sig = {0};
 	if (row_range.min != row_range.max) {
 		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, (sp.idx-row_range.min)/((f32)row_range_dim),0});
-		sprintf(scrollbar_name, "scroll_bar_before_%s", scroll_name);
-		guiBox * before_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , scrollbar_name);
+		sprintf(box_name, "scroll_bar_before_%s", scroll_name);
+		guiBox * before_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , box_name);
 		before_sig = gui_get_signal_for_box(before_box);
 	}
 	// scroll slider
@@ -510,8 +506,8 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 	{
 		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, (num_of_visible_rows)/((f32)row_range_dim),0});
 		gui_set_next_bg_color(gv4(0.6,0.4,0.4,1));
-		sprintf(scrollbar_name, "scroll_bar_slider_%s", scroll_name);
-		slider_sig = gui_button(scrollbar_name);
+		sprintf(box_name, "scroll_bar_slider_%s", scroll_name);
+		slider_sig = gui_button(box_name);
 		// don't show the label for this button
 		slider_sig.box->flags &= ~(GUI_BOX_FLAG_DRAW_TEXT);
 	}
@@ -519,13 +515,20 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 	guiSignal after_sig = {0};
 	if (row_range.min != row_range.max) {
 		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, 1.0f-(sp.idx-row_range.min)/((f32)row_range_dim),0});
-		sprintf(scrollbar_name, "scroll_bar_after_%s", scroll_name);
-		guiBox *after_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , scrollbar_name);
+		sprintf(box_name, "scroll_bar_after_%s", scroll_name);
+		guiBox *after_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , box_name);
 		after_sig = gui_get_signal_for_box(after_box);
 	}
 	// do dragging logic to update the scrollpoint if need be
-	if (slider_sig.flags & GUI_SIGNAL_FLAG_DRAGGING)
-	{
+	if (before_sig.flags & GUI_SIGNAL_FLAG_DRAGGING) {
+		u64 new_idx = minimum(maximum(0,(s64)sp.idx-1),row_range_dim);
+		gui_scroll_point_target_idx(&sp, new_idx);
+	}
+	if (after_sig.flags & GUI_SIGNAL_FLAG_DRAGGING) {
+		u64 new_idx = minimum(maximum(0,(s64)sp.idx+1),row_range_dim);
+		gui_scroll_point_target_idx(&sp, new_idx);
+	}
+	if (slider_sig.flags & GUI_SIGNAL_FLAG_DRAGGING) {
 		guiVec2 delta = gui_drag_get_delta();
 		u64 new_idx = minimum(maximum(0,(s64)sp.idx + signof(delta.raw[axis])),row_range_dim);
 		gui_scroll_point_target_idx(&sp, new_idx);
@@ -533,6 +536,7 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 	}
 
 	gui_pop_pref_width();
+	//scrollbar_area
 	gui_pop_parent();
 	return sp;
 }
@@ -541,9 +545,8 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	guiSignal container_signal = {0};
 
 	s64 num_of_visible_rows = (opt->dim_px.y/opt->row_height_px);
-	//printf("number of visible rows: %ld\n", num_of_visible_rows);
 	guiRange2 scroll_row_idx_range = (guiRange2){.min = opt->item_range.min, .max = opt->item_range.max};
-	//printf("row_idx_range %ld->%ld\n", scroll_row_idx_range.min, scroll_row_idx_range.max);
+	s64 scroll_row_idx_range_dim = maximum(scroll_row_idx_range.max - scroll_row_idx_range.min, 1);
 
 	s64 scroller_width_px = gui_top_text_scale() * 15;
 	// main scroller area
@@ -554,8 +557,14 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	gui_set_next_fixed_height(opt->dim_px.y);
 	guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL | GUI_BOX_FLAG_OVERFLOW_Y, msa_name);
 	//guiBox *main_scroll_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLIP | GUI_BOX_FLAG_SCROLL, msa_name);
-	main_scroll_area->view_off.raw[AXIS2_Y] = main_scroll_area->view_off_target.raw[AXIS2_Y] = sp->idx * opt->row_height_px;
 	guiSignal msa_signal = gui_get_signal_for_box(main_scroll_area);
+	// if there was scrolling, update the scrollpoint
+	if (msa_signal.flags & GUI_SIGNAL_FLAG_SCROLLED) {
+		s32 scroll_delta = gui_input_get_scroll_delta();
+		u64 new_idx = minimum(maximum(0,(s64)sp->idx-signof(scroll_delta)),scroll_row_idx_range_dim);
+		gui_scroll_point_target_idx(sp, new_idx);
+	}
+	main_scroll_area->view_off.raw[AXIS2_Y] = main_scroll_area->view_off_target.raw[AXIS2_Y] = sp->idx * opt->row_height_px;
 
 	gui_set_next_fixed_width(scroller_width_px);
 	gui_set_next_fixed_height(opt->dim_px.y);
@@ -570,6 +579,7 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 }
 
 void gui_scroll_list_end() {
+
 	gui_pop_pref_height();
 	// pop main_scroll_area
 	gui_pop_parent();

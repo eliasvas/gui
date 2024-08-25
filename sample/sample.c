@@ -56,18 +56,18 @@ void sample_update(){
 
         f32 header_height = gui_font_get_default_text_height(gui_top_text_scale());
         static guiScrollPoint sp = {0};
-        guiScrollListRowBlock sb[12];
-        for (u32 i = 0; i < 11; i+=1){ sb[i] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1}; }
+        guiScrollListRowBlock sb[10];
+        for (u32 i = 0; i < 10; i+=1){ sb[i] = (guiScrollListRowBlock){.item_count = 1, .row_count = 1}; }
         guiScrollListOptions scroll_opt = {
             .dim_px = gv2(wdata->dim.x,wdata->dim.y - header_height),
-            .item_range = (guiRange2){0,11},
-            .row_blocks = (guiScrollListRowBlockArray){.blocks = sb, .count = 11},
+            .item_range = (guiRange2){0,10},
+            .row_blocks = (guiScrollListRowBlockArray){.blocks = sb, .count = array_count(sb)},
             .row_height_px = 50,
         };
         gui_scroll_list_begin(&scroll_opt, &sp);
 
         // ------------------------------------
-        const char *random_words [] = {"hello","there","general","kenobi","I","am","General","grievous","nice","to","meet","you"};
+        const char *random_words [] = {"hello","there","general","kenobi","I am","General","grievous","nice","to","meet","you"};
         char button_name[128];
         gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,1});
         for (u32 i = 0; i < array_count(random_words);i+=1) {
