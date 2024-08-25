@@ -798,7 +798,7 @@ struct guiScrollListOptions {
 
 
 
-guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows);
+guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows, b32 with_buttons);
 guiSignal      gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp);
 void           gui_scroll_list_end();
 

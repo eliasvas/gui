@@ -74,7 +74,6 @@ void sample_update(){
             sprintf(button_name, random_words[i]);
             gui_set_next_bg_color(colors[i]);
             gui_button(button_name);
-
         }
         // ------------------------------------
 

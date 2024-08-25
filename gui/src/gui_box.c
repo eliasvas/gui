@@ -481,11 +481,28 @@ void gui_swindow_end(guiSimpleWindowData *window) {
 }
 
 
-guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows) {
+guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range, s64 num_of_visible_rows, b32 with_buttons) {
 	gui_push_pref_width((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT,1,0});
 	const char *scroll_name = "scroll_scroll";
 	s64 row_range_dim = maximum(row_range.max - row_range.min, 1);
 	char box_name[128];
+	
+
+	//main scroll area
+	sprintf(box_name, "scroll_main_%s", scroll_name);
+	gui_set_next_child_layout_axis(axis);
+	guiBox *scroll_main_area = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND, box_name);
+	guiSignal scroll_main_signal = gui_get_signal_for_box(scroll_main_area);
+	gui_set_next_pref_height((guiSize){GUI_SIZEKIND_PERCENT_OF_PARENT, 1,0});
+	gui_push_parent(scroll_main_area);
+
+	// left/up button
+	guiSignal up_sig = {0};
+	if (with_buttons){
+		sprintf(box_name, "up_button_%s", scroll_name);
+		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT, 0,0});
+		up_sig = gui_icon("box_name", (axis == AXIS2_Y) ? FA_ICON_UP_OPEN : FA_ICON_LEFT_OPEN);
+	}
 	
 	//scrollbar area
 	sprintf(box_name, "scroll_bar_%s", scroll_name);
@@ -519,12 +536,23 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 		guiBox *after_box = gui_box_build_from_str(GUI_BOX_FLAG_DRAW_BACKGROUND | GUI_BOX_FLAG_CLICKABLE , box_name);
 		after_sig = gui_get_signal_for_box(after_box);
 	}
+	// pop main scroll area
+	gui_pop_parent();
+
+	// right/down button
+	guiSignal down_sig = {0};
+	if (with_buttons){
+		sprintf(box_name, "down_button_%s", scroll_name);
+		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0,0});
+		down_sig = gui_icon(box_name, (axis == AXIS2_Y) ? FA_ICON_DOWN_OPEN : FA_ICON_RIGHT_OPEN);
+	}
+	
 	// do dragging logic to update the scrollpoint if need be
-	if (before_sig.flags & GUI_SIGNAL_FLAG_DRAGGING) {
+	if (before_sig.flags & GUI_SIGNAL_FLAG_DRAGGING || (up_sig.flags & GUI_SIGNAL_FLAG_LMB_PRESSED && with_buttons)) {
 		u64 new_idx = minimum(maximum(0,(s64)sp.idx-1),row_range_dim);
 		gui_scroll_point_target_idx(&sp, new_idx);
 	}
-	if (after_sig.flags & GUI_SIGNAL_FLAG_DRAGGING) {
+	if (after_sig.flags & GUI_SIGNAL_FLAG_DRAGGING || (down_sig.flags & GUI_SIGNAL_FLAG_LMB_PRESSED && with_buttons)) {
 		u64 new_idx = minimum(maximum(0,(s64)sp.idx+1),row_range_dim);
 		gui_scroll_point_target_idx(&sp, new_idx);
 	}
@@ -536,7 +564,7 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 	}
 
 	gui_pop_pref_width();
-	//scrollbar_area
+	// scrollbar_area
 	gui_pop_parent();
 	return sp;
 }
@@ -548,7 +576,9 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 	guiRange2 scroll_row_idx_range = (guiRange2){.min = opt->item_range.min, .max = opt->item_range.max};
 	s64 scroll_row_idx_range_dim = maximum(scroll_row_idx_range.max - scroll_row_idx_range.min, 1);
 
-	s64 scroller_width_px = gui_top_text_scale() * 15;
+	//s64 scroller_width_px = gui_top_text_scale() * 20;
+    s64 scroller_width_px = gui_font_get_icon_dim(FA_ICON_UP_BIG, gui_top_text_scale()).x;
+
 	// main scroller area
 	char msa_name[128];
 	sprintf(msa_name, "msa_%s", "scroll_scroll");
@@ -568,7 +598,7 @@ guiSignal gui_scroll_list_begin(guiScrollListOptions *opt, guiScrollPoint *sp) {
 
 	gui_set_next_fixed_width(scroller_width_px);
 	gui_set_next_fixed_height(opt->dim_px.y);
-	*sp = gui_scroll_bar(AXIS2_Y, *sp, opt->item_range,num_of_visible_rows);
+	*sp = gui_scroll_bar(AXIS2_Y, *sp, opt->item_range,num_of_visible_rows,1);
 
 	gui_push_parent(main_scroll_area);
 	gui_push_pref_height((guiSize){GUI_SIZEKIND_PIXELS, opt->row_height_px, 1});
