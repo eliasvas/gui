@@ -23,6 +23,8 @@ void gui_input_process_event_queue(void){
 	b32 mb_updated_this_frame[GUI_MOUSE_BUTTON_COUNT] = {0};
 	GUI_MOUSE_BUTTON button;
 	gis->prev_scroll_y = gis->scroll_y;
+	s32 scroll_y;
+	b32 is_down;
 	for (guiInputEventNode *e = gis->first; e != 0; e=e->next) {
 		switch(e->type){
 			case GUI_INPUT_EVENT_TYPE_MOUSE_MOVE:
@@ -31,12 +33,12 @@ void gui_input_process_event_queue(void){
 				break;
 			case GUI_INPUT_EVENT_TYPE_MOUSE_BUTTON_EVENT:
 				button = e->param0;
-				b32 is_down = e->param1;
+				is_down = e->param1;
 				gis->mb[button] = (gis->mb[button] << 1) | (is_down & 1);
 				mb_updated_this_frame[(u32)button] = 1;
 				break;
 			case GUI_INPUT_EVENT_TYPE_SCROLLWHEEL_EVENT:
-				s32 scroll_y = *((s32*)((void*)(&e->param0)));
+				scroll_y = *((s32*)((void*)(&e->param0)));
 				gis->prev_scroll_y = gis->scroll_y;
 				gis->scroll_y += scroll_y;
 				break;
