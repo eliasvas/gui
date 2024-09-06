@@ -121,7 +121,7 @@ guiBox *gui_box_build_from_key(guiBoxFlags flags, guiKey key) {
 		box->c = gui_top_bg_color();
 		box->text_color = gui_top_text_color();
 		box->text_scale = gui_top_text_scale();
-		
+
 	}
 
 
@@ -356,7 +356,7 @@ guiSignal gui_spinner(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *d
 			u64 new_idx = minimum(maximum(0,originalp.idx + delta.raw[axis]),val_count);
 			gui_scroll_point_target_idx(&data->point, new_idx);
 			data->value = data->point.idx+val_range.min;
-	
+
 		}
 	}
 
@@ -384,7 +384,7 @@ guiSignal gui_spinner(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *d
 			u64 new_idx = minimum(maximum(0,originalp.idx + delta.raw[axis]),val_count);
 			gui_scroll_point_target_idx(&data->point, new_idx);
 			data->value = data->point.idx+val_range.min;
-	
+
 		}
 	}
 	gui_pop_parent();
@@ -404,6 +404,18 @@ guiSignal gui_button(char *str) {
 		w->flags |= GUI_BOX_FLAG_DRAW_BORDER;
 	}
 	return signal;
+}
+guiSignal gui_checkbox(char *str, b32 *value) {
+	guiVec4 col = gui_top_bg_color();
+	if (*value == 0) {
+		col = gv4(col.x/4,col.y/4,col.z/4,col.w);
+	}
+	gui_set_next_bg_color(col);
+	guiSignal sig = gui_button(str);
+	if (sig.flags & GUI_SIGNAL_FLAG_LMB_RELEASED) {
+		*value = 1 - *value;
+	}
+	return sig;
 }
 
 void gui_swindow_do_header(guiSimpleWindowData *window) {
@@ -468,7 +480,7 @@ void gui_swindow_begin(guiSimpleWindowData *window, Axis2 layout_axis) {
 	gui_swindow_do_header(window);
 	gui_swindow_do_main_panel(window, layout_axis);
 	//----------------------------------------
-	
+
 }
 
 void gui_swindow_end(guiSimpleWindowData *window) {
@@ -486,7 +498,7 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 	const char *scroll_name = "scroll_scroll";
 	s64 row_range_dim = maximum(row_range.max - row_range.min, 1);
 	char box_name[128];
-	
+
 
 	//main scroll area
 	sprintf(box_name, "scroll_main_%s", scroll_name);
@@ -503,7 +515,7 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT, 0,0});
 		up_sig = gui_icon("box_name", (axis == AXIS2_Y) ? FA_ICON_UP_OPEN : FA_ICON_LEFT_OPEN);
 	}
-	
+
 	//scrollbar area
 	sprintf(box_name, "scroll_bar_%s", scroll_name);
 	gui_set_next_child_layout_axis(axis);
@@ -546,7 +558,7 @@ guiScrollPoint gui_scroll_bar(Axis2 axis, guiScrollPoint sp, guiRange2 row_range
 		gui_set_next_pref_height((guiSize){GUI_SIZEKIND_TEXT_CONTENT,0,0});
 		down_sig = gui_icon(box_name, (axis == AXIS2_Y) ? FA_ICON_DOWN_OPEN : FA_ICON_RIGHT_OPEN);
 	}
-	
+
 	// do dragging logic to update the scrollpoint if need be
 	if (before_sig.flags & GUI_SIGNAL_FLAG_DRAGGING || (up_sig.flags & GUI_SIGNAL_FLAG_LMB_PRESSED && with_buttons)) {
 		u64 new_idx = minimum(maximum(0,(s64)sp.idx-1),row_range_dim);

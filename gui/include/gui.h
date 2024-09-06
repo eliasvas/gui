@@ -78,7 +78,7 @@ static b32 gui_point_inside_rect(guiVec2 p, guiRect r) {
 #define is_pow2(x) ((x & (x - 1)) == 0)
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 #define each_enumv(type, it) type it = (type)0; it < type##_COUNT; it = (type)(it+1)
-#define signof(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0)) 
+#define signof(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
 #define ALLOC malloc
 #define REALLOC realloc
@@ -555,7 +555,7 @@ enum guiSizeKind {
 	GUI_SIZEKIND_CHILDREN_SUM, // size of given axis is sum of children sizes layed out in order
 };
 
-typedef struct guiSize guiSize; 
+typedef struct guiSize guiSize;
 struct guiSize {
 	guiSizeKind kind;
 	f32 value;
@@ -769,6 +769,7 @@ guiKey gui_get_active_box_key(GUI_MOUSE_BUTTON b);
 
 guiSignal gui_panel(char *str);
 guiSignal gui_button(char *str);
+guiSignal gui_checkbox(char *str, b32 *value);
 guiSignal gui_spinner(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data);
 guiSignal gui_slider(char *str, Axis2 axis, guiVec2 val_range, guiSliderData *data);
 guiSignal gui_label(char *str);
@@ -786,7 +787,7 @@ typedef struct guiScrollListRowBlockArray guiScrollListRowBlockArray;
 struct guiScrollListRowBlockArray {
 	guiScrollListRowBlock *blocks;
 	u64 count;
-	
+
 };
 typedef struct guiScrollListOptions guiScrollListOptions;
 struct guiScrollListOptions {
